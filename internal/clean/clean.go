@@ -19,6 +19,9 @@ func Clean(ctx context.Context, i *pipeline.Item) (*pipeline.Item, error) {
 		return i, err
 	}
 
+	// TODO: does not really belong here
+	resolvePicture(doc)
+
 	removeUnwantedElements(doc)
 	unwrapTags(doc)
 	removeUnwantedAttributes(doc)
