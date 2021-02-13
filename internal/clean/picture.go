@@ -15,7 +15,6 @@ func resolvePicture(doc *goquery.Document) {
 			log.Println("Found multiple img elements in <picture>")
 			return
 		}
-        log.Println(s.Html())
 
 		sources := make([]source, 0)
 		s.Find("source").Each(func(j int, source *goquery.Selection) {
@@ -42,9 +41,13 @@ func parseSource(s *goquery.Selection) source {
 	typ, _ := s.Attr("type")
 	media, _ := s.Attr("media")
 	srcs, _ := s.Attr("srcset")
+	// used by some lazyload JS libs (apparently)
+	dataSrcs, _ := s.Attr("data-srcset")
 
 	srcsets := make([]srcset, 0)
 	options := strings.Split(srcs, ",")
+	dataOpts := strings.Split(dataSrcs, ",")
+	options = append(options, dataOpts...)
 
 	for _, o := range options {
 		o = strings.TrimSpace(o)
