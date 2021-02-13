@@ -74,6 +74,7 @@ var unwrap = []string{
 	"content", "font", "listing",
 	"marquee", "nobr", "plaintext", "spacer",
 	"strike", "tt",
+	"picture",
 }
 
 func shouldUnwrap(tag string) bool {

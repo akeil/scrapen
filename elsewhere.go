@@ -4,9 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
-	//"io/ioutil"
 	"os"
-	"strings"
 
 	"akeil.net/akeil/elsewhere/internal/assets"
 	"akeil.net/akeil/elsewhere/internal/clean"
@@ -27,9 +25,8 @@ func Run(url string) error {
 	if err != nil {
 		return err
 	}
-	//return nil
 
-	format := "epub"
+	format := "html"
 
 	var compose ComposeFunc
 	switch format {
@@ -70,41 +67,3 @@ func configurePipeline() pipeline.Pipeline {
 
 // ComposeFunc is used to compose an putput format for an item.
 type ComposeFunc func(w io.Writer, i *pipeline.Item) error
-
-var style = `
-body {
-    font-family: sans-serif;
-    font-size: 1.125rem;
-    line-height: 1.9em;
-    color: #4f4f4f;
-}
-
-code {
-    font-family: monospace;
-    /*background: #505050;*/
-    /*color: #ffffff;*/
-}
-
-p {
-    margin-bottom: 1.5em;
-}
-`
-
-func compose(i pipeline.Item) string {
-	var b strings.Builder
-
-	b.WriteString("<html>")
-	b.WriteString("<head>")
-
-	b.WriteString("<style>")
-	b.WriteString(style)
-	b.WriteString("</style>")
-
-	b.WriteString("</head>")
-	b.WriteString("<body>")
-	b.WriteString(i.Html)
-	b.WriteString("</body>")
-	b.WriteString("</html>")
-
-	return b.String()
-}
