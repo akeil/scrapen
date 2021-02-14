@@ -9,11 +9,12 @@ import (
 type Pipeline func(ctx context.Context, i *Item) (*Item, error)
 
 type Item struct {
-	Url       string
-	Html      string
-	Title     string
-	Retrieved time.Time
-	assets    map[string]asset
+	Url         string
+	Html        string
+	Title       string
+	Retrieved   time.Time
+	Description string
+	assets      map[string]asset
 }
 
 type asset struct {
