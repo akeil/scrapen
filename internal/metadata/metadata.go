@@ -2,7 +2,6 @@ package metadata
 
 import (
 	"context"
-	//"fmt"
 	"strings"
 
 	"golang.org/x/net/html"
@@ -88,6 +87,7 @@ func newMetadata() *metadata {
 
 func handleMeta(t html.Token, m *metadata) {
 	var name string
+	var property string
 	var content string
 	for _, attr := range t.Attr {
 		k := strings.TrimSpace(strings.ToLower(attr.Key))
@@ -95,12 +95,20 @@ func handleMeta(t html.Token, m *metadata) {
 		switch k {
 		case "name":
 			name = v
+		case "property":
+			property = v
 		case "content":
 			content = v
 		}
 	}
 
-	if content == "" {
+	// property and name should not be present at the same time
+	// if they are, prefer name
+	if name == "" {
+		name = property
+	}
+
+	if content == "" || name == "" {
 		return
 	}
 

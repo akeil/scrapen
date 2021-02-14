@@ -36,7 +36,7 @@ func TestMetaDescription(t *testing.T) {
 
 	// og:
 	html = `<html><head>
-        <meta name="og:description" content="the description" />
+        <meta property="og:description" content="the description" />
     </head><body>foo</body></html>`
 
 	i, err = readMeta(html)
@@ -45,7 +45,7 @@ func TestMetaDescription(t *testing.T) {
 
 	// twitter:
 	html = `<html><head>
-        <meta name="twitter:description" content="the description" />
+        <meta property="twitter:description" content="the description" />
     </head><body>foo</body></html>`
 
 	i, err = readMeta(html)
@@ -55,7 +55,7 @@ func TestMetaDescription(t *testing.T) {
 	// preference
 	html = `<html><head>
         <meta name="description" content="the description" />
-        <meta name="og:description" content="NOT the description" />
+        <meta property="og:description" content="NOT the description" />
     </head><body>foo</body></html>`
 
 	i, err = readMeta(html)
@@ -77,7 +77,7 @@ func TestImageURL(t *testing.T) {
 
 	// og
 	html := `<html><head>
-        <meta name="og:image" content="https://example.com/foo.jpg" />
+        <meta property="og:image" content="https://example.com/foo.jpg" />
     </head><body>foo</body></html>`
 
 	i, err := readMeta(html)
@@ -95,8 +95,8 @@ func TestImageURL(t *testing.T) {
 
 	// preference
 	html = `<html><head>
-        <meta name="og:image" content="https://example.com/foo.jpg" />
-        <meta name="twitter:image" content="https://example.com/IGNORED.jpg" />
+        <meta property="og:image" content="https://example.com/foo.jpg" />
+        <meta property="twitter:image" content="https://example.com/IGNORED.jpg" />
     </head><body>foo</body></html>`
 
 	i, err = readMeta(html)
@@ -109,7 +109,7 @@ func TestCanonicalURL(t *testing.T) {
 
 	// og
 	html := `<html><head>
-        <meta name="og:url" content="https://example.com/foo" />
+        <meta property="og:url" content="https://example.com/foo" />
     </head><body>foo</body></html>`
 
 	i, err := readMeta(html)
@@ -127,7 +127,7 @@ func TestCanonicalURL(t *testing.T) {
 
 	// preference
 	html = `<html><head>
-        <meta name="og:url" content="https://example.com/IGNORE" />
+        <meta property="og:url" content="https://example.com/IGNORE" />
         <link rel="canonical" href="https://example.com/foo" />
     </head><body>foo</body></html>`
 
