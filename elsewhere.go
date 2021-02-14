@@ -10,6 +10,7 @@ import (
 	"akeil.net/akeil/elsewhere/internal/clean"
 	"akeil.net/akeil/elsewhere/internal/ebook"
 	"akeil.net/akeil/elsewhere/internal/htm"
+	"akeil.net/akeil/elsewhere/internal/metadata"
 	"akeil.net/akeil/elsewhere/internal/pdf"
 	"akeil.net/akeil/elsewhere/internal/pipeline"
 	"akeil.net/akeil/elsewhere/internal/readable"
@@ -60,6 +61,7 @@ func configurePipeline() pipeline.Pipeline {
 	// TODO: config and call options go here
 	return pipeline.BuildPipeline(
 		Fetch,
+		metadata.ReadMetadata,
 		readable.MakeReadable,
 		clean.Clean,
 		assets.DownloadImages)
