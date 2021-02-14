@@ -23,6 +23,8 @@ func ReadMetadata(ctx context.Context, i *pipeline.Item) (*pipeline.Item, error)
 			switch t.DataAtom {
 			case atom.Meta:
 				handleMeta(t, m)
+			case atom.Link:
+				handleLink(t, m)
 			}
 		case html.EndTagToken:
 		}
@@ -41,6 +43,7 @@ func ReadMetadata(ctx context.Context, i *pipeline.Item) (*pipeline.Item, error)
 }
 
 var descriptionPref = []string{"description", "og:description", "twitter:description"}
+var urlPref = []string{"link/canonical", "og:url", "twitter:url"}
 
 func setMetadata(m *metadata, i *pipeline.Item) {
 	for _, k := range descriptionPref {
@@ -50,15 +53,25 @@ func setMetadata(m *metadata, i *pipeline.Item) {
 			break
 		}
 	}
+
+	for _, k := range urlPref {
+		v, ok := m.url[k]
+		if ok {
+			i.CanonicalURL = v
+			break
+		}
+	}
 }
 
 type metadata struct {
 	description map[string]string
+	url         map[string]string
 }
 
 func newMetadata() *metadata {
 	return &metadata{
 		description: make(map[string]string),
+		url:         make(map[string]string),
 	}
 }
 
@@ -82,6 +95,35 @@ func handleMeta(t html.Token, m *metadata) {
 
 	if contains(descriptionPref, name) {
 		m.description[name] = content
+		return
+	}
+
+	if contains(urlPref, name) {
+		m.url[name] = content
+		return
+	}
+}
+
+func handleLink(t html.Token, m *metadata) {
+	var rel string
+	var href string
+	for _, attr := range t.Attr {
+		k := strings.TrimSpace(strings.ToLower(attr.Key))
+		v := strings.TrimSpace(attr.Val)
+		switch k {
+		case "rel":
+			rel = v
+		case "href":
+			href = v
+		}
+	}
+
+	if href == "" {
+		return
+	}
+
+	if rel == "canonical" {
+		m.url["link/canonical"] = href
 	}
 }
 

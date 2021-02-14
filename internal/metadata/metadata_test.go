@@ -61,6 +61,48 @@ func TestMetaDescription(t *testing.T) {
 	i, err = readMeta(html)
 	assert.Nil(err)
 	assert.Equal("the description", i.Description)
+
+	// unsupported
+	html = `<html><head>
+        <meta name="xxx:description" content="the description" />
+    </head><body>foo</body></html>`
+
+	i, err = readMeta(html)
+	assert.Nil(err)
+	assert.Equal("", i.Description)
+}
+
+func TestCanonicalURL(t *testing.T) {
+	assert := assert.New(t)
+
+	// og
+	html := `<html><head>
+        <meta name="og:url" content="https://example.com/foo" />
+    </head><body>foo</body></html>`
+
+	i, err := readMeta(html)
+	assert.Nil(err)
+	assert.Equal("https://example.com/foo", i.CanonicalURL)
+
+	// link
+	html = `<html><head>
+        <link rel="canonical" href="https://example.com/foo" />
+    </head><body>foo</body></html>`
+
+	i, err = readMeta(html)
+	assert.Nil(err)
+	assert.Equal("https://example.com/foo", i.CanonicalURL)
+
+	// preference
+	html = `<html><head>
+        <meta name="og:url" content="https://example.com/IGNORE" />
+        <link rel="canonical" href="https://example.com/foo" />
+    </head><body>foo</body></html>`
+
+	i, err = readMeta(html)
+	assert.Nil(err)
+	assert.Equal("https://example.com/foo", i.CanonicalURL)
+
 }
 
 func readMeta(html string) (*pipeline.Item, error) {
