@@ -72,6 +72,38 @@ func TestMetaDescription(t *testing.T) {
 	assert.Equal("", i.Description)
 }
 
+func TestImageURL(t *testing.T) {
+	assert := assert.New(t)
+
+	// og
+	html := `<html><head>
+        <meta name="og:image" content="https://example.com/foo.jpg" />
+    </head><body>foo</body></html>`
+
+	i, err := readMeta(html)
+	assert.Nil(err)
+	assert.Equal("https://example.com/foo.jpg", i.ImageURL)
+
+	// link
+	html = `<html><head>
+        <link rel="image_src" href="https://example.com/foo.jpg" />
+    </head><body>foo</body></html>`
+
+	i, err = readMeta(html)
+	assert.Nil(err)
+	assert.Equal("https://example.com/foo.jpg", i.ImageURL)
+
+	// preference
+	html = `<html><head>
+        <meta name="og:image" content="https://example.com/foo.jpg" />
+        <meta name="twitter:image" content="https://example.com/IGNORED.jpg" />
+    </head><body>foo</body></html>`
+
+	i, err = readMeta(html)
+	assert.Nil(err)
+	assert.Equal("https://example.com/foo.jpg", i.ImageURL)
+}
+
 func TestCanonicalURL(t *testing.T) {
 	assert := assert.New(t)
 

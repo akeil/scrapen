@@ -15,6 +15,7 @@ type Item struct {
 	Title        string
 	Retrieved    time.Time
 	Description  string
+	ImageURL     string
 	assets       map[string]asset
 }
 

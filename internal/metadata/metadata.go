@@ -43,6 +43,7 @@ func ReadMetadata(ctx context.Context, i *pipeline.Item) (*pipeline.Item, error)
 }
 
 var descriptionPref = []string{"description", "og:description", "twitter:description"}
+var imagePref = []string{"og:image:secure_url", "og:image", "link/image_src", "twitter:image", "twitter:image:src"}
 var urlPref = []string{"link/canonical", "og:url", "twitter:url"}
 
 func setMetadata(m *metadata, i *pipeline.Item) {
@@ -50,6 +51,14 @@ func setMetadata(m *metadata, i *pipeline.Item) {
 		v, ok := m.description[k]
 		if ok {
 			i.Description = v
+			break
+		}
+	}
+
+	for _, k := range imagePref {
+		v, ok := m.image[k]
+		if ok {
+			i.ImageURL = v
 			break
 		}
 	}
@@ -65,12 +74,14 @@ func setMetadata(m *metadata, i *pipeline.Item) {
 
 type metadata struct {
 	description map[string]string
+	image       map[string]string
 	url         map[string]string
 }
 
 func newMetadata() *metadata {
 	return &metadata{
 		description: make(map[string]string),
+		image:       make(map[string]string),
 		url:         make(map[string]string),
 	}
 }
@@ -98,6 +109,11 @@ func handleMeta(t html.Token, m *metadata) {
 		return
 	}
 
+	if contains(imagePref, name) {
+		m.image[name] = content
+		return
+	}
+
 	if contains(urlPref, name) {
 		m.url[name] = content
 		return
@@ -122,8 +138,11 @@ func handleLink(t html.Token, m *metadata) {
 		return
 	}
 
-	if rel == "canonical" {
+	switch rel {
+	case "canonical":
 		m.url["link/canonical"] = href
+	case "image_src":
+		m.image["link/image_src"] = href
 	}
 }
 
