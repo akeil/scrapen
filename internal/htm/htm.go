@@ -34,6 +34,7 @@ func Compose(w io.Writer, i *pipeline.Item) error {
 
 func writeHead(b *strings.Builder, i *pipeline.Item) {
 	b.WriteString("<head>")
+	b.WriteString("<meta charset=\"utf-8\"/>")
 	b.WriteString(fmt.Sprintf("<title>%v</title>", html.EscapeString(i.Title)))
 	b.WriteString("<style>")
 	b.WriteString(style)
@@ -204,6 +205,11 @@ pre {
 	margin-bottom: 1em;
 	margin-bottom: 0;
 	padding: 0.75em;
+}
+
+figcaption {
+	font-style: italic;
+	font-size: smaller;
 }
 
 time {
