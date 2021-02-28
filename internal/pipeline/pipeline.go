@@ -8,6 +8,11 @@ import (
 
 type Pipeline func(ctx context.Context, i *Item) (*Item, error)
 
+type Store interface {
+	Put(k, contentType string, data []byte) error
+	Get(k string) (string, []byte, error)
+}
+
 type Item struct {
 	Url          string
 	CanonicalURL string
@@ -16,19 +21,14 @@ type Item struct {
 	Retrieved    time.Time
 	Description  string
 	ImageURL     string
-	assets       map[string]asset
+	store        Store
 }
 
-type asset struct {
-	contentType string
-	data        []byte
-}
-
-func NewItem(url string) *Item {
+func NewItem(s Store, url string) *Item {
 	return &Item{
 		Url:       url,
 		Retrieved: time.Now().UTC(),
-		assets:    make(map[string]asset),
+		store:     s,
 	}
 }
 
@@ -38,21 +38,16 @@ func (i *Item) Copy() *Item {
 		Html:      i.Html,
 		Title:     i.Title,
 		Retrieved: i.Retrieved,
-		assets:    i.assets,
+		store:     i.store,
 	}
 }
 
-func (i *Item) PutAsset(id, contentType string, data []byte) error {
-	i.assets[id] = asset{contentType: contentType, data: data}
-	return nil
+func (i *Item) PutAsset(k, contentType string, data []byte) error {
+	return i.store.Put(k, contentType, data)
 }
 
-func (i *Item) GetAsset(id string) (string, []byte, error) {
-	asset, ok := i.assets[id]
-	if !ok {
-		return "", nil, fmt.Errorf("no asset with id %q", id)
-	}
-	return asset.contentType, asset.data, nil
+func (i *Item) GetAsset(k string) (string, []byte, error) {
+	return i.store.Get(k)
 }
 
 func BuildPipeline(f ...Pipeline) Pipeline {
@@ -67,4 +62,32 @@ func BuildPipeline(f ...Pipeline) Pipeline {
 		}
 		return item, nil
 	}
+}
+
+type memoryStore struct {
+	assets map[string]asset
+}
+
+func NewMemoryStore() Store {
+	return &memoryStore{
+		assets: make(map[string]asset),
+	}
+}
+
+func (m *memoryStore) Put(k, contentType string, data []byte) error {
+	m.assets[k] = asset{contentType: contentType, data: data}
+	return nil
+}
+
+func (m *memoryStore) Get(k string) (string, []byte, error) {
+	asset, ok := m.assets[k]
+	if !ok {
+		return "", nil, fmt.Errorf("no asset with id %q", k)
+	}
+	return asset.contentType, asset.data, nil
+}
+
+type asset struct {
+	contentType string
+	data        []byte
 }

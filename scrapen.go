@@ -17,7 +17,14 @@ import (
 )
 
 func Run(url string) error {
-	result, err := Scrape(url)
+	o := Options{
+		Metadata:       true,
+		Readability:    true,
+		Clean:          true,
+		DownloadImages: true,
+	}
+	s := pipeline.NewMemoryStore()
+	result, err := Scrape(s, o, url)
 	if err != nil {
 		return err
 	}
@@ -52,11 +59,11 @@ func Run(url string) error {
 	return nil
 }
 
-func Scrape(url string) (*pipeline.Item, error) {
+func Scrape(s pipeline.Store, o Options, url string) (*pipeline.Item, error) {
 	ctx := context.Background()
-	item := pipeline.NewItem(url)
+	item := pipeline.NewItem(s, url)
 
-	p := configurePipeline()
+	p := configurePipeline(o)
 	result, err := p(ctx, item)
 	if err != nil {
 		return nil, err
@@ -65,14 +72,34 @@ func Scrape(url string) (*pipeline.Item, error) {
 	return result, nil
 }
 
-func configurePipeline() pipeline.Pipeline {
-	// TODO: config and call options go here
-	return pipeline.BuildPipeline(
+type Options struct {
+	Metadata       bool
+	Readability    bool
+	Clean          bool
+	DownloadImages bool
+}
+
+func configurePipeline(o Options) pipeline.Pipeline {
+	p := []pipeline.Pipeline{
 		Fetch,
-		metadata.ReadMetadata,
-		readable.MakeReadable,
-		clean.Clean,
-		assets.DownloadImages)
+	}
+
+	if o.Metadata {
+		p = append(p, metadata.ReadMetadata)
+	}
+
+	if o.Readability {
+		p = append(p, readable.MakeReadable)
+	}
+
+	if o.Clean {
+		p = append(p, clean.Clean)
+	}
+
+	if o.DownloadImages {
+		p = append(p, assets.DownloadImages)
+	}
+	return pipeline.BuildPipeline(p...)
 }
 
 // ComposeFunc is used to compose an putput format for an item.
