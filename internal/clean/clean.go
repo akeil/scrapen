@@ -7,7 +7,7 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 
-	"akeil.net/akeil/elsewhere/internal/pipeline"
+	"github.com/akeil/scrapen/internal/pipeline"
 )
 
 func Clean(ctx context.Context, i *pipeline.Item) (*pipeline.Item, error) {

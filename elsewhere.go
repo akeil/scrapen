@@ -1,4 +1,4 @@
-package elsewhere
+package scrapen
 
 import (
 	"context"
@@ -6,14 +6,14 @@ import (
 	"io"
 	"os"
 
-	"akeil.net/akeil/elsewhere/internal/assets"
-	"akeil.net/akeil/elsewhere/internal/clean"
-	"akeil.net/akeil/elsewhere/internal/ebook"
-	"akeil.net/akeil/elsewhere/internal/htm"
-	"akeil.net/akeil/elsewhere/internal/metadata"
-	"akeil.net/akeil/elsewhere/internal/pdf"
-	"akeil.net/akeil/elsewhere/internal/pipeline"
-	"akeil.net/akeil/elsewhere/internal/readable"
+	"github.com/akeil/scrapen/internal/assets"
+	"github.com/akeil/scrapen/internal/clean"
+	"github.com/akeil/scrapen/internal/ebook"
+	"github.com/akeil/scrapen/internal/htm"
+	"github.com/akeil/scrapen/internal/metadata"
+	"github.com/akeil/scrapen/internal/pdf"
+	"github.com/akeil/scrapen/internal/pipeline"
+	"github.com/akeil/scrapen/internal/readable"
 )
 
 func Run(url string) error {

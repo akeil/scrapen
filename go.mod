@@ -1,4 +1,4 @@
-module akeil.net/akeil/elsewhere
+module github.com/akeil/scrapen
 
 go 1.15
 

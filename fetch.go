@@ -1,4 +1,4 @@
-package elsewhere
+package scrapen
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"akeil.net/akeil/elsewhere/internal/pipeline"
+	"github.com/akeil/scrapen/internal/pipeline"
 )
 
 var client = &http.Client{}
