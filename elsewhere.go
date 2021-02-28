@@ -17,12 +17,7 @@ import (
 )
 
 func Run(url string) error {
-
-	ctx := context.Background()
-	item := pipeline.NewItem(url)
-
-	p := configurePipeline()
-	result, err := p(ctx, item)
+	result, err := Scrape(url)
 	if err != nil {
 		return err
 	}
@@ -55,6 +50,19 @@ func Run(url string) error {
 	}
 
 	return nil
+}
+
+func Scrape(url string) (*pipeline.Item, error) {
+	ctx := context.Background()
+	item := pipeline.NewItem(url)
+
+	p := configurePipeline()
+	result, err := p(ctx, item)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }
 
 func configurePipeline() pipeline.Pipeline {
