@@ -7,7 +7,7 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 
-	"akeil.net/akeil/elsewhere/internal/pipeline"
+	"github.com/akeil/scrapen/internal/pipeline"
 )
 
 func Clean(ctx context.Context, i *pipeline.Item) (*pipeline.Item, error) {
@@ -18,6 +18,9 @@ func Clean(ctx context.Context, i *pipeline.Item) (*pipeline.Item, error) {
 	if err != nil {
 		return i, err
 	}
+
+	// TODO: does not really belong here
+	resolvePicture(doc)
 
 	removeUnwantedElements(doc)
 	unwrapTags(doc)
@@ -74,6 +77,7 @@ var unwrap = []string{
 	"content", "font", "listing",
 	"marquee", "nobr", "plaintext", "spacer",
 	"strike", "tt",
+	"picture",
 }
 
 func shouldUnwrap(tag string) bool {

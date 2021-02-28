@@ -4,14 +4,14 @@ import (
 	"log"
 	"os"
 
-	"akeil.net/akeil/elsewhere"
+	"github.com/akeil/scrapen"
 )
 
 func main() {
 
 	url := os.Args[1]
 
-	err := elsewhere.Run(url)
+	err := scrapen.Run(url)
 	if err != nil {
 		log.Fatal(err)
 	}

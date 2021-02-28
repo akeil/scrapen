@@ -7,6 +7,31 @@ import (
 	"golang.org/x/net/html"
 )
 
+type TokenReader func(html.Token) error
+
+func ReadHTML(s string, r TokenReader) error {
+	var err error
+	z := html.NewTokenizer(strings.NewReader(s))
+
+	for {
+		tt := z.Next()
+		if tt == html.ErrorToken {
+			err = z.Err()
+			if err == io.EOF {
+				// Done and OK
+				return nil
+			}
+			return err
+		}
+
+		t := z.Token()
+		err := r(t)
+		if err != nil {
+			return err
+		}
+	}
+}
+
 type TokenHandler func(html.Token, io.StringWriter) (bool, error)
 
 func WalkHTML(w io.StringWriter, s string, h TokenHandler) error {

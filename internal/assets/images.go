@@ -13,7 +13,7 @@ import (
 	"golang.org/x/net/html"
 	"golang.org/x/net/html/atom"
 
-	"akeil.net/akeil/elsewhere/internal/pipeline"
+	"github.com/akeil/scrapen/internal/pipeline"
 )
 
 var client = &http.Client{}
@@ -63,6 +63,12 @@ func DownloadImages(ctx context.Context, i *pipeline.Item) (*pipeline.Item, erro
 	}
 
 	err := doImages(fetch, i)
+	if err != nil {
+		return nil, err
+	}
+
+	err = doMetadataImages(fetch, i)
+
 	return i, err
 }
 
@@ -126,6 +132,26 @@ func localImage(a []html.Attribute, f fetchFunc, w io.StringWriter) error {
 			pipeline.WriteAttr(attr, w)
 		}
 	}
+	return nil
+}
+
+func doMetadataImages(f fetchFunc, i *pipeline.Item) error {
+	if i.ImageURL == "" {
+		return nil
+	}
+
+	href, err := resolveURL(i.ImageURL, i.Url)
+	if err != nil {
+		return err
+	}
+
+	id, err := f(href)
+	if err != nil {
+		return err
+	}
+
+	i.ImageURL = "local://" + id
+
 	return nil
 }
 

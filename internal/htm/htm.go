@@ -11,7 +11,7 @@ import (
 	"golang.org/x/net/html"
 	"golang.org/x/net/html/atom"
 
-	"akeil.net/akeil/elsewhere/internal/pipeline"
+	"github.com/akeil/scrapen/internal/pipeline"
 )
 
 func Compose(w io.Writer, i *pipeline.Item) error {
@@ -34,6 +34,7 @@ func Compose(w io.Writer, i *pipeline.Item) error {
 
 func writeHead(b *strings.Builder, i *pipeline.Item) {
 	b.WriteString("<head>")
+	b.WriteString("<meta charset=\"utf-8\"/>")
 	b.WriteString(fmt.Sprintf("<title>%v</title>", html.EscapeString(i.Title)))
 	b.WriteString("<style>")
 	b.WriteString(style)
@@ -43,12 +44,42 @@ func writeHead(b *strings.Builder, i *pipeline.Item) {
 
 func writeBody(b *strings.Builder, i *pipeline.Item) error {
 	b.WriteString("<body>")
-	err := writeContent(b, i)
+	err := writeMetadata(b, i)
+	if err != nil {
+		return err
+	}
+	err = writeContent(b, i)
 	if err != nil {
 		return err
 	}
 	writeFooter(b, i)
 	b.WriteString("</body>")
+	return nil
+}
+
+func writeMetadata(b *strings.Builder, i *pipeline.Item) error {
+	// TODO: include <h1> with title?
+	b.WriteString("<header>")
+	if i.ImageURL != "" {
+		attr := []html.Attribute{html.Attribute{Key: "src", Val: i.ImageURL}}
+		b.WriteString("<img ")
+		dataImage(attr, i, b)
+		b.WriteString("/>")
+	}
+
+	if i.Title != "" {
+		b.WriteString("<h1>")
+		b.WriteString(i.Title)
+		b.WriteString("</h1>")
+	}
+
+	if i.Description != "" {
+		b.WriteString("<p>")
+		b.WriteString(i.Description)
+		b.WriteString("</p>")
+	}
+
+	b.WriteString("</header>")
 	return nil
 }
 
@@ -206,6 +237,11 @@ pre {
 	padding: 0.75em;
 }
 
+figcaption {
+	font-style: italic;
+	font-size: smaller;
+}
+
 time {
 	font-style: italic;
 }
@@ -214,4 +250,12 @@ footer {
 	border-top: 1px solid #cccccc;
 	font-size: smaller;
 }
+
+header {
+	border-bottom: 1px solid #cccccc;
+	color: #909090;
+	font-weight: bold;
+	font-style: italic;
+}
+
 `

@@ -11,7 +11,7 @@ import (
 	"github.com/jung-kurt/gofpdf"
 	"golang.org/x/net/html"
 
-	"akeil.net/akeil/elsewhere/internal/pipeline"
+	"github.com/akeil/scrapen/internal/pipeline"
 )
 
 func Compose(w io.Writer, i *pipeline.Item) error {

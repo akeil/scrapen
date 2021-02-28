@@ -1,35 +1,28 @@
-package elsewhere
+package scrapen
 
 import (
 	"context"
 	"fmt"
 	"io"
-	//"io/ioutil"
 	"os"
-	"strings"
 
-	"akeil.net/akeil/elsewhere/internal/assets"
-	"akeil.net/akeil/elsewhere/internal/clean"
-	"akeil.net/akeil/elsewhere/internal/ebook"
-	"akeil.net/akeil/elsewhere/internal/htm"
-	"akeil.net/akeil/elsewhere/internal/pdf"
-	"akeil.net/akeil/elsewhere/internal/pipeline"
-	"akeil.net/akeil/elsewhere/internal/readable"
+	"github.com/akeil/scrapen/internal/assets"
+	"github.com/akeil/scrapen/internal/clean"
+	"github.com/akeil/scrapen/internal/ebook"
+	"github.com/akeil/scrapen/internal/htm"
+	"github.com/akeil/scrapen/internal/metadata"
+	"github.com/akeil/scrapen/internal/pdf"
+	"github.com/akeil/scrapen/internal/pipeline"
+	"github.com/akeil/scrapen/internal/readable"
 )
 
 func Run(url string) error {
-
-	ctx := context.Background()
-	item := pipeline.NewItem(url)
-
-	p := configurePipeline()
-	result, err := p(ctx, item)
+	result, err := Scrape(url)
 	if err != nil {
 		return err
 	}
-	//return nil
 
-	format := "epub"
+	format := "html"
 
 	var compose ComposeFunc
 	switch format {
@@ -59,10 +52,24 @@ func Run(url string) error {
 	return nil
 }
 
+func Scrape(url string) (*pipeline.Item, error) {
+	ctx := context.Background()
+	item := pipeline.NewItem(url)
+
+	p := configurePipeline()
+	result, err := p(ctx, item)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 func configurePipeline() pipeline.Pipeline {
 	// TODO: config and call options go here
 	return pipeline.BuildPipeline(
 		Fetch,
+		metadata.ReadMetadata,
 		readable.MakeReadable,
 		clean.Clean,
 		assets.DownloadImages)
@@ -70,41 +77,3 @@ func configurePipeline() pipeline.Pipeline {
 
 // ComposeFunc is used to compose an putput format for an item.
 type ComposeFunc func(w io.Writer, i *pipeline.Item) error
-
-var style = `
-body {
-    font-family: sans-serif;
-    font-size: 1.125rem;
-    line-height: 1.9em;
-    color: #4f4f4f;
-}
-
-code {
-    font-family: monospace;
-    /*background: #505050;*/
-    /*color: #ffffff;*/
-}
-
-p {
-    margin-bottom: 1.5em;
-}
-`
-
-func compose(i pipeline.Item) string {
-	var b strings.Builder
-
-	b.WriteString("<html>")
-	b.WriteString("<head>")
-
-	b.WriteString("<style>")
-	b.WriteString(style)
-	b.WriteString("</style>")
-
-	b.WriteString("</head>")
-	b.WriteString("<body>")
-	b.WriteString(i.Html)
-	b.WriteString("</body>")
-	b.WriteString("</html>")
-
-	return b.String()
-}
