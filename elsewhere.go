@@ -17,7 +17,8 @@ import (
 )
 
 func Run(url string) error {
-	result, err := Scrape(url)
+	s := pipeline.NewMemoryStore()
+	result, err := Scrape(s, url)
 	if err != nil {
 		return err
 	}
@@ -52,9 +53,9 @@ func Run(url string) error {
 	return nil
 }
 
-func Scrape(url string) (*pipeline.Item, error) {
+func Scrape(s pipeline.Store, url string) (*pipeline.Item, error) {
 	ctx := context.Background()
-	item := pipeline.NewItem(url)
+	item := pipeline.NewItem(s, url)
 
 	p := configurePipeline()
 	result, err := p(ctx, item)
