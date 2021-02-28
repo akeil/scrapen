@@ -6,7 +6,7 @@ import (
 
 	readability "github.com/go-shiori/go-readability"
 
-	"akeil.net/akeil/elsewhere/internal/pipeline"
+	"github.com/akeil/scrapen/internal/pipeline"
 )
 
 func MakeReadable(ctx context.Context, i *pipeline.Item) (*pipeline.Item, error) {

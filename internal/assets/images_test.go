@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"akeil.net/akeil/elsewhere/internal/pipeline"
+	"github.com/akeil/scrapen/internal/pipeline"
 	"github.com/stretchr/testify/assert"
 )
 

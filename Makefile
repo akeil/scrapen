@@ -1,5 +1,5 @@
-NAMESPACE	= akeil.net/akeil
-NAME    	= elsewhere
+NAMESPACE	= github.com/akeil
+NAME    	= scrapen
 MAIN		= ./cmd/$(NAME)
 BINDIR  	= ./bin
 
