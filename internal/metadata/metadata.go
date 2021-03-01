@@ -2,6 +2,7 @@ package metadata
 
 import (
 	"context"
+	"net/url"
 	"strings"
 
 	"golang.org/x/net/html"
@@ -37,6 +38,7 @@ func ReadMetadata(ctx context.Context, i *pipeline.Item) (*pipeline.Item, error)
 	}
 
 	setMetadata(m, i)
+	setSite(i)
 
 	return i, nil
 }
@@ -80,6 +82,21 @@ func setMetadata(m *metadata, i *pipeline.Item) {
 			break
 		}
 	}
+}
+
+func setSite(i *pipeline.Item) {
+	s := i.URL
+	if i.ActualURL != "" {
+		s = i.ActualURL
+	} else if i.CanonicalURL != "" {
+		s = i.CanonicalURL
+	}
+
+	u, err := url.Parse(s)
+	if err != nil {
+		return
+	}
+	i.Site = u.Host
 }
 
 type metadata struct {

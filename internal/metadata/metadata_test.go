@@ -161,6 +161,29 @@ func TestAuthor(t *testing.T) {
 
 }
 
+func TestSite(t *testing.T) {
+	assert := assert.New(t)
+
+	i := &pipeline.Item{
+		URL: "https://foo.bar.com/path?query#fragment",
+	}
+	setSite(i)
+	assert.Equal("foo.bar.com", i.Site)
+
+	// Preference - ActualURL before CanonicalURL
+	i.URL = "https://shorten.it/xyz"
+	i.ActualURL = "https://mobile.foo.com/path/page.html"
+	i.CanonicalURL = "https://foo.com/path/page.html"
+	setSite(i)
+	assert.Equal("mobile.foo.com", i.Site)
+
+	i.URL = "https://shorten.it/xyz"
+	i.ActualURL = ""
+	i.CanonicalURL = "https://foo.com/path/page.html"
+	setSite(i)
+	assert.Equal("foo.com", i.Site)
+}
+
 func readMeta(html string) (*pipeline.Item, error) {
 	i := &pipeline.Item{
 		HTML: html,
