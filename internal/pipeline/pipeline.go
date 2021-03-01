@@ -16,11 +16,15 @@ type Store interface {
 
 type Item struct {
 	URL          string
+	ActualURL    string
 	CanonicalURL string
 	HTML         string
 	Title        string
 	Retrieved    time.Time
 	Description  string
+	PubDate      *time.Time
+	Site         string
+	Author       string
 	ImageURL     string
 	store        Store
 }
@@ -30,16 +34,6 @@ func NewItem(s Store, url string) *Item {
 		URL:       url,
 		Retrieved: time.Now().UTC(),
 		store:     s,
-	}
-}
-
-func (i *Item) Copy() *Item {
-	return &Item{
-		URL:       i.URL,
-		HTML:      i.HTML,
-		Title:     i.Title,
-		Retrieved: i.Retrieved,
-		store:     i.store,
 	}
 }
 
@@ -53,15 +47,14 @@ func (i *Item) GetAsset(k string) (string, []byte, error) {
 
 func BuildPipeline(f ...Pipeline) Pipeline {
 	return func(ctx context.Context, i *Item) (*Item, error) {
-		item := i.Copy()
 		var err error
 		for _, p := range f {
-			item, err = p(ctx, item)
+			i, err = p(ctx, i)
 			if err != nil {
-				return item, err
+				return i, err
 			}
 		}
-		return item, nil
+		return i, nil
 	}
 }
 
