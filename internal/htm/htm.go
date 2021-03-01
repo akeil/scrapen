@@ -72,6 +72,32 @@ func writeMetadata(b *strings.Builder, i *pipeline.Item) error {
 		b.WriteString("</h1>")
 	}
 
+	if i.Author != "" {
+		b.WriteString("<p>")
+		b.WriteString("By ")
+		b.WriteString("<strong>")
+		b.WriteString(i.Author)
+		b.WriteString("</strong>")
+		b.WriteString("</p>")
+	}
+
+	if i.PubDate != nil {
+		b.WriteString("<p>")
+		b.WriteString("Published ")
+		b.WriteString("<time datetime=\"")
+		b.WriteString(i.PubDate.Format(time.RFC3339))
+		b.WriteString("\">")
+		b.WriteString(i.PubDate.Format(time.ANSIC))
+		b.WriteString("</time>")
+		b.WriteString("</p>")
+	}
+
+	if i.Site != "" {
+		b.WriteString("<p>")
+		b.WriteString(i.Site)
+		b.WriteString("</p>")
+	}
+
 	if i.Description != "" {
 		b.WriteString("<p>")
 		b.WriteString(i.Description)
@@ -250,8 +276,11 @@ footer {
 header {
 	border-bottom: 1px solid #cccccc;
 	color: #909090;
-	font-weight: bold;
-	font-style: italic;
+}
+
+header p {
+	font-weight: normal;
+	font-size: small;
 }
 
 `

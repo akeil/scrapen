@@ -50,6 +50,7 @@ var (
 	urlPref         = []string{"link/canonical", "og:url", "twitter:url"}
 	authorPref      = []string{"author", "article:author", "book:author", "twitter:creator"}
 	pubDatePref     = []string{"article:published_time", "article:modified_time", "og:updated_time", "date", "last-modified"}
+	// title: og:title
 )
 
 func setMetadata(m *metadata, i *pipeline.Item) {
