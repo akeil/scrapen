@@ -1,8 +1,8 @@
 package metadata
 
 import (
-	//"errors"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 
@@ -182,6 +182,15 @@ func TestSite(t *testing.T) {
 	i.CanonicalURL = "https://foo.com/path/page.html"
 	setSite(i)
 	assert.Equal("foo.com", i.Site)
+}
+
+func TestParseTime(t *testing.T) {
+	assert := assert.New(t)
+	var ts *time.Time
+	ts = parseTime("2020-03-30T08:35:13+00:00")
+	assert.NotNil(ts)
+	assert.Equal(ts.Format(time.RFC3339), "2020-03-30T08:35:13Z")
+
 }
 
 func readMeta(html string) (*pipeline.Item, error) {

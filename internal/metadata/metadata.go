@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/url"
 	"strings"
+	"time"
 
 	"golang.org/x/net/html"
 	"golang.org/x/net/html/atom"
@@ -48,6 +49,7 @@ var (
 	imagePref       = []string{"og:image:secure_url", "og:image", "link/image_src", "twitter:image", "twitter:image:src"}
 	urlPref         = []string{"link/canonical", "og:url", "twitter:url"}
 	authorPref      = []string{"author", "article:author", "book:author", "twitter:creator"}
+	pubDatePref     = []string{"article:published_time", "article:modified_time", "og:updated_time", "date", "last-modified"}
 )
 
 func setMetadata(m *metadata, i *pipeline.Item) {
@@ -82,6 +84,17 @@ func setMetadata(m *metadata, i *pipeline.Item) {
 			break
 		}
 	}
+
+	for _, k := range pubDatePref {
+		v, ok := m.pubDate[k]
+		if ok {
+			t := parseTime(v)
+			if t != nil {
+				i.PubDate = t
+			}
+			break
+		}
+	}
 }
 
 func setSite(i *pipeline.Item) {
@@ -104,6 +117,7 @@ type metadata struct {
 	image       map[string]string
 	url         map[string]string
 	author      map[string]string
+	pubDate     map[string]string
 }
 
 func newMetadata() *metadata {
@@ -112,6 +126,7 @@ func newMetadata() *metadata {
 		image:       make(map[string]string),
 		url:         make(map[string]string),
 		author:      make(map[string]string),
+		pubDate:     make(map[string]string),
 	}
 }
 
@@ -161,6 +176,11 @@ func handleMeta(t html.Token, m *metadata) {
 		m.author[name] = content
 		return
 	}
+
+	if contains(pubDatePref, name) {
+		m.pubDate[name] = content
+		return
+	}
 }
 
 func handleLink(t html.Token, m *metadata) {
@@ -196,4 +216,21 @@ func contains(haystack []string, needle string) bool {
 		}
 	}
 	return false
+}
+
+var layouts = []string{
+	time.RFC3339,
+	"2006-01-02 15:04:05Z",
+}
+
+func parseTime(v string) *time.Time {
+	for _, l := range layouts {
+		t, err := time.Parse(l, v)
+		if err == nil {
+			if !t.IsZero() {
+				return &t
+			}
+		}
+	}
+	return nil
 }
