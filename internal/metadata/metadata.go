@@ -41,9 +41,12 @@ func ReadMetadata(ctx context.Context, i *pipeline.Item) (*pipeline.Item, error)
 	return i, nil
 }
 
-var descriptionPref = []string{"description", "og:description", "twitter:description"}
-var imagePref = []string{"og:image:secure_url", "og:image", "link/image_src", "twitter:image", "twitter:image:src"}
-var urlPref = []string{"link/canonical", "og:url", "twitter:url"}
+var (
+	descriptionPref = []string{"description", "og:description", "twitter:description"}
+	imagePref       = []string{"og:image:secure_url", "og:image", "link/image_src", "twitter:image", "twitter:image:src"}
+	urlPref         = []string{"link/canonical", "og:url", "twitter:url"}
+	authorPref      = []string{"author", "article:author", "book:author", "twitter:creator"}
+)
 
 func setMetadata(m *metadata, i *pipeline.Item) {
 	for _, k := range descriptionPref {
@@ -69,12 +72,21 @@ func setMetadata(m *metadata, i *pipeline.Item) {
 			break
 		}
 	}
+
+	for _, k := range authorPref {
+		v, ok := m.author[k]
+		if ok {
+			i.Author = v
+			break
+		}
+	}
 }
 
 type metadata struct {
 	description map[string]string
 	image       map[string]string
 	url         map[string]string
+	author      map[string]string
 }
 
 func newMetadata() *metadata {
@@ -82,6 +94,7 @@ func newMetadata() *metadata {
 		description: make(map[string]string),
 		image:       make(map[string]string),
 		url:         make(map[string]string),
+		author:      make(map[string]string),
 	}
 }
 
@@ -124,6 +137,11 @@ func handleMeta(t html.Token, m *metadata) {
 
 	if contains(urlPref, name) {
 		m.url[name] = content
+		return
+	}
+
+	if contains(authorPref, name) {
+		m.author[name] = content
 		return
 	}
 }

@@ -137,6 +137,30 @@ func TestCanonicalURL(t *testing.T) {
 
 }
 
+func TestAuthor(t *testing.T) {
+	assert := assert.New(t)
+
+	// basic
+	html := `<html><head>
+        <meta property="author" content="The Author" />
+    </head><body>foo</body></html>`
+
+	i, err := readMeta(html)
+	assert.Nil(err)
+	assert.Equal("The Author", i.Author)
+
+	// preference
+	html = `<html><head>
+		<meta property="twitter:creator" content="NOT The Author" />
+        <meta property="article:author" content="The Author" />
+    </head><body>foo</body></html>`
+
+	i, err = readMeta(html)
+	assert.Nil(err)
+	assert.Equal("The Author", i.Author)
+
+}
+
 func readMeta(html string) (*pipeline.Item, error) {
 	i := &pipeline.Item{
 		HTML: html,
