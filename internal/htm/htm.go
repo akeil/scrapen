@@ -4,7 +4,6 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
-	"net/url"
 	"strings"
 	"time"
 
@@ -121,12 +120,9 @@ func writeContent(b *strings.Builder, i *pipeline.Item) error {
 func dataImage(a []html.Attribute, i *pipeline.Item, w io.StringWriter) error {
 	for _, attr := range a {
 		if attr.Key == "src" {
-			u, err := url.Parse(attr.Val)
-			if err != nil {
-				return err
-			}
-			if u.Scheme == "local" {
-				contentType, data, err := i.GetAsset(u.Host)
+			storeID := pipeline.ParseStoreID(attr.Val)
+			if storeID != "" {
+				contentType, data, err := i.GetAsset(storeID)
 				if err != nil {
 					return err
 				}

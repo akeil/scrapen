@@ -3,6 +3,7 @@ package pipeline
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 )
 
@@ -90,4 +91,20 @@ func (m *memoryStore) Get(k string) (string, []byte, error) {
 type asset struct {
 	contentType string
 	data        []byte
+}
+
+const storePrefix = "store://"
+
+// StoreURL builds a "store://" URL for the given store ID.
+func StoreURL(id string) string {
+	return storePrefix + id
+}
+
+// ParseStoreID extracts the store ID from a "store://" URL.
+// Returns an empty string if this is not a store URL.
+func ParseStoreID(url string) string {
+	if strings.HasPrefix(url, storePrefix) {
+		return strings.TrimPrefix(url, storePrefix)
+	}
+	return ""
 }

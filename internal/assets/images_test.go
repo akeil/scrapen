@@ -11,7 +11,7 @@ import (
 func TestImg(t *testing.T) {
 	assert := assert.New(t)
 	html := `<img src="https://example.com/image.jpg"/>`
-	expect := `<img src="local://ID"/>`
+	expect := `<img src="store://ID"/>`
 	i, err := doFetchImages(html)
 	assert.Nil(err)
 	assert.Equal(expect, i.HTML)
@@ -20,7 +20,7 @@ func TestImg(t *testing.T) {
 func TestFigure(t *testing.T) {
 	assert := assert.New(t)
 	html := `<figure><img src="https://example.com/image.jpg"/></figure>`
-	expect := `<figure><img src="local://ID"/></figure>`
+	expect := `<figure><img src="store://ID"/></figure>`
 	i, err := doFetchImages(html)
 	assert.Nil(err)
 	assert.Equal(expect, i.HTML)

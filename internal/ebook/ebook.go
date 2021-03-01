@@ -5,7 +5,6 @@ import (
 	"io"
 	"io/ioutil"
 	"mime"
-	"net/url"
 	"os"
 	"strings"
 
@@ -109,13 +108,9 @@ func prepareImage(a []html.Attribute, i *pipeline.Item, w io.StringWriter, e *ep
 
 	for _, attr := range a {
 		if attr.Key == "src" {
-			u, err := url.Parse(attr.Val)
-			if err != nil {
-				return err
-			}
-			if u.Scheme == "local" {
-				id := u.Host
-				err = addImage(tempdir, id, i, w, e)
+			storeID := pipeline.ParseStoreID(attr.Val)
+			if storeID != "" {
+				err := addImage(tempdir, storeID, i, w, e)
 				if err != nil {
 					return nil
 				}

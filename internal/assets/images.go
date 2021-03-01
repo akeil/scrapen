@@ -126,7 +126,7 @@ func localImage(a []html.Attribute, f fetchFunc, w io.StringWriter) error {
 			pipeline.WriteAttr(html.Attribute{
 				Namespace: "",
 				Key:       "src",
-				Val:       "local://" + newSrc,
+				Val:       pipeline.StoreURL(newSrc),
 			}, w)
 		} else {
 			pipeline.WriteAttr(attr, w)
@@ -150,7 +150,7 @@ func doMetadataImages(f fetchFunc, i *pipeline.Item) error {
 		return err
 	}
 
-	i.ImageURL = "local://" + id
+	i.ImageURL = pipeline.StoreURL(id)
 
 	return nil
 }
