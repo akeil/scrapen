@@ -91,7 +91,8 @@ func setMetadata(m *metadata, i *pipeline.Item) {
 		if ok {
 			t := parseTime(v)
 			if t != nil {
-				i.PubDate = t
+				utc := t.UTC()
+				i.PubDate = &utc
 			}
 			break
 		}
