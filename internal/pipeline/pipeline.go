@@ -14,9 +14,9 @@ type Store interface {
 }
 
 type Item struct {
-	Url          string
+	URL          string
 	CanonicalURL string
-	Html         string
+	HTML         string
 	Title        string
 	Retrieved    time.Time
 	Description  string
@@ -26,7 +26,7 @@ type Item struct {
 
 func NewItem(s Store, url string) *Item {
 	return &Item{
-		Url:       url,
+		URL:       url,
 		Retrieved: time.Now().UTC(),
 		store:     s,
 	}
@@ -34,8 +34,8 @@ func NewItem(s Store, url string) *Item {
 
 func (i *Item) Copy() *Item {
 	return &Item{
-		Url:       i.Url,
-		Html:      i.Html,
+		URL:       i.URL,
+		HTML:      i.HTML,
 		Title:     i.Title,
 		Retrieved: i.Retrieved,
 		store:     i.store,

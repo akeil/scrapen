@@ -14,7 +14,7 @@ func TestImg(t *testing.T) {
 	expect := `<img src="local://ID"/>`
 	i, err := doFetchImages(html)
 	assert.Nil(err)
-	assert.Equal(expect, i.Html)
+	assert.Equal(expect, i.HTML)
 }
 
 func TestFigure(t *testing.T) {
@@ -23,7 +23,7 @@ func TestFigure(t *testing.T) {
 	expect := `<figure><img src="local://ID"/></figure>`
 	i, err := doFetchImages(html)
 	assert.Nil(err)
-	assert.Equal(expect, i.Html)
+	assert.Equal(expect, i.HTML)
 }
 
 func TestEmpty(t *testing.T) {
@@ -31,7 +31,7 @@ func TestEmpty(t *testing.T) {
 	html := ""
 	i, err := doFetchImages(html)
 	assert.Nil(err)
-	assert.Equal(html, i.Html)
+	assert.Equal(html, i.HTML)
 }
 
 func TestPlain(t *testing.T) {
@@ -39,7 +39,7 @@ func TestPlain(t *testing.T) {
 	html := "abc"
 	i, err := doFetchImages(html)
 	assert.Nil(err)
-	assert.Equal(html, i.Html)
+	assert.Equal(html, i.HTML)
 }
 
 func TestBasicHTML(t *testing.T) {
@@ -47,7 +47,7 @@ func TestBasicHTML(t *testing.T) {
 	html := "<p>abc</p>"
 	i, err := doFetchImages(html)
 	assert.Nil(err)
-	assert.Equal(html, i.Html)
+	assert.Equal(html, i.HTML)
 }
 
 func TestHTMLAttributes(t *testing.T) {
@@ -55,7 +55,7 @@ func TestHTMLAttributes(t *testing.T) {
 	html := `<p class="foo" id="bar"><span class="baz">abc</span></p>`
 	i, err := doFetchImages(html)
 	assert.Nil(err)
-	assert.Equal(html, i.Html)
+	assert.Equal(html, i.HTML)
 }
 
 func TestSelfClosingTag(t *testing.T) {
@@ -63,13 +63,13 @@ func TestSelfClosingTag(t *testing.T) {
 	html := `foo<br/>baz`
 	i, err := doFetchImages(html)
 	assert.Nil(err)
-	assert.Equal(html, i.Html)
+	assert.Equal(html, i.HTML)
 }
 
 func doFetchImages(html string) (pipeline.Item, error) {
 	i := pipeline.Item{
-		Url:  "https://example.com/base",
-		Html: html,
+		URL:  "https://example.com/base",
+		HTML: html,
 	}
 
 	fetch := func(s string) (string, error) {
@@ -82,8 +82,8 @@ func doFetchImages(html string) (pipeline.Item, error) {
 func TestFetchError(t *testing.T) {
 	assert := assert.New(t)
 	i := pipeline.Item{
-		Url:  "https://example.com/base",
-		Html: `<img src="https://example.com/image.jpg"/>`,
+		URL:  "https://example.com/base",
+		HTML: `<img src="https://example.com/image.jpg"/>`,
 	}
 	fetch := func(s string) (string, error) {
 		return "", errors.New("test error")

@@ -12,7 +12,7 @@ import (
 var client = &http.Client{}
 
 func Fetch(ctx context.Context, i *pipeline.Item) (*pipeline.Item, error) {
-	req, err := http.NewRequestWithContext(ctx, "GET", i.Url, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", i.URL, nil)
 	if err != nil {
 		return i, err
 	}
@@ -35,7 +35,7 @@ func Fetch(ctx context.Context, i *pipeline.Item) (*pipeline.Item, error) {
 		return i, err
 	}
 
-	i.Html = string(data)
+	i.HTML = string(data)
 
 	return i, nil
 }

@@ -15,7 +15,7 @@ func TestMeta(t *testing.T) {
         <meta name="foo" content="bar" />
     </head><body>foo</body></html>`
 	i := &pipeline.Item{
-		Html: html,
+		HTML: html,
 	}
 
 	_, err := ReadMetadata(nil, i)
@@ -139,7 +139,7 @@ func TestCanonicalURL(t *testing.T) {
 
 func readMeta(html string) (*pipeline.Item, error) {
 	i := &pipeline.Item{
-		Html: html,
+		HTML: html,
 	}
 
 	return ReadMetadata(nil, i)

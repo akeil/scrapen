@@ -31,7 +31,7 @@ func ReadMetadata(ctx context.Context, i *pipeline.Item) (*pipeline.Item, error)
 		return nil
 	}
 
-	err := pipeline.ReadHTML(i.Html, reader)
+	err := pipeline.ReadHTML(i.HTML, reader)
 	if err != nil {
 		return i, err
 	}

@@ -12,14 +12,14 @@ import (
 func MakeReadable(ctx context.Context, i *pipeline.Item) (*pipeline.Item, error) {
 	p := readability.NewParser()
 
-	r := strings.NewReader(i.Html)
+	r := strings.NewReader(i.HTML)
 
-	a, err := p.Parse(r, i.Url)
+	a, err := p.Parse(r, i.URL)
 	if err != nil {
 		return i, err
 	}
 
-	i.Html = a.Content
+	i.HTML = a.Content
 	i.Title = a.Title
 
 	return i, nil

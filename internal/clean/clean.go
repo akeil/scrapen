@@ -11,9 +11,9 @@ import (
 )
 
 func Clean(ctx context.Context, i *pipeline.Item) (*pipeline.Item, error) {
-	log.Printf("Clean HTML for %q", i.Url)
+	log.Printf("Clean HTML for %q", i.URL)
 
-	r := strings.NewReader(i.Html)
+	r := strings.NewReader(i.HTML)
 	doc, err := goquery.NewDocumentFromReader(r)
 	if err != nil {
 		return i, err
@@ -30,7 +30,7 @@ func Clean(ctx context.Context, i *pipeline.Item) (*pipeline.Item, error) {
 	if err != nil {
 		return i, err
 	}
-	i.Html = html
+	i.HTML = html
 
 	return i, nil
 }

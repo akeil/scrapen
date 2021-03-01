@@ -115,7 +115,7 @@ func writeContent(b *strings.Builder, i *pipeline.Item) error {
 		return false, nil
 	}
 
-	return pipeline.WalkHTML(b, i.Html, handler)
+	return pipeline.WalkHTML(b, i.HTML, handler)
 }
 
 func dataImage(a []html.Attribute, i *pipeline.Item, w io.StringWriter) error {
@@ -166,7 +166,7 @@ func writeFooter(b *strings.Builder, i *pipeline.Item) {
 	b.WriteString(" | ")
 
 	b.WriteString("<a href=\"")
-	b.WriteString(i.Url)
+	b.WriteString(i.URL)
 	if i.Title != "" {
 		b.WriteString("\" title=\"")
 		// TODO: Escape?

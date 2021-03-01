@@ -101,7 +101,7 @@ func prepareContent(e *epub.Epub, i *pipeline.Item, tempdir string) (string, err
 	}
 
 	var b strings.Builder
-	err := pipeline.WalkHTML(&b, i.Html, handler)
+	err := pipeline.WalkHTML(&b, i.HTML, handler)
 	return b.String(), err
 }
 

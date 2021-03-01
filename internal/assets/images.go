@@ -24,7 +24,7 @@ var client = &http.Client{}
 func DownloadImages(ctx context.Context, i *pipeline.Item) (*pipeline.Item, error) {
 
 	fetch := func(src string) (string, error) {
-		src, err := resolveURL(src, i.Url)
+		src, err := resolveURL(src, i.URL)
 		if err != nil {
 			return "", err
 		}
@@ -107,12 +107,12 @@ func doImages(f fetchFunc, i *pipeline.Item) error {
 	}
 
 	var b strings.Builder
-	err := pipeline.WalkHTML(&b, i.Html, handler)
+	err := pipeline.WalkHTML(&b, i.HTML, handler)
 	if err != nil {
 		return err
 	}
 
-	i.Html = b.String()
+	i.HTML = b.String()
 	return nil
 }
 
@@ -140,7 +140,7 @@ func doMetadataImages(f fetchFunc, i *pipeline.Item) error {
 		return nil
 	}
 
-	href, err := resolveURL(i.ImageURL, i.Url)
+	href, err := resolveURL(i.ImageURL, i.URL)
 	if err != nil {
 		return err
 	}
