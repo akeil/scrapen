@@ -9,6 +9,7 @@ import (
 	"github.com/akeil/scrapen/internal/assets"
 	"github.com/akeil/scrapen/internal/clean"
 	"github.com/akeil/scrapen/internal/ebook"
+	"github.com/akeil/scrapen/internal/fetch"
 	"github.com/akeil/scrapen/internal/htm"
 	"github.com/akeil/scrapen/internal/metadata"
 	"github.com/akeil/scrapen/internal/pdf"
@@ -28,6 +29,9 @@ func Run(url string) error {
 	if err != nil {
 		return err
 	}
+
+	fmt.Printf("Scraped %q\n", result.ContentURL())
+	fmt.Printf("Status %v\n", result.StatusCode)
 
 	format := "html"
 
@@ -81,7 +85,7 @@ type Options struct {
 
 func configurePipeline(o Options) pipeline.Pipeline {
 	p := []pipeline.Pipeline{
-		Fetch,
+		fetch.Fetch,
 	}
 
 	if o.Metadata {

@@ -1,4 +1,4 @@
-package scrapen
+package fetch
 
 import (
 	"net/http"
