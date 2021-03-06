@@ -102,6 +102,11 @@ var profiles = map[string]browserProfile{
 
 func setHeaders(req *http.Request) {
 	profile := profiles["default"]
+	// Problem:
+	// *some* URL shorteners will return a HTML site with a redirect
+	// if they think the requests comes from a browser
+	//
+	// OTHERS will block requests if it does *not* look like a browser ...
 	req.Header.Add("User-Agent", profile.UserAgent)
 	req.Header.Add("Accept", profile.Accept)
 	req.Header.Add("Accept-Language", profile.AcceptLanguage)
