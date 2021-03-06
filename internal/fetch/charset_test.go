@@ -5,6 +5,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/akeil/scrapen/internal/pipeline"
 )
 
 func TestCharsetByName(t *testing.T) {
@@ -12,25 +14,27 @@ func TestCharsetByName(t *testing.T) {
 	var h = http.Header{}
 	var cs string
 
-	cs = charsetFromHeader(h)
+	task := &pipeline.Task{}
+
+	cs = charsetFromHeader(task, h)
 	assert.Equal("", cs)
 
 	h.Add("Content-Type", "text/html")
-	cs = charsetFromHeader(h)
+	cs = charsetFromHeader(task, h)
 	assert.Equal("", cs)
 
 	h.Add("Content-Type", "text/plain")
-	cs = charsetFromHeader(h)
+	cs = charsetFromHeader(task, h)
 	assert.Equal("", cs)
 
 	h.Del("Content-Type")
 
 	h.Add("Content-Type", "text/html; charset=iso-8859-1")
-	cs = charsetFromHeader(h)
+	cs = charsetFromHeader(task, h)
 	assert.Equal("iso-8859-1", cs)
 
 	h.Add("Content-Type", "text/html; charset=utf-8")
-	cs = charsetFromHeader(h)
+	cs = charsetFromHeader(task, h)
 	assert.Equal("iso-8859-1", cs)
 }
 

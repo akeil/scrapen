@@ -8,24 +8,40 @@ import (
 	"net/http"
 	"strings"
 
+	log "github.com/sirupsen/logrus"
 	"golang.org/x/text/encoding"
 	"golang.org/x/text/encoding/charmap"
+
+	"github.com/akeil/scrapen/internal/pipeline"
 )
 
 // readUTF8 reads the response body into a UTF-8 string
-func readUTF8(r io.Reader, h http.Header) (string, error) {
-	cs := charsetFromHeader(h)
-	fmt.Printf("Found charset %q from header\n", cs)
+func readUTF8(t *pipeline.Task, r io.Reader, h http.Header) (string, error) {
+	cs := charsetFromHeader(t, h)
+
+	log.WithFields(log.Fields{
+		"task":   t.ID,
+		"module": "fetch",
+	}).Info(fmt.Sprintf("Got charset %q from header", cs))
+
 	// TODO: we can also obtain the charset from <meta> tag
 	// ... and XML declaration
 
 	if normalizeCharsetName(cs) != "utf-8" && cs != "" {
 		dec := decoderByName(cs)
 		if dec != nil {
-			fmt.Printf("Found decoder for charset %q\n", cs)
 			r = dec.Reader(r)
+
+			log.WithFields(log.Fields{
+				"task":   t.ID,
+				"module": "fetch",
+			}).Info(fmt.Sprintf("Found decoder for charset %q", cs))
+
 		} else {
-			fmt.Printf("Could not find decoder for charset %q, assume UTF-8\n", cs)
+			log.WithFields(log.Fields{
+				"task":   t.ID,
+				"module": "fetch",
+			}).Warn(fmt.Sprintf("Could not find decoder for charset %q, assume UTF-8", cs))
 		}
 	}
 
@@ -36,7 +52,7 @@ func readUTF8(r io.Reader, h http.Header) (string, error) {
 	return string(data), nil
 }
 
-func charsetFromHeader(h http.Header) string {
+func charsetFromHeader(t *pipeline.Task, h http.Header) string {
 	contentType, ok := h["Content-Type"]
 	if !ok {
 		return ""
@@ -45,7 +61,12 @@ func charsetFromHeader(h http.Header) string {
 	for _, s := range contentType {
 		_, params, err := mime.ParseMediaType(s)
 		if err != nil {
-			fmt.Printf("error parsing media type: %v", err)
+			log.WithFields(log.Fields{
+				"task":   t.ID,
+				"module": "fetch",
+				"error":  err,
+			}).Warn("Error parsing media type")
+
 			return ""
 		}
 		cs := params["charset"]

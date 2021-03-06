@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
+	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/html"
 	"golang.org/x/net/html/atom"
 
@@ -22,17 +23,34 @@ var client = &http.Client{}
 // Replaces the images src attribute with a local:// url.
 func DownloadImages(ctx context.Context, t *pipeline.Task) error {
 
+	log.WithFields(log.Fields{
+		"task":   t.ID,
+		"module": "assets",
+	}).Info("Download images")
+
 	fetch := func(src string) (string, error) {
 		req, err := http.NewRequestWithContext(ctx, "GET", src, nil)
 		if err != nil {
 			return "", err
 		}
 
-		fmt.Printf("Fetch image %q\n", src)
+		log.WithFields(log.Fields{
+			"task":   t.ID,
+			"module": "assets",
+			"url":    src,
+		}).Info("Fetch image")
+
 		res, err := client.Do(req)
 		if err != nil {
 			return "", err
 		}
+
+		log.WithFields(log.Fields{
+			"task":   t.ID,
+			"module": "assets",
+			"url":    src,
+			"status": res.StatusCode,
+		}).Info("Got image response")
 
 		if res.StatusCode != http.StatusOK {
 			return "", fmt.Errorf("got HTTP status %v", res.StatusCode)
@@ -50,6 +68,13 @@ func DownloadImages(ctx context.Context, t *pipeline.Task) error {
 		id := uuid.New().String()
 		err = t.PutAsset(id, contentType, data)
 		if err != nil {
+
+			log.WithFields(log.Fields{
+				"task":   t.ID,
+				"module": "assets",
+				"error":  err,
+			}).Warning("Failed to save image")
+
 			return "", err
 		}
 
