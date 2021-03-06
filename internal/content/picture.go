@@ -1,4 +1,4 @@
-package clean
+package content
 
 import (
 	"log"
