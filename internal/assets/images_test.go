@@ -91,28 +91,3 @@ func TestFetchError(t *testing.T) {
 	err := doImages(fetch, &i)
 	assert.NotNil(err)
 }
-
-func TestResolve(t *testing.T) {
-	assert := assert.New(t)
-	var s string
-	var err error
-	s, err = resolveURL("image.jpg", "https://example.com")
-	assert.Nil(err)
-	assert.Equal("https://example.com/image.jpg", s)
-
-	s, err = resolveURL("assets/image.jpg", "https://example.com/path/index.html")
-	assert.Nil(err)
-	assert.Equal("https://example.com/path/assets/image.jpg", s)
-
-	s, err = resolveURL("/assets/image.jpg", "https://example.com/path/index.html")
-	assert.Nil(err)
-	assert.Equal("https://example.com/assets/image.jpg", s)
-
-	s, err = resolveURL("assets/image.jpg", "https://example.com/path/index.html#id")
-	assert.Nil(err)
-	assert.Equal("https://example.com/path/assets/image.jpg", s)
-
-	s, err = resolveURL("https://cdn.org/image.jpg", "https://example.com")
-	assert.Nil(err)
-	assert.Equal("https://cdn.org/image.jpg", s)
-}

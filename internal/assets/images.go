@@ -6,7 +6,6 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-	"net/url"
 	"strings"
 
 	"github.com/google/uuid"
@@ -24,11 +23,6 @@ var client = &http.Client{}
 func DownloadImages(ctx context.Context, t *pipeline.Task) error {
 
 	fetch := func(src string) (string, error) {
-		src, err := resolveURL(src, t.URL)
-		if err != nil {
-			return "", err
-		}
-
 		req, err := http.NewRequestWithContext(ctx, "GET", src, nil)
 		if err != nil {
 			return "", err
@@ -138,13 +132,7 @@ func doMetadataImages(f fetchFunc, t *pipeline.Task) error {
 		return nil
 	}
 
-	// TODO: this should happen in `metadata`
-	href, err := resolveURL(t.ImageURL, t.URL)
-	if err != nil {
-		return err
-	}
-
-	id, err := f(href)
+	id, err := f(t.ImageURL)
 	if err != nil {
 		return err
 	}
@@ -152,17 +140,4 @@ func doMetadataImages(f fetchFunc, t *pipeline.Task) error {
 	t.ImageURL = pipeline.StoreURL(id)
 
 	return nil
-}
-
-func resolveURL(href, base string) (string, error) {
-	b, err := url.Parse(base)
-	if err != nil {
-		return "", err
-	}
-	ref, err := url.Parse(href)
-	if err != nil {
-		return "", err
-	}
-
-	return b.ResolveReference(ref).String(), nil
 }

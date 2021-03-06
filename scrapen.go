@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/akeil/scrapen/internal/assets"
-	"github.com/akeil/scrapen/internal/clean"
+	"github.com/akeil/scrapen/internal/content"
 	"github.com/akeil/scrapen/internal/ebook"
 	"github.com/akeil/scrapen/internal/fetch"
 	"github.com/akeil/scrapen/internal/htm"
@@ -107,8 +107,9 @@ func configurePipeline(o Options) pipeline.Pipeline {
 	}
 
 	if o.Clean {
-		p = append(p, clean.Clean)
+		p = append(p, content.Clean)
 	}
+	p = append(p, content.ResolveURLs)
 
 	if o.DownloadImages {
 		p = append(p, assets.DownloadImages)
