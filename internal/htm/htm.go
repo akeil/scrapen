@@ -7,11 +7,16 @@ import (
 	"strings"
 	"time"
 
+	_ "embed"
+
 	"golang.org/x/net/html"
 	"golang.org/x/net/html/atom"
 
 	"github.com/akeil/scrapen/internal/pipeline"
 )
+
+//go:embed style.css
+var style string
 
 func Compose(w io.Writer, t *pipeline.Task) error {
 	var b strings.Builder
@@ -201,86 +206,3 @@ func writeFooter(b *strings.Builder, t *pipeline.Task) {
 	b.WriteString("</p>")
 	b.WriteString("</footer>")
 }
-
-// TODO: read this from a file or embed
-const style = `body {
-	background: #ffffff;
-	font-family: sans-serif;
-	margin: 3em;
-}
-
-h1, h2, h3, h4, h5, h6 {
-	font-family: serif;
-}
-
-a {
-	color: #007bff; /* light blue */
-	text-decoration: none;
-}
-
-dl {
-	display: block;
-	margin-top: 0;
-	margin-bottom: 1em;
-	border-left: 1px solid #cccccc;
-	padding-left: 0.25em;
-}
-
-dt {
-	display: block;
-	clear: left;
-	float: left;
-	margin: 0;
-	padding: 0 0.5em 0 0;
-	font-weight: bold;
-}
-
-dd {
-	display: block;
-	margin: 0 0 0.5em 2em;
-}
-
-code {
-	color: #e83e8c; /* pink */
-	font-family: monospace;
-}
-
-pre {
-	font-family: monospace;
-	white-space: pre-wrap;
-	line-height: 125%;
-	background: #f8f8f8;
-	border: 1px solid #cccccc;
-	border-radius: 0.25em;
-	margin-left: 1em;
-	margin-right: 1em;
-	margin-bottom: 1em;
-	margin-bottom: 0;
-	padding: 0.75em;
-}
-
-figcaption {
-	font-style: italic;
-	font-size: smaller;
-}
-
-time {
-	font-style: italic;
-}
-
-footer {
-	border-top: 1px solid #cccccc;
-	font-size: smaller;
-}
-
-header {
-	border-bottom: 1px solid #cccccc;
-	color: #909090;
-}
-
-header p {
-	font-weight: normal;
-	font-size: small;
-}
-
-`
