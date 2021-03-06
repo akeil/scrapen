@@ -38,15 +38,22 @@ func Fetch(ctx context.Context, i *pipeline.Item) (*pipeline.Item, error) {
 	}
 	defer res.Body.Close()
 
-	if res.Request.URL != nil {
-		i.ActualURL = res.Request.URL.String()
+	// decompress
+	r, err := decompressed(res.Body, res.Header)
+	if err != nil {
+		return i, err
 	}
 
-	s, err := readUTF8(res)
+	// decode charset
+	s, err := readUTF8(r, res.Header)
 	if err != nil {
 		return i, err
 	}
 	i.HTML = s
+
+	if res.Request.URL != nil {
+		i.ActualURL = res.Request.URL.String()
+	}
 
 	return i, nil
 }
@@ -55,7 +62,6 @@ type browserProfile struct {
 	UserAgent      string
 	Accept         string
 	AcceptLanguage string
-	AcceptEncoding string
 }
 
 var profiles = map[string]browserProfile{
@@ -64,7 +70,6 @@ var profiles = map[string]browserProfile{
 		UserAgent:      "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.182 Safari/537.36",
 		Accept:         "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
 		AcceptLanguage: "en-US,en;q=0.9,de;q=0.8",
-		AcceptEncoding: "gzip, deflate, br",
 	},
 }
 
@@ -73,8 +78,8 @@ func setHeaders(req *http.Request) {
 	req.Header.Add("User-Agent", profile.UserAgent)
 	req.Header.Add("Accept", profile.Accept)
 	req.Header.Add("Accept-Language", profile.AcceptLanguage)
-	// TODO: if we 'Accept' encoding, we must also handle it ...
-	//req.Header.Add("Accept-Encoding", profile.AcceptEncoding)
+
+	req.Header.Add("Accept-Encoding", supportedCompressions)
 
 	//req.Header.Add("Connection", "keep-alive")
 

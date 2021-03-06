@@ -13,26 +13,19 @@ import (
 )
 
 // readUTF8 reads the response body into a UTF-8 string
-func readUTF8(res *http.Response) (string, error) {
-	var r io.Reader
-
-	cs := charsetFromHeader(res.Header)
+func readUTF8(r io.Reader, h http.Header) (string, error) {
+	cs := charsetFromHeader(h)
 	fmt.Printf("Found charset %q from header\n", cs)
 	// TODO: we can also obtain the charset from <meta> tag
 	// ... and XML declaration
 
-	if normalizeCharsetName(cs) == "utf-8" {
-		r = res.Body
-	} else if cs == "" {
-		r = res.Body
-	} else {
+	if normalizeCharsetName(cs) != "utf-8" && cs != "" {
 		dec := decoderByName(cs)
 		if dec != nil {
 			fmt.Printf("Found decoder for charset %q\n", cs)
-			r = dec.Reader(res.Body)
+			r = dec.Reader(r)
 		} else {
 			fmt.Printf("Could not find decoder for charset %q, assume UTF-8\n", cs)
-			r = res.Body
 		}
 	}
 
