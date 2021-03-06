@@ -1,7 +1,6 @@
 package fetch
 
 import (
-	"fmt"
 	"strings"
 
 	"golang.org/x/net/html"
@@ -11,11 +10,9 @@ import (
 )
 
 func findRedirect(s string) (string, error) {
-	fmt.Println(s)
 	var redirect string
 
 	reader := func(t html.Token) error {
-		fmt.Println(t)
 		tt := t.Type
 		switch tt {
 		case html.StartTagToken,
@@ -27,7 +24,6 @@ func findRedirect(s string) (string, error) {
 					v := strings.ToLower(attr.Val)
 					if k == "http-equiv" && v == "refresh" {
 						url := parseRefresh(t.Attr)
-						fmt.Println(url)
 						// got it
 						if url != "" {
 							redirect = url
