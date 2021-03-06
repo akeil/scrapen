@@ -80,6 +80,20 @@ func Fetch(ctx context.Context, t *pipeline.Task) error {
 	if err != nil {
 		return err
 	}
+
+	// check for redirect from <meta http-equiv="refresh" ... />
+	redirect, err := findRedirect(s)
+	if err != nil {
+		return err
+	}
+	if redirect != "" {
+		log.WithFields(log.Fields{
+			"task":   t.ID,
+			"module": "fetch",
+			"url":    redirect,
+		}).Info("Redirect from <meta>")
+	}
+
 	t.HTML = s
 
 	return nil
