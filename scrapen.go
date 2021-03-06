@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"time"
 
 	"github.com/akeil/scrapen/internal/assets"
 	"github.com/akeil/scrapen/internal/clean"
@@ -25,7 +26,7 @@ func Run(url string) error {
 		DownloadImages: true,
 	}
 	s := pipeline.NewMemoryStore()
-	result, err := Scrape(s, o, url)
+	result, err := doScrape(s, o, url)
 	if err != nil {
 		return err
 	}
@@ -63,7 +64,16 @@ func Run(url string) error {
 	return nil
 }
 
-func Scrape(s pipeline.Store, o Options, url string) (*pipeline.Task, error) {
+func Scrape(s pipeline.Store, o Options, url string) (Result, error) {
+	t, err := doScrape(s, o, url)
+	if err != nil {
+		return Result{}, err
+	}
+
+	return resultFromTask(t), nil
+}
+
+func doScrape(s pipeline.Store, o Options, url string) (*pipeline.Task, error) {
 	ctx := context.Background()
 	t := pipeline.NewTask(s, url)
 
@@ -104,6 +114,38 @@ func configurePipeline(o Options) pipeline.Pipeline {
 		p = append(p, assets.DownloadImages)
 	}
 	return pipeline.BuildPipeline(p...)
+}
+
+type Result struct {
+	URL          string
+	ActualURL    string
+	CanonicalURL string
+	StatusCode   int
+	HTML         string
+	Title        string
+	Retrieved    time.Time
+	Description  string
+	PubDate      *time.Time
+	Site         string
+	Author       string
+	ImageURL     string
+}
+
+func resultFromTask(t *pipeline.Task) Result {
+	return Result{
+		URL:          t.URL,
+		ActualURL:    t.ActualURL,
+		CanonicalURL: t.CanonicalURL,
+		StatusCode:   t.StatusCode,
+		HTML:         t.HTML,
+		Title:        t.Title,
+		Retrieved:    t.Retrieved,
+		Description:  t.Description,
+		PubDate:      t.PubDate,
+		Site:         t.Site,
+		Author:       t.Author,
+		ImageURL:     t.ImageURL,
+	}
 }
 
 // ComposeFunc is used to compose an putput format for an item.
