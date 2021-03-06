@@ -18,6 +18,7 @@ type Item struct {
 	URL          string
 	ActualURL    string
 	CanonicalURL string
+	StatusCode   int
 	HTML         string
 	Title        string
 	Retrieved    time.Time

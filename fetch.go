@@ -32,6 +32,11 @@ func Fetch(ctx context.Context, i *pipeline.Item) (*pipeline.Item, error) {
 		fmt.Printf("< %v: %v\n", k, v)
 	}
 
+	i.StatusCode = res.StatusCode
+	if res.Request.URL != nil {
+		i.ActualURL = res.Request.URL.String()
+	}
+
 	err = errorFromStatus(res)
 	if err != nil {
 		return i, err
@@ -50,10 +55,6 @@ func Fetch(ctx context.Context, i *pipeline.Item) (*pipeline.Item, error) {
 		return i, err
 	}
 	i.HTML = s
-
-	if res.Request.URL != nil {
-		i.ActualURL = res.Request.URL.String()
-	}
 
 	return i, nil
 }

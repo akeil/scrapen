@@ -29,6 +29,9 @@ func Run(url string) error {
 		return err
 	}
 
+	fmt.Printf("Scraped %q\n", result.ContentURL())
+	fmt.Printf("Status %v\n", result.StatusCode)
+
 	format := "html"
 
 	var compose ComposeFunc
