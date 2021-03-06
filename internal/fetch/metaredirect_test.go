@@ -47,4 +47,14 @@ func TestFindRedirect(t *testing.T) {
 	s, err = findRedirect(html)
 	assert.Nil(err)
 	assert.Equal("", s)
+
+	// <noscript>
+	html = `<head>
+		<noscript>
+        	<meta http-equiv="refresh" content="0;url=https://example.com">
+		</noscript>
+    </head>`
+	s, err = findRedirect(html)
+	assert.Nil(err)
+	assert.Equal("https://example.com", s)
 }
