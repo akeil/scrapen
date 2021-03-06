@@ -45,6 +45,18 @@ func (i *Item) GetAsset(k string) (string, []byte, error) {
 	return i.store.Get(k)
 }
 
+// ContentURL is the "best" URL for an item.
+//
+// If available, the actual URL is returned. Otherwise, the requested URL is used.
+func (i *Item) ContentURL() string {
+	if i.ActualURL != "" {
+		return i.ActualURL
+	} else if i.CanonicalURL != "" {
+		return i.CanonicalURL
+	}
+	return i.URL
+}
+
 func BuildPipeline(f ...Pipeline) Pipeline {
 	return func(ctx context.Context, i *Item) (*Item, error) {
 		var err error

@@ -188,7 +188,7 @@ func writeFooter(b *strings.Builder, i *pipeline.Item) {
 	b.WriteString(" | ")
 
 	b.WriteString("<a href=\"")
-	b.WriteString(i.URL)
+	b.WriteString(i.ContentURL())
 	if i.Title != "" {
 		b.WriteString("\" title=\"")
 		// TODO: Escape?

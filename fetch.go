@@ -28,7 +28,9 @@ func Fetch(ctx context.Context, i *pipeline.Item) (*pipeline.Item, error) {
 	}
 	defer res.Body.Close()
 
-	// TODO: would be nice if we could set the resolved URL
+	if res.Request.URL != nil {
+		i.ActualURL = res.Request.URL.String()
+	}
 
 	data, err := ioutil.ReadAll(res.Body)
 	if err != nil {
