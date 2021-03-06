@@ -100,14 +100,7 @@ func setMetadata(m *metadata, i *pipeline.Item) {
 }
 
 func setSite(i *pipeline.Item) {
-	s := i.URL
-	if i.ActualURL != "" {
-		s = i.ActualURL
-	} else if i.CanonicalURL != "" {
-		s = i.CanonicalURL
-	}
-
-	u, err := url.Parse(s)
+	u, err := url.Parse(i.ContentURL())
 	if err != nil {
 		return
 	}
