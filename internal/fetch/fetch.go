@@ -14,15 +14,43 @@ var client = &http.Client{}
 
 // Fetch fetches the HTML content for the given item.
 func Fetch(ctx context.Context, t *pipeline.Task) error {
+	html, err := fetchURL(ctx, t, t.URL)
+	if err != nil {
+		return err
+	}
+
+	// check for redirect from <meta http-equiv="refresh" ... />
+	redirect, err := findRedirect(html)
+	if err != nil {
+		return err
+	}
+	if redirect != "" {
+		log.WithFields(log.Fields{
+			"task":   t.ID,
+			"module": "fetch",
+			"url":    redirect,
+		}).Info("Redirect from <meta>")
+
+		html, err = fetchURL(ctx, t, redirect)
+		if err != nil {
+			return err
+		}
+	}
+
+	t.HTML = html
+	return nil
+}
+
+func fetchURL(ctx context.Context, t *pipeline.Task, url string) (string, error) {
 	log.WithFields(log.Fields{
 		"task":   t.ID,
 		"module": "fetch",
-		"url":    t.URL,
-	}).Info(fmt.Sprintf("Fetch %q", t.URL))
+		"url":    url,
+	}).Info("Fetch URL")
 
-	req, err := http.NewRequestWithContext(ctx, "GET", t.URL, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	setHeaders(req)
@@ -31,21 +59,21 @@ func Fetch(ctx context.Context, t *pipeline.Task) error {
 		log.WithFields(log.Fields{
 			"task":   t.ID,
 			"module": "fetch",
-			"url":    t.URL,
+			"url":    url,
 			"header": k,
 		}).Debug(fmt.Sprintf("Request Header: %v = %v", k, v))
 	}
 
 	res, err := client.Do(req)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	for k, v := range res.Header {
 		log.WithFields(log.Fields{
 			"task":   t.ID,
 			"module": "fetch",
-			"url":    t.URL,
+			"url":    url,
 			"header": k,
 		}).Debug(fmt.Sprintf("Response Header: %v = %v", k, v))
 	}
@@ -65,38 +93,23 @@ func Fetch(ctx context.Context, t *pipeline.Task) error {
 
 	err = errorFromStatus(res)
 	if err != nil {
-		return err
+		return "", err
 	}
 	defer res.Body.Close()
 
 	// decompress
 	r, err := decompressed(t, res.Body, res.Header)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	// decode charset
 	s, err := readUTF8(t, r, res.Header)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	// check for redirect from <meta http-equiv="refresh" ... />
-	redirect, err := findRedirect(s)
-	if err != nil {
-		return err
-	}
-	if redirect != "" {
-		log.WithFields(log.Fields{
-			"task":   t.ID,
-			"module": "fetch",
-			"url":    redirect,
-		}).Info("Redirect from <meta>")
-	}
-
-	t.HTML = s
-
-	return nil
+	return s, nil
 }
 
 type browserProfile struct {
