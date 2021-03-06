@@ -7,6 +7,9 @@ import (
 	"os"
 	"time"
 
+	"github.com/google/uuid"
+	log "github.com/sirupsen/logrus"
+
 	"github.com/akeil/scrapen/internal/assets"
 	"github.com/akeil/scrapen/internal/content"
 	"github.com/akeil/scrapen/internal/ebook"
@@ -19,6 +22,9 @@ import (
 )
 
 func Run(url string) error {
+	//log.SetLevel(log.DebugLevel)
+	log.SetLevel(log.InfoLevel)
+
 	o := Options{
 		Metadata:       true,
 		Readability:    true,
@@ -26,7 +32,8 @@ func Run(url string) error {
 		DownloadImages: true,
 	}
 	s := pipeline.NewMemoryStore()
-	result, err := doScrape(s, o, url)
+	id := uuid.New().String()
+	result, err := doScrape(s, o, id, url)
 	if err != nil {
 		return err
 	}
@@ -64,8 +71,8 @@ func Run(url string) error {
 	return nil
 }
 
-func Scrape(s pipeline.Store, o Options, url string) (Result, error) {
-	t, err := doScrape(s, o, url)
+func Scrape(s pipeline.Store, o Options, id, url string) (Result, error) {
+	t, err := doScrape(s, o, id, url)
 	if err != nil {
 		return Result{}, err
 	}
@@ -73,9 +80,9 @@ func Scrape(s pipeline.Store, o Options, url string) (Result, error) {
 	return resultFromTask(t), nil
 }
 
-func doScrape(s pipeline.Store, o Options, url string) (*pipeline.Task, error) {
+func doScrape(s pipeline.Store, o Options, id, url string) (*pipeline.Task, error) {
 	ctx := context.Background()
-	t := pipeline.NewTask(s, url)
+	t := pipeline.NewTask(s, id, url)
 
 	p := configurePipeline(o)
 	err := p(ctx, t)

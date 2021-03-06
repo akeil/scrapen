@@ -15,6 +15,7 @@ type Store interface {
 }
 
 type Task struct {
+	ID           string
 	URL          string
 	ActualURL    string
 	CanonicalURL string
@@ -30,8 +31,9 @@ type Task struct {
 	store        Store
 }
 
-func NewTask(s Store, url string) *Task {
+func NewTask(s Store, id, url string) *Task {
 	return &Task{
+		ID:        id,
 		URL:       url,
 		Retrieved: time.Now().UTC(),
 		store:     s,
