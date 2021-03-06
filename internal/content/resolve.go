@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"strings"
 
+	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/html"
 	"golang.org/x/net/html/atom"
 
@@ -13,6 +14,13 @@ import (
 )
 
 func ResolveURLs(ctx context.Context, t *pipeline.Task) error {
+
+	log.WithFields(log.Fields{
+		"task":   t.ID,
+		"module": "content",
+		"url":    t.ContentURL(),
+	}).Info("Resolve URLs in content")
+
 	base, err := url.Parse(t.ContentURL())
 	if err != nil {
 		return err

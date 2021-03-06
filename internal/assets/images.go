@@ -38,7 +38,7 @@ func DownloadImages(ctx context.Context, t *pipeline.Task) error {
 			"task":   t.ID,
 			"module": "assets",
 			"url":    src,
-		}).Info(fmt.Sprintf("Fetch image %q", src))
+		}).Info("Fetch image")
 
 		res, err := client.Do(req)
 		if err != nil {
@@ -50,7 +50,7 @@ func DownloadImages(ctx context.Context, t *pipeline.Task) error {
 			"module": "assets",
 			"url":    src,
 			"status": res.StatusCode,
-		}).Info(fmt.Sprintf("Got image %q", src))
+		}).Info("Got image response")
 
 		if res.StatusCode != http.StatusOK {
 			return "", fmt.Errorf("got HTTP status %v", res.StatusCode)

@@ -2,7 +2,6 @@ package content
 
 import (
 	"context"
-	"fmt"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
@@ -16,7 +15,7 @@ func Clean(ctx context.Context, t *pipeline.Task) error {
 	log.WithFields(log.Fields{
 		"task":   t.ID,
 		"module": "content",
-	}).Info(fmt.Sprintf("Clean HTML for %q", t.URL))
+	}).Info("Clean HTML")
 
 	r := strings.NewReader(t.HTML)
 	doc, err := goquery.NewDocumentFromReader(r)
