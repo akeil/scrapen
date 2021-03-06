@@ -9,6 +9,7 @@ import (
 	"github.com/akeil/scrapen/internal/assets"
 	"github.com/akeil/scrapen/internal/clean"
 	"github.com/akeil/scrapen/internal/ebook"
+	"github.com/akeil/scrapen/internal/fetch"
 	"github.com/akeil/scrapen/internal/htm"
 	"github.com/akeil/scrapen/internal/metadata"
 	"github.com/akeil/scrapen/internal/pdf"
@@ -84,7 +85,7 @@ type Options struct {
 
 func configurePipeline(o Options) pipeline.Pipeline {
 	p := []pipeline.Pipeline{
-		Fetch,
+		fetch.Fetch,
 	}
 
 	if o.Metadata {

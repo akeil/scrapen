@@ -1,4 +1,4 @@
-package scrapen
+package fetch
 
 import (
 	"fmt"
