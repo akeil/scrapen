@@ -11,17 +11,17 @@ import (
 var client = &http.Client{}
 
 // Fetch fetches the HTML content for the given item.
-func Fetch(ctx context.Context, i *pipeline.Item) (*pipeline.Item, error) {
-	req, err := http.NewRequestWithContext(ctx, "GET", i.URL, nil)
+func Fetch(ctx context.Context, t *pipeline.Task) error {
+	req, err := http.NewRequestWithContext(ctx, "GET", t.URL, nil)
 	if err != nil {
-		return i, err
+		return err
 	}
 
 	setHeaders(req)
 
 	res, err := client.Do(req)
 	if err != nil {
-		return i, err
+		return err
 	}
 
 	// TODO: use logger instead
@@ -32,31 +32,31 @@ func Fetch(ctx context.Context, i *pipeline.Item) (*pipeline.Item, error) {
 		fmt.Printf("< %v: %v\n", k, v)
 	}
 
-	i.StatusCode = res.StatusCode
+	t.StatusCode = res.StatusCode
 	if res.Request.URL != nil {
-		i.ActualURL = res.Request.URL.String()
+		t.ActualURL = res.Request.URL.String()
 	}
 
 	err = errorFromStatus(res)
 	if err != nil {
-		return i, err
+		return err
 	}
 	defer res.Body.Close()
 
 	// decompress
 	r, err := decompressed(res.Body, res.Header)
 	if err != nil {
-		return i, err
+		return err
 	}
 
 	// decode charset
 	s, err := readUTF8(r, res.Header)
 	if err != nil {
-		return i, err
+		return err
 	}
-	i.HTML = s
+	t.HTML = s
 
-	return i, nil
+	return nil
 }
 
 type browserProfile struct {

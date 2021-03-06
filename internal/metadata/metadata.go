@@ -12,7 +12,7 @@ import (
 	"github.com/akeil/scrapen/internal/pipeline"
 )
 
-func ReadMetadata(ctx context.Context, i *pipeline.Item) (*pipeline.Item, error) {
+func ReadMetadata(ctx context.Context, t *pipeline.Task) error {
 	m := newMetadata()
 
 	reader := func(t html.Token) error {
@@ -33,15 +33,15 @@ func ReadMetadata(ctx context.Context, i *pipeline.Item) (*pipeline.Item, error)
 		return nil
 	}
 
-	err := pipeline.ReadHTML(i.HTML, reader)
+	err := pipeline.ReadHTML(t.HTML, reader)
 	if err != nil {
-		return i, err
+		return err
 	}
 
-	setMetadata(m, i)
-	setSite(i)
+	setMetadata(m, t)
+	setSite(t)
 
-	return i, nil
+	return nil
 }
 
 var (
@@ -53,19 +53,20 @@ var (
 	// title: og:title
 )
 
-func setMetadata(m *metadata, i *pipeline.Item) {
+func setMetadata(m *metadata, t *pipeline.Task) {
 	for _, k := range descriptionPref {
 		v, ok := m.description[k]
 		if ok {
-			i.Description = v
+			t.Description = v
 			break
 		}
 	}
 
+	// TODO: resolve the URLK against ContentURL()
 	for _, k := range imagePref {
 		v, ok := m.image[k]
 		if ok {
-			i.ImageURL = v
+			t.ImageURL = v
 			break
 		}
 	}
@@ -73,7 +74,7 @@ func setMetadata(m *metadata, i *pipeline.Item) {
 	for _, k := range urlPref {
 		v, ok := m.url[k]
 		if ok {
-			i.CanonicalURL = v
+			t.CanonicalURL = v
 			break
 		}
 	}
@@ -81,7 +82,7 @@ func setMetadata(m *metadata, i *pipeline.Item) {
 	for _, k := range authorPref {
 		v, ok := m.author[k]
 		if ok {
-			i.Author = v
+			t.Author = v
 			break
 		}
 	}
@@ -89,22 +90,22 @@ func setMetadata(m *metadata, i *pipeline.Item) {
 	for _, k := range pubDatePref {
 		v, ok := m.pubDate[k]
 		if ok {
-			t := parseTime(v)
-			if t != nil {
-				utc := t.UTC()
-				i.PubDate = &utc
+			ts := parseTime(v)
+			if ts != nil {
+				utc := ts.UTC()
+				t.PubDate = &utc
 			}
 			break
 		}
 	}
 }
 
-func setSite(i *pipeline.Item) {
-	u, err := url.Parse(i.ContentURL())
+func setSite(t *pipeline.Task) {
+	u, err := url.Parse(t.ContentURL())
 	if err != nil {
 		return
 	}
-	i.Site = u.Host
+	t.Site = u.Host
 }
 
 type metadata struct {

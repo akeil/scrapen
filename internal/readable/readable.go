@@ -9,18 +9,18 @@ import (
 	"github.com/akeil/scrapen/internal/pipeline"
 )
 
-func MakeReadable(ctx context.Context, i *pipeline.Item) (*pipeline.Item, error) {
+func MakeReadable(ctx context.Context, t *pipeline.Task) error {
 	p := readability.NewParser()
 
-	r := strings.NewReader(i.HTML)
+	r := strings.NewReader(t.HTML)
 
-	a, err := p.Parse(r, i.URL)
+	a, err := p.Parse(r, t.URL)
 	if err != nil {
-		return i, err
+		return err
 	}
 
-	i.HTML = a.Content
-	i.Title = a.Title
+	t.HTML = a.Content
+	t.Title = a.Title
 
-	return i, nil
+	return nil
 }

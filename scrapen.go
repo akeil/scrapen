@@ -63,17 +63,17 @@ func Run(url string) error {
 	return nil
 }
 
-func Scrape(s pipeline.Store, o Options, url string) (*pipeline.Item, error) {
+func Scrape(s pipeline.Store, o Options, url string) (*pipeline.Task, error) {
 	ctx := context.Background()
-	item := pipeline.NewItem(s, url)
+	t := pipeline.NewTask(s, url)
 
 	p := configurePipeline(o)
-	result, err := p(ctx, item)
+	err := p(ctx, t)
 	if err != nil {
 		return nil, err
 	}
 
-	return result, nil
+	return t, nil
 }
 
 type Options struct {
@@ -107,4 +107,4 @@ func configurePipeline(o Options) pipeline.Pipeline {
 }
 
 // ComposeFunc is used to compose an putput format for an item.
-type ComposeFunc func(w io.Writer, i *pipeline.Item) error
+type ComposeFunc func(w io.Writer, i *pipeline.Task) error

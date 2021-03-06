@@ -14,11 +14,11 @@ func TestMeta(t *testing.T) {
 	html := `<html><head>
         <meta name="foo" content="bar" />
     </head><body>foo</body></html>`
-	i := &pipeline.Item{
+	i := &pipeline.Task{
 		HTML: html,
 	}
 
-	_, err := ReadMetadata(nil, i)
+	err := ReadMetadata(nil, i)
 	assert.Nil(err)
 }
 
@@ -164,7 +164,7 @@ func TestAuthor(t *testing.T) {
 func TestSite(t *testing.T) {
 	assert := assert.New(t)
 
-	i := &pipeline.Item{
+	i := &pipeline.Task{
 		URL: "https://foo.bar.com/path?query#fragment",
 	}
 	setSite(i)
@@ -193,10 +193,10 @@ func TestParseTime(t *testing.T) {
 
 }
 
-func readMeta(html string) (*pipeline.Item, error) {
-	i := &pipeline.Item{
+func readMeta(html string) (*pipeline.Task, error) {
+	t := &pipeline.Task{
 		HTML: html,
 	}
 
-	return ReadMetadata(nil, i)
+	return t, ReadMetadata(nil, t)
 }

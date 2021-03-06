@@ -10,13 +10,13 @@ import (
 	"github.com/akeil/scrapen/internal/pipeline"
 )
 
-func Clean(ctx context.Context, i *pipeline.Item) (*pipeline.Item, error) {
-	log.Printf("Clean HTML for %q", i.URL)
+func Clean(ctx context.Context, t *pipeline.Task) error {
+	log.Printf("Clean HTML for %q", t.URL)
 
-	r := strings.NewReader(i.HTML)
+	r := strings.NewReader(t.HTML)
 	doc, err := goquery.NewDocumentFromReader(r)
 	if err != nil {
-		return i, err
+		return err
 	}
 
 	// TODO: does not really belong here
@@ -28,11 +28,11 @@ func Clean(ctx context.Context, i *pipeline.Item) (*pipeline.Item, error) {
 
 	html, err := doc.Selection.Find("body").First().Html()
 	if err != nil {
-		return i, err
+		return err
 	}
-	i.HTML = html
+	t.HTML = html
 
-	return i, nil
+	return nil
 }
 
 // dropUnwantedTags finds tags from the greylists an removes the *markup*

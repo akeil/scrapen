@@ -21,10 +21,10 @@ var client = &http.Client{}
 // DownloadImages finds img tags in the HTML and downloads the referenced images.
 //
 // Replaces the images src attribute with a local:// url.
-func DownloadImages(ctx context.Context, i *pipeline.Item) (*pipeline.Item, error) {
+func DownloadImages(ctx context.Context, t *pipeline.Task) error {
 
 	fetch := func(src string) (string, error) {
-		src, err := resolveURL(src, i.URL)
+		src, err := resolveURL(src, t.URL)
 		if err != nil {
 			return "", err
 		}
@@ -54,7 +54,7 @@ func DownloadImages(ctx context.Context, i *pipeline.Item) (*pipeline.Item, erro
 		contentType := res.Header.Get("content-type")
 
 		id := uuid.New().String()
-		err = i.PutAsset(id, contentType, data)
+		err = t.PutAsset(id, contentType, data)
 		if err != nil {
 			return "", err
 		}
@@ -62,19 +62,17 @@ func DownloadImages(ctx context.Context, i *pipeline.Item) (*pipeline.Item, erro
 		return id, nil
 	}
 
-	err := doImages(fetch, i)
+	err := doImages(fetch, t)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	err = doMetadataImages(fetch, i)
-
-	return i, err
+	return doMetadataImages(fetch, t)
 }
 
 type fetchFunc func(src string) (string, error)
 
-func doImages(f fetchFunc, i *pipeline.Item) error {
+func doImages(f fetchFunc, t *pipeline.Task) error {
 	handler := func(t html.Token, w io.StringWriter) (bool, error) {
 		if t.DataAtom != atom.Img {
 			return false, nil
@@ -107,12 +105,12 @@ func doImages(f fetchFunc, i *pipeline.Item) error {
 	}
 
 	var b strings.Builder
-	err := pipeline.WalkHTML(&b, i.HTML, handler)
+	err := pipeline.WalkHTML(&b, t.HTML, handler)
 	if err != nil {
 		return err
 	}
 
-	i.HTML = b.String()
+	t.HTML = b.String()
 	return nil
 }
 
@@ -135,12 +133,13 @@ func localImage(a []html.Attribute, f fetchFunc, w io.StringWriter) error {
 	return nil
 }
 
-func doMetadataImages(f fetchFunc, i *pipeline.Item) error {
-	if i.ImageURL == "" {
+func doMetadataImages(f fetchFunc, t *pipeline.Task) error {
+	if t.ImageURL == "" {
 		return nil
 	}
 
-	href, err := resolveURL(i.ImageURL, i.URL)
+	// TODO: this should happen in `metadata`
+	href, err := resolveURL(t.ImageURL, t.URL)
 	if err != nil {
 		return err
 	}
@@ -150,7 +149,7 @@ func doMetadataImages(f fetchFunc, i *pipeline.Item) error {
 		return err
 	}
 
-	i.ImageURL = pipeline.StoreURL(id)
+	t.ImageURL = pipeline.StoreURL(id)
 
 	return nil
 }

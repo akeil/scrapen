@@ -7,14 +7,14 @@ import (
 	"time"
 )
 
-type Pipeline func(ctx context.Context, i *Item) (*Item, error)
+type Pipeline func(ctx context.Context, t *Task) error
 
 type Store interface {
 	Put(k, contentType string, data []byte) error
 	Get(k string) (string, []byte, error)
 }
 
-type Item struct {
+type Task struct {
 	URL          string
 	ActualURL    string
 	CanonicalURL string
@@ -30,44 +30,44 @@ type Item struct {
 	store        Store
 }
 
-func NewItem(s Store, url string) *Item {
-	return &Item{
+func NewTask(s Store, url string) *Task {
+	return &Task{
 		URL:       url,
 		Retrieved: time.Now().UTC(),
 		store:     s,
 	}
 }
 
-func (i *Item) PutAsset(k, contentType string, data []byte) error {
-	return i.store.Put(k, contentType, data)
+func (t *Task) PutAsset(k, contentType string, data []byte) error {
+	return t.store.Put(k, contentType, data)
 }
 
-func (i *Item) GetAsset(k string) (string, []byte, error) {
-	return i.store.Get(k)
+func (t *Task) GetAsset(k string) (string, []byte, error) {
+	return t.store.Get(k)
 }
 
 // ContentURL is the "best" URL for an item.
 //
 // If available, the actual URL is returned. Otherwise, the requested URL is used.
-func (i *Item) ContentURL() string {
-	if i.ActualURL != "" {
-		return i.ActualURL
-	} else if i.CanonicalURL != "" {
-		return i.CanonicalURL
+func (t *Task) ContentURL() string {
+	if t.ActualURL != "" {
+		return t.ActualURL
+	} else if t.CanonicalURL != "" {
+		return t.CanonicalURL
 	}
-	return i.URL
+	return t.URL
 }
 
 func BuildPipeline(f ...Pipeline) Pipeline {
-	return func(ctx context.Context, i *Item) (*Item, error) {
+	return func(ctx context.Context, t *Task) error {
 		var err error
 		for _, p := range f {
-			i, err = p(ctx, i)
+			err = p(ctx, t)
 			if err != nil {
-				return i, err
+				return err
 			}
 		}
-		return i, nil
+		return nil
 	}
 }
 
