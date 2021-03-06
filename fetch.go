@@ -3,7 +3,6 @@ package scrapen
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 
 	"github.com/akeil/scrapen/internal/pipeline"
@@ -11,6 +10,7 @@ import (
 
 var client = &http.Client{}
 
+// Fetch fetches the HTML content for the given item.
 func Fetch(ctx context.Context, i *pipeline.Item) (*pipeline.Item, error) {
 	req, err := http.NewRequestWithContext(ctx, "GET", i.URL, nil)
 	if err != nil {
@@ -32,12 +32,11 @@ func Fetch(ctx context.Context, i *pipeline.Item) (*pipeline.Item, error) {
 		i.ActualURL = res.Request.URL.String()
 	}
 
-	data, err := ioutil.ReadAll(res.Body)
+	s, err := readUTF8(res)
 	if err != nil {
 		return i, err
 	}
-
-	i.HTML = string(data)
+	i.HTML = s
 
 	return i, nil
 }
