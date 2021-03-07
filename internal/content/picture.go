@@ -1,18 +1,22 @@
 package content
 
 import (
-	"log"
+	"fmt"
 	"strconv"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
+	log "github.com/sirupsen/logrus"
 )
 
 func resolvePicture(doc *goquery.Document) {
 	doc.Selection.Find("picture").Each(func(i int, s *goquery.Selection) {
 		img := s.Find("img")
 		if img.Length() != 1 {
-			log.Println("Found multiple img elements in <picture>")
+			log.WithFields(log.Fields{
+				"module": "content",
+			}).Warn("Found multiple img elements in <picture>")
+
 			return
 		}
 
@@ -26,7 +30,9 @@ func resolvePicture(doc *goquery.Document) {
 
 		srcset := selectSrcset(sources)
 		if srcset.url == "" {
-			log.Println("no suitable src found for <picture>")
+			log.WithFields(log.Fields{
+				"module": "content",
+			}).Warn("no suitable src found for <picture>")
 			return
 		}
 
@@ -55,7 +61,10 @@ func parseSource(s *goquery.Selection) source {
 		if len(parts) == 0 {
 			return source{}
 		} else if len(parts) > 2 {
-			log.Printf("invalid srcset: %q", o)
+			log.WithFields(log.Fields{
+				"module": "content",
+			}).Warn(fmt.Sprintf("Invalid srcset: %q", o))
+
 			return source{}
 		}
 
@@ -68,7 +77,10 @@ func parseSource(s *goquery.Selection) source {
 			if strings.HasSuffix(x, "w") {
 				width, err := strconv.ParseUint(strings.TrimSuffix(x, "w"), 10, 64)
 				if err != nil {
-					log.Printf("failed to parse int from %q", x)
+					log.WithFields(log.Fields{
+						"module": "content",
+					}).Warn(fmt.Sprintf("Failed to parse int from %q", x))
+
 					return source{}
 				}
 				srcset.width = width
@@ -76,7 +88,10 @@ func parseSource(s *goquery.Selection) source {
 			} else if strings.HasSuffix(x, "x") {
 				density, err := strconv.ParseFloat(strings.TrimSuffix(x, "x"), 64)
 				if err != nil {
-					log.Printf("failed to parse float from %q", x)
+					log.WithFields(log.Fields{
+						"module": "content",
+					}).Warn(fmt.Sprintf("Failed to parse float from %q", x))
+
 					return source{}
 				}
 				srcset.density = density

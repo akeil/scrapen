@@ -69,7 +69,7 @@ func Run(url string) error {
 	}
 
 	outfile := fmt.Sprintf("output.%v", format)
-	fmt.Printf("Output to %q\n", outfile)
+	log.Info(fmt.Sprintf("Output to %q\n", outfile))
 
 	f, err := os.Create(outfile)
 	if err != nil {
