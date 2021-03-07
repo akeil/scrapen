@@ -25,32 +25,17 @@ func Run(url string) error {
 	//log.SetLevel(log.DebugLevel)
 	log.SetLevel(log.InfoLevel)
 
-	o := Options{
+	o := &Options{
 		Metadata:       true,
 		Readability:    true,
 		Clean:          true,
 		DownloadImages: true,
+		Store:          pipeline.NewMemoryStore(),
 	}
-	s := pipeline.NewMemoryStore()
-	id := uuid.New().String()
-	result, err := doScrape(s, o, id, url)
+	result, err := doScrape(url, o)
 	if err != nil {
-
-		log.WithFields(log.Fields{
-			"task":   id,
-			"module": "main",
-			"error":  err,
-		}).Info("Scrape failed")
-
 		return err
 	}
-
-	log.WithFields(log.Fields{
-		"task":   result.ID,
-		"module": "main",
-		"url":    result.ContentURL(),
-		"status": result.StatusCode,
-	}).Info("Scrape complete")
 
 	format := "html"
 
@@ -85,8 +70,8 @@ func Run(url string) error {
 // Scrape creates and runs a scraping task for the given URL with given Options.
 //
 // The given Store will receive downloaded images and other assets.
-func Scrape(s Store, o Options, id, url string) (Result, error) {
-	t, err := doScrape(s, o, id, url)
+func Scrape(url string, o *Options) (Result, error) {
+	t, err := doScrape(url, o)
 	if err != nil {
 		return Result{}, err
 	}
@@ -94,15 +79,33 @@ func Scrape(s Store, o Options, id, url string) (Result, error) {
 	return resultFromTask(t), nil
 }
 
-func doScrape(s Store, o Options, id, url string) (*pipeline.Task, error) {
+func doScrape(url string, o *Options) (*pipeline.Task, error) {
+	if o == nil {
+		o = DefaultOptions()
+	}
 	ctx := context.Background()
-	t := pipeline.NewTask(s, id, url)
+	id := uuid.New().String()
+	t := pipeline.NewTask(o.Store, id, url)
 
 	p := configurePipeline(o)
 	err := p(ctx, t)
 	if err != nil {
+
+		log.WithFields(log.Fields{
+			"task":   t.ID,
+			"module": "main",
+			"error":  err,
+		}).Warn("Scrape failed")
+
 		return nil, err
 	}
+
+	log.WithFields(log.Fields{
+		"task":   t.ID,
+		"module": "main",
+		"url":    t.ContentURL(),
+		"status": t.StatusCode,
+	}).Info("Scrape complete")
 
 	return t, nil
 }
@@ -117,9 +120,22 @@ type Options struct {
 	Clean bool
 	// DownloadImages controls whether images from the content should be downloaded.
 	DownloadImages bool
+	// A Store is required if DownloadImages is true.
+	Store Store
 }
 
-func configurePipeline(o Options) pipeline.Pipeline {
+// DefaultOptions creates default scrape settings.
+func DefaultOptions() *Options {
+	return &Options{
+		Metadata:       true,
+		Readability:    true,
+		Clean:          true,
+		DownloadImages: false,
+		Store:          nil,
+	}
+}
+
+func configurePipeline(o *Options) pipeline.Pipeline {
 	p := []pipeline.Pipeline{
 		fetch.Fetch,
 	}
