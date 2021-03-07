@@ -93,35 +93,43 @@ func DownloadImages(ctx context.Context, t *pipeline.Task) error {
 type fetchFunc func(src string) (string, error)
 
 func doImages(f fetchFunc, t *pipeline.Task) error {
-	handler := func(t html.Token, w io.StringWriter) (bool, error) {
-		if t.DataAtom != atom.Img {
+	handler := func(tk html.Token, w io.StringWriter) (bool, error) {
+		if tk.DataAtom != atom.Img {
 			return false, nil
 		}
 
 		var err error
-		tt := t.Type
+		var tmp strings.Builder
+		tt := tk.Type
 		switch tt {
 		case html.StartTagToken:
-			w.WriteString("<")
-			w.WriteString(t.Data)
-			err = localImage(t.Attr, f, w)
-			if err != nil {
-				return false, err
-			}
-			w.WriteString(">")
-			return true, nil
+			tmp.WriteString("<")
+			tmp.WriteString(tk.Data)
+			err = localImage(tk.Attr, f, &tmp)
+			tmp.WriteString(">")
 		case html.SelfClosingTagToken:
-			w.WriteString("<")
-			w.WriteString(t.Data)
-			err = localImage(t.Attr, f, w)
-			if err != nil {
-				return false, err
-			}
-			w.WriteString("/>")
-			return true, nil
+			tmp.WriteString("<")
+			tmp.WriteString(tk.Data)
+			err = localImage(tk.Attr, f, &tmp)
+			tmp.WriteString("/>")
+		default:
+			// should not be possible
+			return false, nil
 		}
 
-		return false, nil
+		// if we encounter a download error,
+		// leave the image as is.
+		if err != nil {
+			log.WithFields(log.Fields{
+				"task":   t.ID,
+				"module": "assets",
+				"error":  err,
+			}).Warning("Failed to download image")
+
+			return false, nil
+		}
+		w.WriteString(tmp.String())
+		return true, nil
 	}
 
 	var b strings.Builder

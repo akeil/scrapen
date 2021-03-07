@@ -81,13 +81,14 @@ func doFetchImages(html string) (pipeline.Task, error) {
 
 func TestFetchError(t *testing.T) {
 	assert := assert.New(t)
-	i := pipeline.Task{
+	task := pipeline.Task{
 		URL:  "https://example.com/base",
 		HTML: `<img src="https://example.com/image.jpg"/>`,
 	}
 	fetch := func(s string) (string, error) {
 		return "", errors.New("test error")
 	}
-	err := doImages(fetch, &i)
-	assert.NotNil(err)
+	err := doImages(fetch, &task)
+	assert.Nil(err)
+	assert.Equal(`<img src="https://example.com/image.jpg"/>`, task.HTML)
 }
