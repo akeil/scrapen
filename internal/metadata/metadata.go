@@ -106,6 +106,7 @@ func setSite(t *pipeline.Task) {
 		return
 	}
 	t.Site = u.Host
+	t.SiteScheme = u.Scheme
 }
 
 type metadata struct {

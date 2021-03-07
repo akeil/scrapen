@@ -169,6 +169,14 @@ func TestSite(t *testing.T) {
 	}
 	setSite(i)
 	assert.Equal("foo.bar.com", i.Site)
+	assert.Equal("https", i.SiteScheme)
+
+	i = &pipeline.Task{
+		URL: "http://foo.bar.com/path?query#fragment",
+	}
+	setSite(i)
+	assert.Equal("foo.bar.com", i.Site)
+	assert.Equal("http", i.SiteScheme)
 
 	// Preference - ActualURL before CanonicalURL
 	i.URL = "https://shorten.it/xyz"

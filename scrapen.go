@@ -35,11 +35,24 @@ func Run(url string) error {
 	id := uuid.New().String()
 	result, err := doScrape(s, o, id, url)
 	if err != nil {
+
+		log.WithFields(log.Fields{
+			"task":   result.ID,
+			"module": "main",
+			"url":    result.ContentURL(),
+			"status": result.StatusCode,
+			"error":  err,
+		}).Info("Scrape failed")
+
 		return err
 	}
 
-	fmt.Printf("Scraped %q\n", result.ContentURL())
-	fmt.Printf("Status %v\n", result.StatusCode)
+	log.WithFields(log.Fields{
+		"task":   result.ID,
+		"module": "main",
+		"url":    result.ContentURL(),
+		"status": result.StatusCode,
+	}).Info("Scrape complete")
 
 	format := "html"
 
@@ -135,6 +148,7 @@ type Result struct {
 	Description  string
 	PubDate      *time.Time
 	Site         string
+	SiteScheme   string
 	Author       string
 	ImageURL     string
 }
@@ -151,6 +165,7 @@ func resultFromTask(t *pipeline.Task) Result {
 		Description:  t.Description,
 		PubDate:      t.PubDate,
 		Site:         t.Site,
+		SiteScheme:   t.SiteScheme,
 		Author:       t.Author,
 		ImageURL:     t.ImageURL,
 	}

@@ -26,6 +26,7 @@ type Task struct {
 	Description  string
 	PubDate      *time.Time
 	Site         string
+	SiteScheme   string
 	Author       string
 	ImageURL     string
 	store        Store

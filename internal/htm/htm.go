@@ -98,9 +98,13 @@ func writeMetadata(b *strings.Builder, t *pipeline.Task) error {
 	}
 
 	if t.Site != "" {
-		b.WriteString("<p>")
+		b.WriteString("<p><a href=\"")
+		b.WriteString(t.SiteScheme)
+		b.WriteString("://")
 		b.WriteString(t.Site)
-		b.WriteString("</p>")
+		b.WriteString("\">")
+		b.WriteString(t.Site)
+		b.WriteString("</a></p>")
 	}
 
 	if t.Description != "" {
