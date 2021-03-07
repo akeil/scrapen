@@ -84,6 +84,9 @@ func Run(url string) error {
 	return nil
 }
 
+// Scrape creates and runs a scraping task for the given URL with given Options.
+//
+// The given Store will receive downloaded images and other assets.
 func Scrape(s Store, o Options, id, url string) (Result, error) {
 	t, err := doScrape(s, o, id, url)
 	if err != nil {
@@ -106,10 +109,15 @@ func doScrape(s Store, o Options, id, url string) (*pipeline.Task, error) {
 	return t, nil
 }
 
+// Options holds settings for a scraping task.
 type Options struct {
-	Metadata       bool
-	Readability    bool
-	Clean          bool
+	// Metadata controls whether metadata should be extracted.
+	Metadata bool
+	// Readability controls whether a readability script should be applied.
+	Readability bool
+	// Clean controls whether the resulting HTML should be stripped of unwanted tags.
+	Clean bool
+	// DownloadImages controls whether images from the content should be downloaded.
 	DownloadImages bool
 }
 
@@ -137,11 +145,18 @@ func configurePipeline(o Options) pipeline.Pipeline {
 	return pipeline.BuildPipeline(p...)
 }
 
+// Store is the interface which receives downloaded image data.
+//
+// The Store is a simple key-value store.
+// Each key stores the content type and the byte data.
 type Store interface {
+	// Put adds an entry to the store under the given key.
 	Put(k, contentType string, data []byte) error
+	// Get retrieves a store entry with the given key.
 	Get(k string) (string, []byte, error)
 }
 
+// Result holds the result of a successful scraping task.
 type Result struct {
 	URL          string
 	ActualURL    string
