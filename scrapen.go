@@ -37,10 +37,8 @@ func Run(url string) error {
 	if err != nil {
 
 		log.WithFields(log.Fields{
-			"task":   result.ID,
+			"task":   id,
 			"module": "main",
-			"url":    result.ContentURL(),
-			"status": result.StatusCode,
 			"error":  err,
 		}).Info("Scrape failed")
 
