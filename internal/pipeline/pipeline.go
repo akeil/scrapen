@@ -32,7 +32,7 @@ type Task struct {
 	SiteScheme   string
 	Author       string
 	ImageURL     string
-	store        Store
+	Store        Store
 }
 
 func NewTask(s Store, id, url string) *Task {
@@ -40,16 +40,16 @@ func NewTask(s Store, id, url string) *Task {
 		ID:        id,
 		URL:       url,
 		Retrieved: time.Now().UTC(),
-		store:     s,
+		Store:     s,
 	}
 }
 
 func (t *Task) PutAsset(k, contentType string, data []byte) error {
-	return t.store.Put(k, contentType, data)
+	return t.Store.Put(k, contentType, data)
 }
 
 func (t *Task) GetAsset(k string) (string, []byte, error) {
-	return t.store.Get(k)
+	return t.Store.Get(k)
 }
 
 // ContentURL is the "best" URL for an item.
