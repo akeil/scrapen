@@ -14,6 +14,9 @@ type Store interface {
 	Get(k string) (string, []byte, error)
 }
 
+// Note: Store is the same interface as defined in the main scrapen module.
+// The definition here is required for internal use.
+
 type Task struct {
 	ID           string
 	URL          string

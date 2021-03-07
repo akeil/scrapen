@@ -84,7 +84,7 @@ func Run(url string) error {
 	return nil
 }
 
-func Scrape(s pipeline.Store, o Options, id, url string) (Result, error) {
+func Scrape(s Store, o Options, id, url string) (Result, error) {
 	t, err := doScrape(s, o, id, url)
 	if err != nil {
 		return Result{}, err
@@ -93,7 +93,7 @@ func Scrape(s pipeline.Store, o Options, id, url string) (Result, error) {
 	return resultFromTask(t), nil
 }
 
-func doScrape(s pipeline.Store, o Options, id, url string) (*pipeline.Task, error) {
+func doScrape(s Store, o Options, id, url string) (*pipeline.Task, error) {
 	ctx := context.Background()
 	t := pipeline.NewTask(s, id, url)
 
@@ -135,6 +135,11 @@ func configurePipeline(o Options) pipeline.Pipeline {
 		p = append(p, assets.DownloadImages)
 	}
 	return pipeline.BuildPipeline(p...)
+}
+
+type Store interface {
+	Put(k, contentType string, data []byte) error
+	Get(k string) (string, []byte, error)
 }
 
 type Result struct {
