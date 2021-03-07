@@ -44,10 +44,10 @@ func ResolveURLs(ctx context.Context, t *pipeline.Task) error {
 }
 
 func resolveContentURLs(base *url.URL, s string) (string, error) {
-	handler := func(t html.Token, w io.StringWriter) (bool, error) {
+	handler := func(tk html.Token, w io.StringWriter) (bool, error) {
 		var name string
 
-		switch t.DataAtom {
+		switch tk.DataAtom {
 		case atom.Img:
 			name = "src"
 		case atom.A:
@@ -57,12 +57,12 @@ func resolveContentURLs(base *url.URL, s string) (string, error) {
 		}
 
 		var err error
-		tt := t.Type
+		tt := tk.Type
 		switch tt {
 		case html.StartTagToken:
 			w.WriteString("<")
-			w.WriteString(t.Data)
-			err = resolveAttr(base, t.Attr, name, w)
+			w.WriteString(tk.Data)
+			err = resolveAttr(base, tk.Attr, name, w)
 			if err != nil {
 				return false, err
 			}
@@ -70,8 +70,8 @@ func resolveContentURLs(base *url.URL, s string) (string, error) {
 			return true, nil
 		case html.SelfClosingTagToken:
 			w.WriteString("<")
-			w.WriteString(t.Data)
-			err = resolveAttr(base, t.Attr, name, w)
+			w.WriteString(tk.Data)
+			err = resolveAttr(base, tk.Attr, name, w)
 			if err != nil {
 				return false, err
 			}
