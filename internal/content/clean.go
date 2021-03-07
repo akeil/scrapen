@@ -1,22 +1,26 @@
-package clean
+package content
 
 import (
 	"context"
-	"log"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/akeil/scrapen/internal/pipeline"
 )
 
-func Clean(ctx context.Context, i *pipeline.Item) (*pipeline.Item, error) {
-	log.Printf("Clean HTML for %q", i.Url)
+func Clean(ctx context.Context, t *pipeline.Task) error {
 
-	r := strings.NewReader(i.Html)
+	log.WithFields(log.Fields{
+		"task":   t.ID,
+		"module": "content",
+	}).Info("Clean HTML")
+
+	r := strings.NewReader(t.HTML)
 	doc, err := goquery.NewDocumentFromReader(r)
 	if err != nil {
-		return i, err
+		return err
 	}
 
 	// TODO: does not really belong here
@@ -28,11 +32,11 @@ func Clean(ctx context.Context, i *pipeline.Item) (*pipeline.Item, error) {
 
 	html, err := doc.Selection.Find("body").First().Html()
 	if err != nil {
-		return i, err
+		return err
 	}
-	i.Html = html
+	t.HTML = html
 
-	return i, nil
+	return nil
 }
 
 // dropUnwantedTags finds tags from the greylists an removes the *markup*

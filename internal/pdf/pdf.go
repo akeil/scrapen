@@ -14,8 +14,8 @@ import (
 	"github.com/akeil/scrapen/internal/pipeline"
 )
 
-func Compose(w io.Writer, i *pipeline.Item) error {
-	b := newBuilder(i)
+func Compose(w io.Writer, t *pipeline.Task) error {
+	b := newBuilder(t)
 	err := b.build()
 	if err != nil {
 		return err
@@ -25,14 +25,14 @@ func Compose(w io.Writer, i *pipeline.Item) error {
 }
 
 type builder struct {
-	item *pipeline.Item
+	task *pipeline.Task
 	doc  gofpdf.Pdf
 	dom  *goquery.Document
 }
 
-func newBuilder(i *pipeline.Item) *builder {
+func newBuilder(t *pipeline.Task) *builder {
 	b := &builder{
-		item: i,
+		task: t,
 	}
 	return b
 }
@@ -55,12 +55,12 @@ func (b *builder) build() error {
 
 func (b *builder) title() {
 	b.doc.SetFont("Times", "B", 24.0)
-	b.doc.Cell(60, 14.0, b.item.Title)
+	b.doc.Cell(60, 14.0, b.task.Title)
 	b.doc.Ln(14) // line break
 }
 
 func (b *builder) walk() error {
-	r := strings.NewReader(b.item.Html)
+	r := strings.NewReader(b.task.HTML)
 	z := html.NewTokenizer(r)
 
 	var c renderer
@@ -141,7 +141,7 @@ func (b *builder) setup() {
 }
 
 func (b *builder) parse() error {
-	r := strings.NewReader(b.item.Html)
+	r := strings.NewReader(b.task.HTML)
 	dom, err := goquery.NewDocumentFromReader(r)
 	if err != nil {
 		return err

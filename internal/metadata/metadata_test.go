@@ -1,8 +1,8 @@
 package metadata
 
 import (
-	//"errors"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 
@@ -14,11 +14,11 @@ func TestMeta(t *testing.T) {
 	html := `<html><head>
         <meta name="foo" content="bar" />
     </head><body>foo</body></html>`
-	i := &pipeline.Item{
-		Html: html,
+	i := &pipeline.Task{
+		HTML: html,
 	}
 
-	_, err := ReadMetadata(nil, i)
+	err := ReadMetadata(nil, i)
 	assert.Nil(err)
 }
 
@@ -137,10 +137,74 @@ func TestCanonicalURL(t *testing.T) {
 
 }
 
-func readMeta(html string) (*pipeline.Item, error) {
-	i := &pipeline.Item{
-		Html: html,
+func TestAuthor(t *testing.T) {
+	assert := assert.New(t)
+
+	// basic
+	html := `<html><head>
+        <meta property="author" content="The Author" />
+    </head><body>foo</body></html>`
+
+	i, err := readMeta(html)
+	assert.Nil(err)
+	assert.Equal("The Author", i.Author)
+
+	// preference
+	html = `<html><head>
+		<meta property="twitter:creator" content="NOT The Author" />
+        <meta property="article:author" content="The Author" />
+    </head><body>foo</body></html>`
+
+	i, err = readMeta(html)
+	assert.Nil(err)
+	assert.Equal("The Author", i.Author)
+
+}
+
+func TestSite(t *testing.T) {
+	assert := assert.New(t)
+
+	i := &pipeline.Task{
+		URL: "https://foo.bar.com/path?query#fragment",
+	}
+	setSite(i)
+	assert.Equal("foo.bar.com", i.Site)
+	assert.Equal("https", i.SiteScheme)
+
+	i = &pipeline.Task{
+		URL: "http://foo.bar.com/path?query#fragment",
+	}
+	setSite(i)
+	assert.Equal("foo.bar.com", i.Site)
+	assert.Equal("http", i.SiteScheme)
+
+	// Preference - ActualURL before CanonicalURL
+	i.URL = "https://shorten.it/xyz"
+	i.ActualURL = "https://mobile.foo.com/path/page.html"
+	i.CanonicalURL = "https://foo.com/path/page.html"
+	setSite(i)
+	assert.Equal("mobile.foo.com", i.Site)
+
+	i.URL = "https://shorten.it/xyz"
+	i.ActualURL = ""
+	i.CanonicalURL = "https://foo.com/path/page.html"
+	setSite(i)
+	assert.Equal("foo.com", i.Site)
+}
+
+func TestParseTime(t *testing.T) {
+	assert := assert.New(t)
+	var ts *time.Time
+	ts = parseTime("2020-03-30T08:35:13+00:00")
+	assert.NotNil(ts)
+	assert.Equal(ts.Format(time.RFC3339), "2020-03-30T08:35:13Z")
+
+}
+
+func readMeta(html string) (*pipeline.Task, error) {
+	t := &pipeline.Task{
+		HTML: html,
 	}
 
-	return ReadMetadata(nil, i)
+	return t, ReadMetadata(nil, t)
 }

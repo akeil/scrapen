@@ -4,9 +4,10 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
-	"net/url"
 	"strings"
 	"time"
+
+	_ "embed"
 
 	"golang.org/x/net/html"
 	"golang.org/x/net/html/atom"
@@ -14,12 +15,15 @@ import (
 	"github.com/akeil/scrapen/internal/pipeline"
 )
 
-func Compose(w io.Writer, i *pipeline.Item) error {
+//go:embed style.css
+var style string
+
+func Compose(w io.Writer, t *pipeline.Task) error {
 	var b strings.Builder
 
 	b.WriteString("<html>")
-	writeHead(&b, i)
-	err := writeBody(&b, i)
+	writeHead(&b, t)
+	err := writeBody(&b, t)
 	if err != nil {
 		return err
 	}
@@ -32,50 +36,80 @@ func Compose(w io.Writer, i *pipeline.Item) error {
 	return nil
 }
 
-func writeHead(b *strings.Builder, i *pipeline.Item) {
+func writeHead(b *strings.Builder, t *pipeline.Task) {
 	b.WriteString("<head>")
 	b.WriteString("<meta charset=\"utf-8\"/>")
-	b.WriteString(fmt.Sprintf("<title>%v</title>", html.EscapeString(i.Title)))
+	b.WriteString(fmt.Sprintf("<title>%v</title>", html.EscapeString(t.Title)))
 	b.WriteString("<style>")
 	b.WriteString(style)
 	b.WriteString("</style>")
 	b.WriteString("</head>")
 }
 
-func writeBody(b *strings.Builder, i *pipeline.Item) error {
+func writeBody(b *strings.Builder, t *pipeline.Task) error {
 	b.WriteString("<body>")
-	err := writeMetadata(b, i)
+	err := writeMetadata(b, t)
 	if err != nil {
 		return err
 	}
-	err = writeContent(b, i)
+	err = writeContent(b, t)
 	if err != nil {
 		return err
 	}
-	writeFooter(b, i)
+	writeFooter(b, t)
 	b.WriteString("</body>")
 	return nil
 }
 
-func writeMetadata(b *strings.Builder, i *pipeline.Item) error {
+func writeMetadata(b *strings.Builder, t *pipeline.Task) error {
 	// TODO: include <h1> with title?
 	b.WriteString("<header>")
-	if i.ImageURL != "" {
-		attr := []html.Attribute{html.Attribute{Key: "src", Val: i.ImageURL}}
+	if t.ImageURL != "" {
+		attr := []html.Attribute{html.Attribute{Key: "src", Val: t.ImageURL}}
 		b.WriteString("<img ")
-		dataImage(attr, i, b)
+		dataImage(attr, t, b)
 		b.WriteString("/>")
 	}
 
-	if i.Title != "" {
+	if t.Title != "" {
 		b.WriteString("<h1>")
-		b.WriteString(i.Title)
+		b.WriteString(t.Title)
 		b.WriteString("</h1>")
 	}
 
-	if i.Description != "" {
+	if t.Author != "" {
 		b.WriteString("<p>")
-		b.WriteString(i.Description)
+		b.WriteString("By ")
+		b.WriteString("<strong>")
+		b.WriteString(t.Author)
+		b.WriteString("</strong>")
+		b.WriteString("</p>")
+	}
+
+	if t.PubDate != nil {
+		b.WriteString("<p>")
+		b.WriteString("Published ")
+		b.WriteString("<time datetime=\"")
+		b.WriteString(t.PubDate.Format(time.RFC3339))
+		b.WriteString("\">")
+		b.WriteString(t.PubDate.Local().Format(time.ANSIC))
+		b.WriteString("</time>")
+		b.WriteString("</p>")
+	}
+
+	if t.Site != "" {
+		b.WriteString("<p><a href=\"")
+		b.WriteString(t.SiteScheme)
+		b.WriteString("://")
+		b.WriteString(t.Site)
+		b.WriteString("\">")
+		b.WriteString(t.Site)
+		b.WriteString("</a></p>")
+	}
+
+	if t.Description != "" {
+		b.WriteString("<p>")
+		b.WriteString(t.Description)
 		b.WriteString("</p>")
 	}
 
@@ -83,19 +117,19 @@ func writeMetadata(b *strings.Builder, i *pipeline.Item) error {
 	return nil
 }
 
-func writeContent(b *strings.Builder, i *pipeline.Item) error {
-	handler := func(t html.Token, w io.StringWriter) (bool, error) {
-		if t.DataAtom != atom.Img {
+func writeContent(b *strings.Builder, t *pipeline.Task) error {
+	handler := func(tk html.Token, w io.StringWriter) (bool, error) {
+		if tk.DataAtom != atom.Img {
 			return false, nil
 		}
 
 		var err error
-		tt := t.Type
+		tt := tk.Type
 		switch tt {
 		case html.StartTagToken:
 			w.WriteString("<")
-			w.WriteString(t.Data)
-			err = dataImage(t.Attr, i, w)
+			w.WriteString(tk.Data)
+			err = dataImage(tk.Attr, t, w)
 			if err != nil {
 				return false, err
 			}
@@ -103,8 +137,8 @@ func writeContent(b *strings.Builder, i *pipeline.Item) error {
 			return true, nil
 		case html.SelfClosingTagToken:
 			w.WriteString("<")
-			w.WriteString(t.Data)
-			err = dataImage(t.Attr, i, w)
+			w.WriteString(tk.Data)
+			err = dataImage(tk.Attr, t, w)
 			if err != nil {
 				return false, err
 			}
@@ -115,18 +149,15 @@ func writeContent(b *strings.Builder, i *pipeline.Item) error {
 		return false, nil
 	}
 
-	return pipeline.WalkHTML(b, i.Html, handler)
+	return pipeline.WalkHTML(b, t.HTML, handler)
 }
 
-func dataImage(a []html.Attribute, i *pipeline.Item, w io.StringWriter) error {
+func dataImage(a []html.Attribute, t *pipeline.Task, w io.StringWriter) error {
 	for _, attr := range a {
 		if attr.Key == "src" {
-			u, err := url.Parse(attr.Val)
-			if err != nil {
-				return err
-			}
-			if u.Scheme == "local" {
-				contentType, data, err := i.GetAsset(u.Host)
+			storeID := pipeline.ParseStoreID(attr.Val)
+			if storeID != "" {
+				contentType, data, err := t.GetAsset(storeID)
 				if err != nil {
 					return err
 				}
@@ -151,7 +182,7 @@ func dataImage(a []html.Attribute, i *pipeline.Item, w io.StringWriter) error {
 	return nil
 }
 
-func writeFooter(b *strings.Builder, i *pipeline.Item) {
+func writeFooter(b *strings.Builder, t *pipeline.Task) {
 	b.WriteString("<footer>")
 	b.WriteString("<p>")
 
@@ -159,18 +190,18 @@ func writeFooter(b *strings.Builder, i *pipeline.Item) {
 	// see:
 	// http://microformats.org/wiki/datetime-design-pattern
 	b.WriteString("<time datetime=\"")
-	b.WriteString(i.Retrieved.Format(time.RFC3339))
+	b.WriteString(t.Retrieved.Format(time.RFC3339))
 	b.WriteString("\">")
-	b.WriteString(i.Retrieved.Format(time.ANSIC))
+	b.WriteString(t.Retrieved.Local().Format(time.ANSIC))
 	b.WriteString("</time>")
 	b.WriteString(" | ")
 
 	b.WriteString("<a href=\"")
-	b.WriteString(i.Url)
-	if i.Title != "" {
+	b.WriteString(t.ContentURL())
+	if t.Title != "" {
 		b.WriteString("\" title=\"")
 		// TODO: Escape?
-		b.WriteString(i.Title)
+		b.WriteString(t.Title)
 	}
 	b.WriteString("\">")
 	b.WriteString("view orginal site")
@@ -179,83 +210,3 @@ func writeFooter(b *strings.Builder, i *pipeline.Item) {
 	b.WriteString("</p>")
 	b.WriteString("</footer>")
 }
-
-// TODO: read this from a file
-const style = `body {
-	background: #ffffff;
-	font-family: sans-serif;
-	margin: 3em;
-}
-
-h1, h2, h3, h4, h5, h6 {
-	font-family: serif;
-}
-
-a {
-	color: #007bff; /* light blue */
-	text-decoration: none;
-}
-
-dl {
-	display: block;
-	margin-top: 0;
-	margin-bottom: 1em;
-	border-left: 1px solid #cccccc;
-	padding-left: 0.25em;
-}
-
-dt {
-	display: block;
-	clear: left;
-	float: left;
-	margin: 0;
-	padding: 0 0.5em 0 0;
-	font-weight: bold;
-}
-
-dd {
-	display: block;
-	margin: 0 0 0.5em 2em;
-}
-
-code {
-	color: #e83e8c; /* pink */
-	font-family: monospace;
-}
-
-pre {
-	font-family: monospace;
-	white-space: pre-wrap;
-	line-height: 125%;
-	background: #f8f8f8;
-	border: 1px solid #cccccc;
-	border-radius: 0.25em;
-	margin-left: 1em;
-	margin-right: 1em;
-	margin-bottom: 1em;
-	margin-bottom: 0;
-	padding: 0.75em;
-}
-
-figcaption {
-	font-style: italic;
-	font-size: smaller;
-}
-
-time {
-	font-style: italic;
-}
-
-footer {
-	border-top: 1px solid #cccccc;
-	font-size: smaller;
-}
-
-header {
-	border-bottom: 1px solid #cccccc;
-	color: #909090;
-	font-weight: bold;
-	font-style: italic;
-}
-
-`

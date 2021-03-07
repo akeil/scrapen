@@ -5,7 +5,6 @@ import (
 	"io"
 	"io/ioutil"
 	"mime"
-	"net/url"
 	"os"
 	"strings"
 
@@ -17,7 +16,7 @@ import (
 )
 
 // Compose creates an EPUB file from the given item.
-func Compose(w io.Writer, i *pipeline.Item) error {
+func Compose(w io.Writer, t *pipeline.Task) error {
 	tempdir, err := ioutil.TempDir("", "ebook-*")
 	if err != nil {
 		return err
@@ -26,8 +25,8 @@ func Compose(w io.Writer, i *pipeline.Item) error {
 		os.RemoveAll(tempdir)
 	}()
 
-	e := epub.NewEpub(i.Title)
-	err = composeEPUB(e, i, tempdir)
+	e := epub.NewEpub(t.Title)
+	err = composeEPUB(e, t, tempdir)
 	if err != nil {
 		return err
 	}
@@ -54,33 +53,33 @@ func Compose(w io.Writer, i *pipeline.Item) error {
 	return err
 }
 
-func composeEPUB(e *epub.Epub, i *pipeline.Item, tempdir string) error {
-	e.SetTitle(i.Title)
+func composeEPUB(e *epub.Epub, t *pipeline.Task, tempdir string) error {
+	e.SetTitle(t.Title)
 
-	html, err := prepareContent(e, i, tempdir)
+	html, err := prepareContent(e, t, tempdir)
 	if err != nil {
 		return err
 	}
-	e.AddSection(html, i.Title, "", "")
+	e.AddSection(html, t.Title, "", "")
 
 	return nil
 }
 
 // prepareContent builds the HTML that is to be included in the EPUB.
 // It replaces references to images to internal references within the epub file.
-func prepareContent(e *epub.Epub, i *pipeline.Item, tempdir string) (string, error) {
-	handler := func(t html.Token, w io.StringWriter) (bool, error) {
-		if t.DataAtom != atom.Img {
+func prepareContent(e *epub.Epub, t *pipeline.Task, tempdir string) (string, error) {
+	handler := func(tk html.Token, w io.StringWriter) (bool, error) {
+		if tk.DataAtom != atom.Img {
 			return false, nil
 		}
 
 		var err error
-		tt := t.Type
+		tt := tk.Type
 		switch tt {
 		case html.StartTagToken:
 			w.WriteString("<")
-			w.WriteString(t.Data)
-			err = prepareImage(t.Attr, i, w, e, tempdir)
+			w.WriteString(tk.Data)
+			err = prepareImage(tk.Attr, t, w, e, tempdir)
 			if err != nil {
 				return false, err
 			}
@@ -88,8 +87,8 @@ func prepareContent(e *epub.Epub, i *pipeline.Item, tempdir string) (string, err
 			return true, nil
 		case html.SelfClosingTagToken:
 			w.WriteString("<")
-			w.WriteString(t.Data)
-			err = prepareImage(t.Attr, i, w, e, tempdir)
+			w.WriteString(tk.Data)
+			err = prepareImage(tk.Attr, t, w, e, tempdir)
 			if err != nil {
 				return false, err
 			}
@@ -101,21 +100,17 @@ func prepareContent(e *epub.Epub, i *pipeline.Item, tempdir string) (string, err
 	}
 
 	var b strings.Builder
-	err := pipeline.WalkHTML(&b, i.Html, handler)
+	err := pipeline.WalkHTML(&b, t.HTML, handler)
 	return b.String(), err
 }
 
-func prepareImage(a []html.Attribute, i *pipeline.Item, w io.StringWriter, e *epub.Epub, tempdir string) error {
+func prepareImage(a []html.Attribute, t *pipeline.Task, w io.StringWriter, e *epub.Epub, tempdir string) error {
 
 	for _, attr := range a {
 		if attr.Key == "src" {
-			u, err := url.Parse(attr.Val)
-			if err != nil {
-				return err
-			}
-			if u.Scheme == "local" {
-				id := u.Host
-				err = addImage(tempdir, id, i, w, e)
+			storeID := pipeline.ParseStoreID(attr.Val)
+			if storeID != "" {
+				err := addImage(tempdir, storeID, t, w, e)
 				if err != nil {
 					return nil
 				}
@@ -130,8 +125,8 @@ func prepareImage(a []html.Attribute, i *pipeline.Item, w io.StringWriter, e *ep
 	return nil
 }
 
-func addImage(tempdir, id string, i *pipeline.Item, w io.StringWriter, e *epub.Epub) error {
-	contentType, data, err := i.GetAsset(id)
+func addImage(tempdir, id string, t *pipeline.Task, w io.StringWriter, e *epub.Epub) error {
+	contentType, data, err := t.GetAsset(id)
 	if err != nil {
 		return err
 	}

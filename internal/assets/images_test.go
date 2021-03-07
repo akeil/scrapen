@@ -11,19 +11,19 @@ import (
 func TestImg(t *testing.T) {
 	assert := assert.New(t)
 	html := `<img src="https://example.com/image.jpg"/>`
-	expect := `<img src="local://ID"/>`
+	expect := `<img src="store://ID"/>`
 	i, err := doFetchImages(html)
 	assert.Nil(err)
-	assert.Equal(expect, i.Html)
+	assert.Equal(expect, i.HTML)
 }
 
 func TestFigure(t *testing.T) {
 	assert := assert.New(t)
 	html := `<figure><img src="https://example.com/image.jpg"/></figure>`
-	expect := `<figure><img src="local://ID"/></figure>`
+	expect := `<figure><img src="store://ID"/></figure>`
 	i, err := doFetchImages(html)
 	assert.Nil(err)
-	assert.Equal(expect, i.Html)
+	assert.Equal(expect, i.HTML)
 }
 
 func TestEmpty(t *testing.T) {
@@ -31,7 +31,7 @@ func TestEmpty(t *testing.T) {
 	html := ""
 	i, err := doFetchImages(html)
 	assert.Nil(err)
-	assert.Equal(html, i.Html)
+	assert.Equal(html, i.HTML)
 }
 
 func TestPlain(t *testing.T) {
@@ -39,7 +39,7 @@ func TestPlain(t *testing.T) {
 	html := "abc"
 	i, err := doFetchImages(html)
 	assert.Nil(err)
-	assert.Equal(html, i.Html)
+	assert.Equal(html, i.HTML)
 }
 
 func TestBasicHTML(t *testing.T) {
@@ -47,7 +47,7 @@ func TestBasicHTML(t *testing.T) {
 	html := "<p>abc</p>"
 	i, err := doFetchImages(html)
 	assert.Nil(err)
-	assert.Equal(html, i.Html)
+	assert.Equal(html, i.HTML)
 }
 
 func TestHTMLAttributes(t *testing.T) {
@@ -55,7 +55,7 @@ func TestHTMLAttributes(t *testing.T) {
 	html := `<p class="foo" id="bar"><span class="baz">abc</span></p>`
 	i, err := doFetchImages(html)
 	assert.Nil(err)
-	assert.Equal(html, i.Html)
+	assert.Equal(html, i.HTML)
 }
 
 func TestSelfClosingTag(t *testing.T) {
@@ -63,13 +63,13 @@ func TestSelfClosingTag(t *testing.T) {
 	html := `foo<br/>baz`
 	i, err := doFetchImages(html)
 	assert.Nil(err)
-	assert.Equal(html, i.Html)
+	assert.Equal(html, i.HTML)
 }
 
-func doFetchImages(html string) (pipeline.Item, error) {
-	i := pipeline.Item{
-		Url:  "https://example.com/base",
-		Html: html,
+func doFetchImages(html string) (pipeline.Task, error) {
+	i := pipeline.Task{
+		URL:  "https://example.com/base",
+		HTML: html,
 	}
 
 	fetch := func(s string) (string, error) {
@@ -81,38 +81,14 @@ func doFetchImages(html string) (pipeline.Item, error) {
 
 func TestFetchError(t *testing.T) {
 	assert := assert.New(t)
-	i := pipeline.Item{
-		Url:  "https://example.com/base",
-		Html: `<img src="https://example.com/image.jpg"/>`,
+	task := pipeline.Task{
+		URL:  "https://example.com/base",
+		HTML: `<img src="https://example.com/image.jpg"/>`,
 	}
 	fetch := func(s string) (string, error) {
 		return "", errors.New("test error")
 	}
-	err := doImages(fetch, &i)
-	assert.NotNil(err)
-}
-
-func TestResolve(t *testing.T) {
-	assert := assert.New(t)
-	var s string
-	var err error
-	s, err = resolveURL("image.jpg", "https://example.com")
+	err := doImages(fetch, &task)
 	assert.Nil(err)
-	assert.Equal("https://example.com/image.jpg", s)
-
-	s, err = resolveURL("assets/image.jpg", "https://example.com/path/index.html")
-	assert.Nil(err)
-	assert.Equal("https://example.com/path/assets/image.jpg", s)
-
-	s, err = resolveURL("/assets/image.jpg", "https://example.com/path/index.html")
-	assert.Nil(err)
-	assert.Equal("https://example.com/assets/image.jpg", s)
-
-	s, err = resolveURL("assets/image.jpg", "https://example.com/path/index.html#id")
-	assert.Nil(err)
-	assert.Equal("https://example.com/path/assets/image.jpg", s)
-
-	s, err = resolveURL("https://cdn.org/image.jpg", "https://example.com")
-	assert.Nil(err)
-	assert.Equal("https://cdn.org/image.jpg", s)
+	assert.Equal(`<img src="https://example.com/image.jpg"/>`, task.HTML)
 }

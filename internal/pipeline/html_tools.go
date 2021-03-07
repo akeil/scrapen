@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"golang.org/x/net/html"
+	"golang.org/x/net/html/atom"
 )
 
 type TokenReader func(html.Token) error
@@ -28,6 +29,17 @@ func ReadHTML(s string, r TokenReader) error {
 		err := r(t)
 		if err != nil {
 			return err
+		}
+
+		// working around the HTML parser not parsing the content of <noscript>
+		// https://github.com/golang/go/issues/16318
+		if t.DataAtom == atom.Noscript {
+			z.Next()
+			t = z.Token() // the text content of <noscript>
+			err = ReadHTML(t.Data, r)
+			if err != nil {
+				return err
+			}
 		}
 	}
 }
@@ -56,6 +68,17 @@ func WalkHTML(w io.StringWriter, s string, h TokenHandler) error {
 		}
 		if !consumed {
 			identity(t, w)
+		}
+
+		// working around the HTML parser not parsing the content of <noscript>
+		// https://github.com/golang/go/issues/16318
+		if t.DataAtom == atom.Noscript {
+			z.Next()
+			t = z.Token() // the text content of <noscript>
+			err = WalkHTML(w, t.Data, h)
+			if err != nil {
+				return err
+			}
 		}
 	}
 }

@@ -3,64 +3,77 @@ package pipeline
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 )
 
-type Pipeline func(ctx context.Context, i *Item) (*Item, error)
+type Pipeline func(ctx context.Context, t *Task) error
 
 type Store interface {
 	Put(k, contentType string, data []byte) error
 	Get(k string) (string, []byte, error)
 }
 
-type Item struct {
-	Url          string
+// Note: Store is the same interface as defined in the main scrapen module.
+// The definition here is required for internal use.
+
+type Task struct {
+	ID           string
+	URL          string
+	ActualURL    string
 	CanonicalURL string
-	Html         string
+	StatusCode   int
+	HTML         string
 	Title        string
 	Retrieved    time.Time
 	Description  string
+	PubDate      *time.Time
+	Site         string
+	SiteScheme   string
+	Author       string
 	ImageURL     string
-	store        Store
+	Store        Store
 }
 
-func NewItem(s Store, url string) *Item {
-	return &Item{
-		Url:       url,
+func NewTask(s Store, id, url string) *Task {
+	return &Task{
+		ID:        id,
+		URL:       url,
 		Retrieved: time.Now().UTC(),
-		store:     s,
+		Store:     s,
 	}
 }
 
-func (i *Item) Copy() *Item {
-	return &Item{
-		Url:       i.Url,
-		Html:      i.Html,
-		Title:     i.Title,
-		Retrieved: i.Retrieved,
-		store:     i.store,
+func (t *Task) PutAsset(k, contentType string, data []byte) error {
+	return t.Store.Put(k, contentType, data)
+}
+
+func (t *Task) GetAsset(k string) (string, []byte, error) {
+	return t.Store.Get(k)
+}
+
+// ContentURL is the "best" URL for an item.
+//
+// If available, the actual URL is returned. Otherwise, the requested URL is used.
+func (t *Task) ContentURL() string {
+	if t.ActualURL != "" {
+		return t.ActualURL
+	} else if t.CanonicalURL != "" {
+		return t.CanonicalURL
 	}
-}
-
-func (i *Item) PutAsset(k, contentType string, data []byte) error {
-	return i.store.Put(k, contentType, data)
-}
-
-func (i *Item) GetAsset(k string) (string, []byte, error) {
-	return i.store.Get(k)
+	return t.URL
 }
 
 func BuildPipeline(f ...Pipeline) Pipeline {
-	return func(ctx context.Context, i *Item) (*Item, error) {
-		item := i.Copy()
+	return func(ctx context.Context, t *Task) error {
 		var err error
 		for _, p := range f {
-			item, err = p(ctx, item)
+			err = p(ctx, t)
 			if err != nil {
-				return item, err
+				return err
 			}
 		}
-		return item, nil
+		return nil
 	}
 }
 
@@ -90,4 +103,20 @@ func (m *memoryStore) Get(k string) (string, []byte, error) {
 type asset struct {
 	contentType string
 	data        []byte
+}
+
+const storePrefix = "store://"
+
+// StoreURL builds a "store://" URL for the given store ID.
+func StoreURL(id string) string {
+	return storePrefix + id
+}
+
+// ParseStoreID extracts the store ID from a "store://" URL.
+// Returns an empty string if this is not a store URL.
+func ParseStoreID(url string) string {
+	if strings.HasPrefix(url, storePrefix) {
+		return strings.TrimPrefix(url, storePrefix)
+	}
+	return ""
 }
