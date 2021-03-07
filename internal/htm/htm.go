@@ -92,7 +92,7 @@ func writeMetadata(b *strings.Builder, t *pipeline.Task) error {
 		b.WriteString("<time datetime=\"")
 		b.WriteString(t.PubDate.Format(time.RFC3339))
 		b.WriteString("\">")
-		b.WriteString(t.PubDate.Format(time.ANSIC))
+		b.WriteString(t.PubDate.Local().Format(time.ANSIC))
 		b.WriteString("</time>")
 		b.WriteString("</p>")
 	}
@@ -192,7 +192,7 @@ func writeFooter(b *strings.Builder, t *pipeline.Task) {
 	b.WriteString("<time datetime=\"")
 	b.WriteString(t.Retrieved.Format(time.RFC3339))
 	b.WriteString("\">")
-	b.WriteString(t.Retrieved.Format(time.ANSIC))
+	b.WriteString(t.Retrieved.Local().Format(time.ANSIC))
 	b.WriteString("</time>")
 	b.WriteString(" | ")
 
