@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/html"
 	"golang.org/x/net/html/atom"
 
@@ -13,6 +14,13 @@ import (
 )
 
 func ReadMetadata(ctx context.Context, t *pipeline.Task) error {
+
+	log.WithFields(log.Fields{
+		"task":   t.ID,
+		"module": "metadata",
+		"url":    t.ContentURL(),
+	}).Info("Extract metadata")
+
 	m := newMetadata()
 
 	reader := func(t html.Token) error {

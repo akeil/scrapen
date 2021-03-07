@@ -41,9 +41,6 @@ func DownloadImages(ctx context.Context, t *pipeline.Task) error {
 		}).Info("Fetch image")
 
 		res, err := client.Do(req)
-		if err != nil {
-			return "", err
-		}
 
 		log.WithFields(log.Fields{
 			"task":   t.ID,
@@ -51,6 +48,10 @@ func DownloadImages(ctx context.Context, t *pipeline.Task) error {
 			"url":    src,
 			"status": res.StatusCode,
 		}).Info("Got image response")
+
+		if err != nil {
+			return "", err
+		}
 
 		if res.StatusCode != http.StatusOK {
 			return "", fmt.Errorf("got HTTP status %v", res.StatusCode)

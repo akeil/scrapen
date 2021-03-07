@@ -14,6 +14,13 @@ var client = &http.Client{}
 
 // Fetch fetches the HTML content for the given item.
 func Fetch(ctx context.Context, t *pipeline.Task) error {
+
+	log.WithFields(log.Fields{
+		"task":   t.ID,
+		"module": "fetch",
+		"url":    t.ContentURL(),
+	}).Info("Fetch content")
+
 	html, err := fetchURL(ctx, t, t.URL)
 	if err != nil {
 		return err
