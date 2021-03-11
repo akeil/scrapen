@@ -16,6 +16,7 @@ import (
 	//	"github.com/akeil/scrapen/internal/pdf"
 	"github.com/akeil/scrapen/internal/pipeline"
 	"github.com/akeil/scrapen/internal/readable"
+	"github.com/akeil/scrapen/internal/rss"
 )
 
 // Scrape creates and runs a scraping task for the given URL with given Options.
@@ -71,6 +72,8 @@ type Options struct {
 	Clean bool
 	// DownloadImages controls whether images from the content should be downloaded.
 	DownloadImages bool
+	// Detect RSS feeds
+	FindFeeds bool
 	// A Store is required if DownloadImages is true.
 	Store Store
 }
@@ -82,6 +85,7 @@ func DefaultOptions() *Options {
 		Readability:    true,
 		Clean:          true,
 		DownloadImages: false,
+		FindFeeds:      false,
 		Store:          nil,
 	}
 }
@@ -93,6 +97,10 @@ func configurePipeline(o *Options) pipeline.Pipeline {
 
 	if o.Metadata {
 		p = append(p, metadata.ReadMetadata)
+	}
+
+	if o.FindFeeds {
+		p = append(p, rss.FindFeeds)
 	}
 
 	if o.Readability {
@@ -139,10 +147,23 @@ type Result struct {
 	Site         string
 	SiteScheme   string
 	Author       string
+	Feeds        []Feed
 	ImageURL     string
 }
 
+type Feed struct {
+	URL   string
+	Title string
+}
+
 func resultFromTask(t *pipeline.Task) Result {
+	fs := make([]Feed, len(t.Feeds))
+	for i, fi := range t.Feeds {
+		fs[i] = Feed{
+			URL:   fi.URL,
+			Title: fi.Title,
+		}
+	}
 	return Result{
 		URL:          t.URL,
 		ActualURL:    t.ActualURL,
@@ -156,6 +177,7 @@ func resultFromTask(t *pipeline.Task) Result {
 		Site:         t.Site,
 		SiteScheme:   t.SiteScheme,
 		Author:       t.Author,
+		Feeds:        fs,
 		ImageURL:     t.ImageURL,
 	}
 }

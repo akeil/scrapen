@@ -3,24 +3,24 @@ package content
 import (
 	"context"
 
+	"github.com/microcosm-cc/bluemonday"
 	log "github.com/sirupsen/logrus"
-    "github.com/microcosm-cc/bluemonday"
 
 	"github.com/akeil/scrapen/internal/pipeline"
 )
 
 func Sanitize(ctx context.Context, t *pipeline.Task) error {
-    log.WithFields(log.Fields{
+	log.WithFields(log.Fields{
 		"task":   t.ID,
 		"module": "content",
 	}).Info("Sanitize HTML")
 
-    //p := bluemonday.UGCPolicy()
+	//p := bluemonday.UGCPolicy()
 	p := createPolicy()
 
-    t.HTML = p.Sanitize(t.HTML)
+	t.HTML = p.Sanitize(t.HTML)
 
-    return nil
+	return nil
 }
 
 func createPolicy() *bluemonday.Policy {

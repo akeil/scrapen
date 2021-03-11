@@ -36,6 +36,7 @@ func run(url string) error {
 		Readability:    true,
 		Clean:          true,
 		DownloadImages: true,
+		FindFeeds:      true,
 		Store:          s,
 	}
 	a, err := scrapen.Scrape(url, o)
@@ -74,6 +75,14 @@ func run(url string) error {
 }
 
 func taskFromArticle(a scrapen.Result, s scrapen.Store) *pipeline.Task {
+	fs := make([]pipeline.FeedInfo, len(a.Feeds))
+	for i, f := range a.Feeds {
+		fs[i] = pipeline.FeedInfo{
+			URL:   f.URL,
+			Title: f.Title,
+		}
+	}
+
 	return &pipeline.Task{
 		URL:          a.URL,
 		ActualURL:    a.ActualURL,
@@ -88,6 +97,7 @@ func taskFromArticle(a scrapen.Result, s scrapen.Store) *pipeline.Task {
 		SiteScheme:   a.SiteScheme,
 		Author:       a.Author,
 		ImageURL:     a.ImageURL,
+		Feeds:        fs,
 		Store:        s,
 	}
 }
