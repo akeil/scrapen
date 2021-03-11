@@ -59,5 +59,5 @@ func findRss(base, html string) ([]pipeline.FeedInfo, error) {
 	}
 
 	err := FindFeeds(nil, task)
-	return task.FeedInfo, err
+	return task.Feeds, err
 }

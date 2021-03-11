@@ -147,7 +147,7 @@ type Result struct {
 	Site         string
 	SiteScheme   string
 	Author       string
-	FeedInfo     []pipeline.FeedInfo
+	Feeds        []pipeline.FeedInfo
 	ImageURL     string
 }
 
@@ -165,7 +165,7 @@ func resultFromTask(t *pipeline.Task) Result {
 		Site:         t.Site,
 		SiteScheme:   t.SiteScheme,
 		Author:       t.Author,
-		FeedInfo:     t.FeedInfo,
+		Feeds:        t.Feeds,
 		ImageURL:     t.ImageURL,
 	}
 }

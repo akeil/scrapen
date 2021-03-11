@@ -17,7 +17,7 @@ func FindFeeds(ctx context.Context, t *pipeline.Task) error {
 		"module": "rss",
 	}).Info("Find feeds")
 
-	t.FeedInfo = make([]pipeline.FeedInfo, 0)
+	t.Feeds = make([]pipeline.FeedInfo, 0)
 
 	reader := func(tk html.Token) error {
 
@@ -87,7 +87,7 @@ func handleLink(tk html.Token, t *pipeline.Task) {
 		"rss":    href,
 	}).Info("found link")
 
-	t.FeedInfo = append(t.FeedInfo, pipeline.FeedInfo{
+	t.Feeds = append(t.Feeds, pipeline.FeedInfo{
 		URL:   href,
 		Title: title,
 	})

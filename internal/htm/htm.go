@@ -216,13 +216,13 @@ func writeFooter(b *strings.Builder, t *pipeline.Task) {
 
 func writeFeeds(b *strings.Builder, t *pipeline.Task) {
 	b.WriteString("<p>Feeds ????</p>")
-	if len(t.FeedInfo) == 0 {
+	if len(t.Feeds) == 0 {
 		return
 	}
 
 	b.WriteString("<p>RSS Feeds:</p>")
 	b.WriteString("<ul>")
-	for _, fi := range t.FeedInfo {
+	for _, fi := range t.Feeds {
 		b.WriteString("<li><a href=\"")
 		b.WriteString(fi.URL)
 		b.WriteString("\">")
