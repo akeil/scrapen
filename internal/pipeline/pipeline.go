@@ -32,6 +32,7 @@ type Task struct {
 	SiteScheme   string
 	Author       string
 	ImageURL     string
+	FeedInfo     []FeedInfo
 	Store        Store
 }
 
