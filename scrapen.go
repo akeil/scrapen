@@ -99,6 +99,10 @@ func configurePipeline(o *Options) pipeline.Pipeline {
 		p = append(p, metadata.ReadMetadata)
 	}
 
+	if o.FindFeeds {
+		p = append(p, rss.FindFeeds)
+	}
+
 	if o.Readability {
 		p = append(p, readable.MakeReadable)
 	}
@@ -113,10 +117,6 @@ func configurePipeline(o *Options) pipeline.Pipeline {
 
 	if o.DownloadImages {
 		p = append(p, assets.DownloadImages)
-	}
-
-	if o.FindFeeds {
-		p = append(p, rss.FindFeeds)
 	}
 
 	return pipeline.BuildPipeline(p...)
@@ -147,6 +147,7 @@ type Result struct {
 	Site         string
 	SiteScheme   string
 	Author       string
+	FeedInfo     []pipeline.FeedInfo
 	ImageURL     string
 }
 
@@ -164,6 +165,7 @@ func resultFromTask(t *pipeline.Task) Result {
 		Site:         t.Site,
 		SiteScheme:   t.SiteScheme,
 		Author:       t.Author,
+		FeedInfo:     t.FeedInfo,
 		ImageURL:     t.ImageURL,
 	}
 }

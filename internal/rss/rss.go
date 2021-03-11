@@ -72,6 +72,7 @@ func handleLink(tk html.Token, t *pipeline.Task) {
 			}
 			href = h
 		case "title":
+			// TODO: unescape HTML
 			title = attr.Val
 		}
 	}
@@ -79,6 +80,12 @@ func handleLink(tk html.Token, t *pipeline.Task) {
 	if rel != "alternate" || href == "" {
 		return
 	}
+
+	log.WithFields(log.Fields{
+		"task":   t.ID,
+		"module": "rss",
+		"rss":    href,
+	}).Info("found link")
 
 	t.FeedInfo = append(t.FeedInfo, pipeline.FeedInfo{
 		URL:   href,

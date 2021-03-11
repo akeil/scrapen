@@ -42,6 +42,7 @@ func TestFindFeeds(t *testing.T) {
     </head><body>foo</body></html>`
 
 	fi, err = findRss(base, html)
+	assert.Nil(err)
 	assert.Equal(1, len(fi))
 	if len(fi) == 1 {
 		i := fi[0]
