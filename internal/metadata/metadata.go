@@ -23,6 +23,8 @@ func ReadMetadata(ctx context.Context, t *pipeline.Task) error {
 
 	m := newMetadata()
 
+	titleFlag := false
+
 	reader := func(t html.Token) error {
 
 		tt := t.Type
@@ -34,8 +36,20 @@ func ReadMetadata(ctx context.Context, t *pipeline.Task) error {
 				handleMeta(t, m)
 			case atom.Link:
 				handleLink(t, m)
+			case atom.Title:
+				titleFlag = true
 			}
+
+		case html.TextToken:
+			if titleFlag {
+				handleTitle(t, m)
+
+			}
+
 		case html.EndTagToken:
+			if titleFlag {
+				titleFlag = false
+			}
 		}
 
 		return nil
@@ -62,6 +76,10 @@ var (
 )
 
 func setMetadata(m *metadata, t *pipeline.Task) {
+	if m.title != "" {
+		t.Title = m.title
+	}
+
 	for _, k := range descriptionPref {
 		v, ok := m.description[k]
 		if ok {
@@ -118,6 +136,7 @@ func setSite(t *pipeline.Task) {
 }
 
 type metadata struct {
+	title       string
 	description map[string]string
 	image       map[string]string
 	url         map[string]string
@@ -212,6 +231,10 @@ func handleLink(t html.Token, m *metadata) {
 	case "image_src":
 		m.image["link/image_src"] = href
 	}
+}
+
+func handleTitle(t html.Token, m *metadata) {
+	m.title = strings.TrimSpace(t.Data)
 }
 
 func contains(haystack []string, needle string) bool {
