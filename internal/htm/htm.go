@@ -208,5 +208,26 @@ func writeFooter(b *strings.Builder, t *pipeline.Task) {
 	b.WriteString("</a>")
 
 	b.WriteString("</p>")
+
+	writeFeeds(b, t)
+
 	b.WriteString("</footer>")
+}
+
+func writeFeeds(b *strings.Builder, t *pipeline.Task) {
+	b.WriteString("<p>Feeds ????</p>")
+	if len(t.FeedInfo) == 0 {
+		return
+	}
+
+	b.WriteString("<p>RSS Feeds:</p>")
+	b.WriteString("<ul>")
+	for _, fi := range t.FeedInfo {
+		b.WriteString("<li><a href=\"")
+		b.WriteString(fi.URL)
+		b.WriteString("\">")
+		b.WriteString(fi.Title)
+		b.WriteString("</a></li>")
+	}
+	b.WriteString("</ul")
 }
