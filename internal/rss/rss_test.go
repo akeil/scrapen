@@ -58,23 +58,23 @@ func TestFindFeeds(t *testing.T) {
 	assert.Nil(err)
 	assert.Equal(0, len(fi))
 
-	// invalid RSS link, missing ´rel` should be OK if type is given
+	// invalid RSS link, missing rel
 	html = `<html><head>
         <link type="application/rss+xml" href="rss.xml"/>
     </head><body>foo</body></html>`
 
 	fi, err = findRss(base, html)
 	assert.Nil(err)
-	assert.Equal(1, len(fi))
+	assert.Equal(0, len(fi))
 
-	// invalid RSS link, missing type` should be OK if rel is given
+	// invalid RSS link, missing type
 	html = `<html><head>
         <link rel="alternate" href="rss.xml"/>
     </head><body>foo</body></html>`
 
 	fi, err = findRss(base, html)
 	assert.Nil(err)
-	assert.Equal(1, len(fi))
+	assert.Equal(0, len(fi))
 
 	// invalid RSS link, missing href
 	html = `<html><head>

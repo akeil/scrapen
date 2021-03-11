@@ -11,16 +11,23 @@ import (
 	"github.com/akeil/scrapen/internal/pipeline"
 )
 
+const (
+	ctRSS  = "application/rss+xml"
+	ctAtom = "application/atom+xml"
+	ctXML  = "text/xml"
+)
+
 // FindFeeds looks for links to RSS feeds and places them in the `Feeds`
 // attribute for the task.
 //
 // Some deviations from the standard:
 // - accept links in <body>
 // - does (currently) not de-duplicate links
-// - does not require `rel` AND `type`
 // - does not require the <base> element to resolve relative URLs
 // Source:
-// https://www.rssboard.org/rss-autodiscovery
+// - https://www.rssboard.org/rss-autodiscovery
+// - https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/rel#attr-alternate
+//
 func FindFeeds(ctx context.Context, t *pipeline.Task) error {
 	log.WithFields(log.Fields{
 		"task":   t.ID,
@@ -61,7 +68,7 @@ func FindFeeds(ctx context.Context, t *pipeline.Task) error {
 func handleLink(tk html.Token, t *pipeline.Task) {
 	var (
 		rel   string
-		type_ string
+		typ   string
 		href  string
 		title string
 	)
@@ -71,7 +78,7 @@ func handleLink(tk html.Token, t *pipeline.Task) {
 		case "rel":
 			rel = strings.ToLower(attr.Val)
 		case "type":
-			type_ = strings.ToLower(attr.Val)
+			typ = strings.ToLower(attr.Val)
 		case "href":
 			h, err := t.ResolveURL(attr.Val)
 			if err != nil {
@@ -89,8 +96,10 @@ func handleLink(tk html.Token, t *pipeline.Task) {
 		}
 	}
 
-	typeOK := type_ == "application/rss+xml" || type_ == "application/atom+xml" || type_ == "text/xml"
-	if rel != "alternate" && !typeOK {
+	if typ != ctRSS && typ != ctAtom && typ != ctXML {
+		return
+	}
+	if rel != "alternate" {
 		return
 	}
 	if href == "" {
