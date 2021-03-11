@@ -104,9 +104,13 @@ func configurePipeline(o *Options) pipeline.Pipeline {
 	}
 	p = append(p, content.ResolveURLs)
 
+	// we should call this AFTER modifiying the HTML
+	p = append(p, content.Sanitize)
+
 	if o.DownloadImages {
 		p = append(p, assets.DownloadImages)
 	}
+
 	return pipeline.BuildPipeline(p...)
 }
 
