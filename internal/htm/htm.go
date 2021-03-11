@@ -225,7 +225,11 @@ func writeFeeds(b *strings.Builder, t *pipeline.Task) {
 		b.WriteString("<li><a href=\"")
 		b.WriteString(fi.URL)
 		b.WriteString("\">")
-		b.WriteString(fi.Title)
+		if fi.Title != "" {
+			b.WriteString(fi.Title)
+		} else {
+			b.WriteString(fi.URL)
+		}
 		b.WriteString("</a></li>")
 	}
 	b.WriteString("</ul")
