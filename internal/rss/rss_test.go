@@ -13,7 +13,7 @@ func TestFindFeeds(t *testing.T) {
 
 	base := "https://example.com"
 	html := `<html><head>
-        <link rel="alternate" type="application/rss+xml" title="RSS" href="rss.xml"/>
+        <link rel="alternate" type="application/rss+xml" title="-&gt; RSS" href="rss.xml"/>
     </head><body>foo</body></html>`
 
 	fi, err := findRss(base, html)
@@ -22,7 +22,7 @@ func TestFindFeeds(t *testing.T) {
 	assert.Equal(1, len(fi))
 	if len(fi) == 1 {
 		i := fi[0]
-		assert.Equal("RSS", i.Title)
+		assert.Equal("-> RSS", i.Title)
 		assert.Equal("https://example.com/rss.xml", i.URL)
 	}
 

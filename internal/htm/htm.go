@@ -200,8 +200,7 @@ func writeFooter(b *strings.Builder, t *pipeline.Task) {
 	b.WriteString(t.ContentURL())
 	if t.Title != "" {
 		b.WriteString("\" title=\"")
-		// TODO: Escape?
-		b.WriteString(t.Title)
+		b.WriteString(html.EscapeString(t.Title))
 	}
 	b.WriteString("\">")
 	b.WriteString("view orginal site")
@@ -226,7 +225,7 @@ func writeFeeds(b *strings.Builder, t *pipeline.Task) {
 		b.WriteString(fi.URL)
 		b.WriteString("\">")
 		if fi.Title != "" {
-			b.WriteString(fi.Title)
+			b.WriteString(html.EscapeString(fi.Title))
 		} else {
 			b.WriteString(fi.URL)
 		}
