@@ -61,7 +61,16 @@ func handleLink(tk html.Token, t *pipeline.Task) {
 		case "rel":
 			rel = strings.ToLower(attr.Val)
 		case "href":
-			href = attr.Val
+			h, err := t.ResolveURL(attr.Val)
+			if err != nil {
+				log.WithFields(log.Fields{
+					"task":   t.ID,
+					"module": "rss",
+					"error":  err,
+				}).Warn("Could not resolve feed URL")
+				return
+			}
+			href = h
 		case "title":
 			title = attr.Val
 		}

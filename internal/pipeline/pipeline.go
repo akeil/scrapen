@@ -3,6 +3,7 @@ package pipeline
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"strings"
 	"time"
 )
@@ -63,6 +64,22 @@ func (t *Task) ContentURL() string {
 		return t.CanonicalURL
 	}
 	return t.URL
+}
+
+// ResolveURL resolves the given URL(-fragment) against the content URL that
+// was determined for this task.
+func (t *Task) ResolveURL(href string) (string, error) {
+	b, err := url.Parse(t.ContentURL())
+	if err != nil {
+		return "", err
+	}
+
+	h, err := url.Parse(href)
+	if err != nil {
+		return "", err
+	}
+
+	return b.ResolveReference(h).String(), nil
 }
 
 func BuildPipeline(f ...Pipeline) Pipeline {
