@@ -1,0 +1,46 @@
+package content
+
+import (
+	"context"
+
+	log "github.com/sirupsen/logrus"
+    "github.com/microcosm-cc/bluemonday"
+
+	"github.com/akeil/scrapen/internal/pipeline"
+)
+
+func Sanitize(ctx context.Context, t *pipeline.Task) error {
+    log.WithFields(log.Fields{
+		"task":   t.ID,
+		"module": "content",
+	}).Info("Sanitize HTML")
+
+    //p := bluemonday.UGCPolicy()
+	p := createPolicy()
+
+    t.HTML = p.Sanitize(t.HTML)
+
+    return nil
+}
+
+func createPolicy() *bluemonday.Policy {
+	p := bluemonday.NewPolicy()
+	p.AllowElements(whitelist...)
+
+	m := make(map[string][]string)
+	for elem, a := range attrWhitelist {
+		for _, attr := range a {
+			_, ok := m[attr]
+			if !ok {
+				m[attr] = make([]string, 0)
+			}
+			m[attr] = append(m[attr], elem)
+		}
+	}
+
+	for attr, elems := range m {
+		p.AllowAttrs(attr).OnElements(elems...)
+	}
+
+	return p
+}

@@ -9,6 +9,7 @@ require (
 	github.com/google/brotli/go/cbrotli v0.0.0-20210127140805-63be8a994019 // indirect
 	github.com/google/uuid v1.2.0
 	github.com/jung-kurt/gofpdf v1.16.2
+	github.com/microcosm-cc/bluemonday v1.0.4 // indirect
 	github.com/sirupsen/logrus v1.8.0 // indirect
 	github.com/stretchr/testify v1.7.0
 	golang.org/x/net v0.0.0-20210119194325-5f4716e94777
