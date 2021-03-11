@@ -215,7 +215,6 @@ func writeFooter(b *strings.Builder, t *pipeline.Task) {
 }
 
 func writeFeeds(b *strings.Builder, t *pipeline.Task) {
-	b.WriteString("<p>Feeds ????</p>")
 	if len(t.Feeds) == 0 {
 		return
 	}

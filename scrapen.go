@@ -147,11 +147,23 @@ type Result struct {
 	Site         string
 	SiteScheme   string
 	Author       string
-	Feeds        []pipeline.FeedInfo
+	Feeds        []Feed
 	ImageURL     string
 }
 
+type Feed struct {
+	URL   string
+	Title string
+}
+
 func resultFromTask(t *pipeline.Task) Result {
+	fs := make([]Feed, len(t.Feeds))
+	for i, fi := range t.Feeds {
+		fs[i] = Feed{
+			URL:   fi.URL,
+			Title: fi.Title,
+		}
+	}
 	return Result{
 		URL:          t.URL,
 		ActualURL:    t.ActualURL,
@@ -165,7 +177,7 @@ func resultFromTask(t *pipeline.Task) Result {
 		Site:         t.Site,
 		SiteScheme:   t.SiteScheme,
 		Author:       t.Author,
-		Feeds:        t.Feeds,
+		Feeds:        fs,
 		ImageURL:     t.ImageURL,
 	}
 }
