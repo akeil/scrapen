@@ -16,6 +16,7 @@ import (
 	//	"github.com/akeil/scrapen/internal/pdf"
 	"github.com/akeil/scrapen/internal/pipeline"
 	"github.com/akeil/scrapen/internal/readable"
+	"github.com/akeil/scrapen/internal/rss"
 )
 
 // Scrape creates and runs a scraping task for the given URL with given Options.
@@ -71,6 +72,8 @@ type Options struct {
 	Clean bool
 	// DownloadImages controls whether images from the content should be downloaded.
 	DownloadImages bool
+	// Detect RSS feeds
+	FindFeeds bool
 	// A Store is required if DownloadImages is true.
 	Store Store
 }
@@ -82,6 +85,7 @@ func DefaultOptions() *Options {
 		Readability:    true,
 		Clean:          true,
 		DownloadImages: false,
+		FindFeeds:      false,
 		Store:          nil,
 	}
 }
@@ -109,6 +113,10 @@ func configurePipeline(o *Options) pipeline.Pipeline {
 
 	if o.DownloadImages {
 		p = append(p, assets.DownloadImages)
+	}
+
+	if o.FindFeeds {
+		p = append(p, rss.FindFeeds)
 	}
 
 	return pipeline.BuildPipeline(p...)

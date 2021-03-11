@@ -36,6 +36,7 @@ func run(url string) error {
 		Readability:    true,
 		Clean:          true,
 		DownloadImages: true,
+		FindFeeds:      true,
 		Store:          s,
 	}
 	a, err := scrapen.Scrape(url, o)
