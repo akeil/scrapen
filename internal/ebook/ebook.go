@@ -3,7 +3,6 @@ package ebook
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"mime"
 	"os"
 	"strings"
@@ -17,7 +16,7 @@ import (
 
 // Compose creates an EPUB file from the given item.
 func Compose(w io.Writer, t *pipeline.Task) error {
-	tempdir, err := ioutil.TempDir("", "ebook-*")
+	tempdir, err := os.MkdirTemp("", "ebook-*")
 	if err != nil {
 		return err
 	}
@@ -35,7 +34,7 @@ func Compose(w io.Writer, t *pipeline.Task) error {
 	// epub library only allows writing to dst path
 	// so we write to a temp file
 	// and then copy the temp file to the actual dst writer
-	tmp, err := ioutil.TempFile("", "*.epub")
+	tmp, err := os.CreateTemp("", "*.epub")
 	if err != nil {
 		return err
 	}
@@ -139,7 +138,7 @@ func addImage(tempdir, id string, t *pipeline.Task, w io.StringWriter, e *epub.E
 	// We can only add *paths* to images, not image data.
 	// Therfore, we need to write to a temp directory and add the path.
 	// Images Will be read when the epub is written.
-	f, err := ioutil.TempFile(tempdir, id+"*"+ext)
+	f, err := os.CreateTemp(tempdir, id+"*"+ext)
 	if err != nil {
 		return err
 	}

@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"strings"
 
@@ -58,7 +57,7 @@ func DownloadImages(ctx context.Context, t *pipeline.Task) error {
 		}
 		defer res.Body.Close()
 
-		data, err := ioutil.ReadAll(res.Body)
+		data, err := io.ReadAll(res.Body)
 		if err != nil {
 			return "", err
 		}

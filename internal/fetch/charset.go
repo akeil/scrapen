@@ -3,7 +3,6 @@ package fetch
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"mime"
 	"net/http"
 	"strings"
@@ -45,7 +44,7 @@ func readUTF8(t *pipeline.Task, r io.Reader, h http.Header) (string, error) {
 		}
 	}
 
-	data, err := ioutil.ReadAll(r)
+	data, err := io.ReadAll(r)
 	if err != nil {
 		return "", err
 	}
