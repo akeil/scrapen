@@ -200,13 +200,36 @@ func writeFooter(b *strings.Builder, t *pipeline.Task) {
 	b.WriteString(t.ContentURL())
 	if t.Title != "" {
 		b.WriteString("\" title=\"")
-		// TODO: Escape?
-		b.WriteString(t.Title)
+		b.WriteString(html.EscapeString(t.Title))
 	}
 	b.WriteString("\">")
 	b.WriteString("view orginal site")
 	b.WriteString("</a>")
 
 	b.WriteString("</p>")
+
+	writeFeeds(b, t)
+
 	b.WriteString("</footer>")
+}
+
+func writeFeeds(b *strings.Builder, t *pipeline.Task) {
+	if len(t.Feeds) == 0 {
+		return
+	}
+
+	b.WriteString("<p>RSS Feeds:</p>")
+	b.WriteString("<ul>")
+	for _, fi := range t.Feeds {
+		b.WriteString("<li><a href=\"")
+		b.WriteString(fi.URL)
+		b.WriteString("\">")
+		if fi.Title != "" {
+			b.WriteString(html.EscapeString(fi.Title))
+		} else {
+			b.WriteString(fi.URL)
+		}
+		b.WriteString("</a></li>")
+	}
+	b.WriteString("</ul")
 }

@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
+	"mime"
 	"net/http"
 	"strings"
 
@@ -58,16 +58,42 @@ func DownloadImages(ctx context.Context, t *pipeline.Task) error {
 		}
 		defer res.Body.Close()
 
-		data, err := ioutil.ReadAll(res.Body)
+		data, err := io.ReadAll(res.Body)
 		if err != nil {
 			return "", err
 		}
 
 		// note: may be empty
 		contentType := res.Header.Get("content-type")
+		mime, _, err := mime.ParseMediaType(contentType)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"task":   t.ID,
+				"module": "assets",
+				"url":    src,
+				"error":  err,
+			}).Info(fmt.Sprintf("Failed to parse MIME type from %q", contentType))
 
+			return "", err
+		}
+		// TODO: parse, use mime only
+
+		// TODO: add the file extension to id ???
 		id := uuid.New().String()
-		err = t.PutAsset(id, contentType, data)
+		newSrc := pipeline.StoreURL(id)
+		i := pipeline.ImageInfo{
+			Key:         id,
+			ContentURL:  newSrc,
+			OriginalURL: src,
+			ContentType: mime,
+		}
+
+		// in case there was a redirect on the image
+		if res.Request.URL != nil {
+			i.OriginalURL = res.Request.URL.String()
+		}
+
+		err = t.AddImage(i, data)
 		if err != nil {
 
 			log.WithFields(log.Fields{
@@ -79,7 +105,7 @@ func DownloadImages(ctx context.Context, t *pipeline.Task) error {
 			return "", err
 		}
 
-		return id, nil
+		return newSrc, nil
 	}
 
 	err := doImages(fetch, t)
@@ -152,7 +178,7 @@ func localImage(a []html.Attribute, f fetchFunc, w io.StringWriter) error {
 			pipeline.WriteAttr(html.Attribute{
 				Namespace: "",
 				Key:       "src",
-				Val:       pipeline.StoreURL(newSrc),
+				Val:       newSrc,
 			}, w)
 		} else {
 			pipeline.WriteAttr(attr, w)

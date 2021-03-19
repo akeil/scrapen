@@ -3,6 +3,7 @@ package pipeline
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"strings"
 	"time"
 )
@@ -32,6 +33,8 @@ type Task struct {
 	SiteScheme   string
 	Author       string
 	ImageURL     string
+	Images       []ImageInfo
+	Feeds        []FeedInfo
 	Store        Store
 }
 
@@ -41,15 +44,26 @@ func NewTask(s Store, id, url string) *Task {
 		URL:       url,
 		Retrieved: time.Now().UTC(),
 		Store:     s,
+		Images:    make([]ImageInfo, 0),
 	}
 }
 
+// TODO: still needed?
 func (t *Task) PutAsset(k, contentType string, data []byte) error {
 	return t.Store.Put(k, contentType, data)
 }
 
 func (t *Task) GetAsset(k string) (string, []byte, error) {
 	return t.Store.Get(k)
+}
+
+func (t *Task) AddImage(i ImageInfo, data []byte) error {
+	err := t.Store.Put(i.Key, i.ContentType, data)
+	if err != nil {
+		return err
+	}
+	t.Images = append(t.Images, i)
+	return nil
 }
 
 // ContentURL is the "best" URL for an item.
@@ -62,6 +76,29 @@ func (t *Task) ContentURL() string {
 		return t.CanonicalURL
 	}
 	return t.URL
+}
+
+// ResolveURL resolves the given URL(-fragment) against the content URL that
+// was determined for this task.
+func (t *Task) ResolveURL(href string) (string, error) {
+	b, err := url.Parse(t.ContentURL())
+	if err != nil {
+		return "", err
+	}
+
+	h, err := url.Parse(href)
+	if err != nil {
+		return "", err
+	}
+
+	return b.ResolveReference(h).String(), nil
+}
+
+type ImageInfo struct {
+	Key         string
+	ContentURL  string
+	OriginalURL string
+	ContentType string
 }
 
 func BuildPipeline(f ...Pipeline) Pipeline {

@@ -16,6 +16,7 @@ import (
 	//	"github.com/akeil/scrapen/internal/pdf"
 	"github.com/akeil/scrapen/internal/pipeline"
 	"github.com/akeil/scrapen/internal/readable"
+	"github.com/akeil/scrapen/internal/rss"
 )
 
 // Scrape creates and runs a scraping task for the given URL with given Options.
@@ -71,6 +72,8 @@ type Options struct {
 	Clean bool
 	// DownloadImages controls whether images from the content should be downloaded.
 	DownloadImages bool
+	// Detect RSS feeds
+	FindFeeds bool
 	// A Store is required if DownloadImages is true.
 	Store Store
 }
@@ -82,6 +85,7 @@ func DefaultOptions() *Options {
 		Readability:    true,
 		Clean:          true,
 		DownloadImages: false,
+		FindFeeds:      false,
 		Store:          nil,
 	}
 }
@@ -95,6 +99,10 @@ func configurePipeline(o *Options) pipeline.Pipeline {
 		p = append(p, metadata.ReadMetadata)
 	}
 
+	if o.FindFeeds {
+		p = append(p, rss.FindFeeds)
+	}
+
 	if o.Readability {
 		p = append(p, readable.MakeReadable)
 	}
@@ -104,9 +112,13 @@ func configurePipeline(o *Options) pipeline.Pipeline {
 	}
 	p = append(p, content.ResolveURLs)
 
+	// we should call this AFTER modifiying the HTML
+	p = append(p, content.Sanitize)
+
 	if o.DownloadImages {
 		p = append(p, assets.DownloadImages)
 	}
+
 	return pipeline.BuildPipeline(p...)
 }
 
@@ -135,10 +147,42 @@ type Result struct {
 	Site         string
 	SiteScheme   string
 	Author       string
+	Feeds        []Feed
+	Images       []Image
 	ImageURL     string
 }
 
+type Feed struct {
+	URL   string
+	Title string
+}
+
+type Image struct {
+	Key         string
+	ContentURL  string
+	ContentType string
+	OriginalURL string
+}
+
 func resultFromTask(t *pipeline.Task) Result {
+	fs := make([]Feed, len(t.Feeds))
+	for i, fi := range t.Feeds {
+		fs[i] = Feed{
+			URL:   fi.URL,
+			Title: fi.Title,
+		}
+	}
+
+	imgs := make([]Image, len(t.Images))
+	for i, img := range t.Images {
+		imgs[i] = Image{
+			Key:         img.Key,
+			ContentURL:  img.ContentURL,
+			ContentType: img.ContentType,
+			OriginalURL: img.OriginalURL,
+		}
+	}
+
 	return Result{
 		URL:          t.URL,
 		ActualURL:    t.ActualURL,
@@ -152,6 +196,8 @@ func resultFromTask(t *pipeline.Task) Result {
 		Site:         t.Site,
 		SiteScheme:   t.SiteScheme,
 		Author:       t.Author,
+		Feeds:        fs,
+		Images:       imgs,
 		ImageURL:     t.ImageURL,
 	}
 }

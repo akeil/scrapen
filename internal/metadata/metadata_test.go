@@ -72,6 +72,21 @@ func TestMetaDescription(t *testing.T) {
 	assert.Equal("", i.Description)
 }
 
+func TestUnescape(t *testing.T) {
+	assert := assert.New(t)
+
+	// basic
+	html := `<html><head>
+		<title>the &quot;title&quot;</title>
+        <meta name="description" content="the &quot;description&quot;" />
+    </head><body>foo</body></html>`
+
+	i, err := readMeta(html)
+	assert.Nil(err)
+	assert.Equal("the \"title\"", i.Title)
+	assert.Equal("the \"description\"", i.Description)
+}
+
 func TestImageURL(t *testing.T) {
 	assert := assert.New(t)
 
