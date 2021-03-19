@@ -64,9 +64,24 @@ func DownloadImages(ctx context.Context, t *pipeline.Task) error {
 
 		// note: may be empty
 		contentType := res.Header.Get("content-type")
+		// TODO: parse, use mime only
 
+		// TODO: add the file extension to id ???
 		id := uuid.New().String()
-		err = t.PutAsset(id, contentType, data)
+		newSrc := pipeline.StoreURL(id)
+		i := pipeline.ImageInfo{
+			Key:         id,
+			ContentURL:  newSrc,
+			OriginalURL: src,
+			ContentType: contentType,
+		}
+
+		// in case there was a redirect on the image
+		if res.Request.URL != nil {
+			i.OriginalURL = res.Request.URL.String()
+		}
+
+		err = t.AddImage(i, data)
 		if err != nil {
 
 			log.WithFields(log.Fields{
@@ -78,7 +93,7 @@ func DownloadImages(ctx context.Context, t *pipeline.Task) error {
 			return "", err
 		}
 
-		return id, nil
+		return newSrc, nil
 	}
 
 	err := doImages(fetch, t)
@@ -151,7 +166,7 @@ func localImage(a []html.Attribute, f fetchFunc, w io.StringWriter) error {
 			pipeline.WriteAttr(html.Attribute{
 				Namespace: "",
 				Key:       "src",
-				Val:       pipeline.StoreURL(newSrc),
+				Val:       newSrc,
 			}, w)
 		} else {
 			pipeline.WriteAttr(attr, w)
