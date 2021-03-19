@@ -148,12 +148,20 @@ type Result struct {
 	SiteScheme   string
 	Author       string
 	Feeds        []Feed
+	Images       []Image
 	ImageURL     string
 }
 
 type Feed struct {
 	URL   string
 	Title string
+}
+
+type Image struct {
+	Key         string
+	ContentURL  string
+	ContentType string
+	OriginalURL string
 }
 
 func resultFromTask(t *pipeline.Task) Result {
@@ -164,6 +172,17 @@ func resultFromTask(t *pipeline.Task) Result {
 			Title: fi.Title,
 		}
 	}
+
+	imgs := make([]Image, len(t.Images))
+	for i, img := range t.Images {
+		imgs[i] = Image{
+			Key:         img.Key,
+			ContentURL:  img.ContentURL,
+			ContentType: img.ContentType,
+			OriginalURL: img.OriginalURL,
+		}
+	}
+
 	return Result{
 		URL:          t.URL,
 		ActualURL:    t.ActualURL,
@@ -178,6 +197,7 @@ func resultFromTask(t *pipeline.Task) Result {
 		SiteScheme:   t.SiteScheme,
 		Author:       t.Author,
 		Feeds:        fs,
+		Images:       imgs,
 		ImageURL:     t.ImageURL,
 	}
 }
