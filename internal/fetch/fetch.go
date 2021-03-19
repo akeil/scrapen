@@ -86,7 +86,7 @@ func fetchURL(ctx context.Context, t *pipeline.Task, url string) (string, error)
 	}
 
 	t.StatusCode = res.StatusCode
-	// TODO: does nopt seem to work in all cases...
+	// TODO: does not seem to work in all cases...
 	if res.Request.URL != nil {
 		t.ActualURL = res.Request.URL.String()
 	}
