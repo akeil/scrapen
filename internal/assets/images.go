@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"mime"
 	"net/http"
 	"strings"
 
@@ -64,6 +65,17 @@ func DownloadImages(ctx context.Context, t *pipeline.Task) error {
 
 		// note: may be empty
 		contentType := res.Header.Get("content-type")
+		mime, _, err := mime.ParseMediaType(contentType)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"task":   t.ID,
+				"module": "assets",
+				"url":    src,
+				"error":  err,
+			}).Info(fmt.Sprintf("Failed to parse MIME type from %q", contentType))
+
+			return "", err
+		}
 		// TODO: parse, use mime only
 
 		// TODO: add the file extension to id ???
@@ -73,7 +85,7 @@ func DownloadImages(ctx context.Context, t *pipeline.Task) error {
 			Key:         id,
 			ContentURL:  newSrc,
 			OriginalURL: src,
-			ContentType: contentType,
+			ContentType: mime,
 		}
 
 		// in case there was a redirect on the image
