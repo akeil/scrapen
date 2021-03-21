@@ -66,19 +66,6 @@ func TestSelfClosingTag(t *testing.T) {
 	assert.Equal(html, i.HTML)
 }
 
-func doFetchImages(html string) (pipeline.Task, error) {
-	i := pipeline.Task{
-		URL:  "https://example.com/base",
-		HTML: html,
-	}
-
-	fetch := func(s string) (string, error) {
-		return "ID", nil
-	}
-
-	return i, doImages(fetch, &i)
-}
-
 func TestFetchError(t *testing.T) {
 	assert := assert.New(t)
 	task := pipeline.Task{
@@ -91,4 +78,17 @@ func TestFetchError(t *testing.T) {
 	err := doImages(fetch, &task)
 	assert.Nil(err)
 	assert.Equal(`<img src="https://example.com/image.jpg"/>`, task.HTML)
+}
+
+func doFetchImages(html string) (pipeline.Task, error) {
+	i := pipeline.Task{
+		URL:  "https://example.com/base",
+		HTML: html,
+	}
+
+	fetch := func(s string) (string, error) {
+		return "store://ID", nil
+	}
+
+	return i, doImages(fetch, &i)
 }
