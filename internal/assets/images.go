@@ -192,12 +192,12 @@ func doMetadataImages(f fetchFunc, t *pipeline.Task) error {
 		return nil
 	}
 
-	id, err := f(t.ImageURL)
+	src, err := f(t.ImageURL)
 	if err != nil {
 		return err
 	}
 
-	t.ImageURL = pipeline.StoreURL(id)
+	t.ImageURL = src
 
 	return nil
 }
