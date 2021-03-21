@@ -20,7 +20,7 @@ var client = &http.Client{}
 
 // DownloadImages finds img tags in the HTML and downloads the referenced images.
 //
-// Replaces the images src attribute with a local:// url.
+// Replaces the images src attribute with a "store://xyz..." url.
 func DownloadImages(ctx context.Context, t *pipeline.Task) error {
 
 	log.WithFields(log.Fields{
@@ -76,10 +76,11 @@ func DownloadImages(ctx context.Context, t *pipeline.Task) error {
 
 			return "", err
 		}
-		// TODO: parse, use mime only
 
-		// TODO: add the file extension to id ???
-		id := uuid.New().String()
+		// note: may be empty for non-supported types.
+		fileExt := fileExt(mime)
+
+		id := uuid.New().String() + fileExt
 		newSrc := pipeline.StoreURL(id)
 		i := pipeline.ImageInfo{
 			Key:         id,
@@ -123,6 +124,9 @@ func doImages(f fetchFunc, t *pipeline.Task) error {
 		if tk.DataAtom != atom.Img {
 			return false, nil
 		}
+
+		// TODO: account for duplicates
+		// i.e. if we already have the image, re-use it
 
 		var err error
 		var tmp strings.Builder
@@ -192,6 +196,14 @@ func doMetadataImages(f fetchFunc, t *pipeline.Task) error {
 		return nil
 	}
 
+	// early exit
+	// in case we already have the "main" image as part of the content
+	existing := findExistingImage(t)
+	if existing.ContentURL != "" {
+		t.ImageURL = existing.ContentURL
+		return nil
+	}
+
 	src, err := f(t.ImageURL)
 	if err != nil {
 		return err
@@ -200,4 +212,13 @@ func doMetadataImages(f fetchFunc, t *pipeline.Task) error {
 	t.ImageURL = src
 
 	return nil
+}
+
+func findExistingImage(t *pipeline.Task) pipeline.ImageInfo {
+	for _, img := range t.Images {
+		if t.ImageURL == img.OriginalURL {
+			return img
+		}
+	}
+	return pipeline.ImageInfo{}
 }
