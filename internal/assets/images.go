@@ -125,6 +125,9 @@ func doImages(f fetchFunc, t *pipeline.Task) error {
 			return false, nil
 		}
 
+		// TODO: account for duplicates
+		// i.e. if we already have the image, re-use it
+
 		var err error
 		var tmp strings.Builder
 		tt := tk.Type
@@ -193,6 +196,14 @@ func doMetadataImages(f fetchFunc, t *pipeline.Task) error {
 		return nil
 	}
 
+	// early exit
+	// in case we already have the "main" image as part of the content
+	existing := findExistingImage(t)
+	if existing.ContentURL != "" {
+		t.ImageURL = existing.ContentURL
+		return nil
+	}
+
 	src, err := f(t.ImageURL)
 	if err != nil {
 		return err
@@ -201,4 +212,13 @@ func doMetadataImages(f fetchFunc, t *pipeline.Task) error {
 	t.ImageURL = src
 
 	return nil
+}
+
+func findExistingImage(t *pipeline.Task) pipeline.ImageInfo {
+	for _, img := range t.Images {
+		if t.ImageURL == img.OriginalURL {
+			return img
+		}
+	}
+	return pipeline.ImageInfo{}
 }
