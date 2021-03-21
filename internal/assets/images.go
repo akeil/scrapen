@@ -20,7 +20,7 @@ var client = &http.Client{}
 
 // DownloadImages finds img tags in the HTML and downloads the referenced images.
 //
-// Replaces the images src attribute with a local:// url.
+// Replaces the images src attribute with a "store://xyz..." url.
 func DownloadImages(ctx context.Context, t *pipeline.Task) error {
 
 	log.WithFields(log.Fields{
