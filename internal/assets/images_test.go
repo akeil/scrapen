@@ -87,7 +87,7 @@ func doFetchImages(html string) (pipeline.Task, error) {
 	}
 
 	fetch := func(s string) (string, error) {
-		return "ID", nil
+		return "store://ID", nil
 	}
 
 	return i, doImages(fetch, &i)
