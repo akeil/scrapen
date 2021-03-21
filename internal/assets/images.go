@@ -76,10 +76,11 @@ func DownloadImages(ctx context.Context, t *pipeline.Task) error {
 
 			return "", err
 		}
-		// TODO: parse, use mime only
 
-		// TODO: add the file extension to id ???
-		id := uuid.New().String()
+		// note: may be empty for non-supported types.
+		fileExt := fileExt(mime)
+
+		id := uuid.New().String() + fileExt
 		newSrc := pipeline.StoreURL(id)
 		i := pipeline.ImageInfo{
 			Key:         id,
