@@ -21,3 +21,21 @@ func TestNormalizeSpace(t *testing.T) {
 	normalizeSpace(d)
 	assert.Equal("<p>with <em>some</em> space</p>", str(d))
 }
+
+func TestDeduplicateTitle(t *testing.T) {
+	assert := assert.New(t)
+
+	d := doc("<h2>My Title</h2><p>unchanged</p>")
+	deduplicateTitle(d, "My Title")
+	assert.Equal("<p>unchanged</p>", str(d))
+
+	// case insensitive
+	d = doc("<h2>MY TITLE</h2><p>unchanged</p>")
+	deduplicateTitle(d, "My Title")
+	assert.Equal("<p>unchanged</p>", str(d))
+
+	// keep other headings
+	d = doc("<h2>My Title</h2><p>unchanged</p> <h3>Other Title</h3>")
+	deduplicateTitle(d, "My Title")
+	assert.Equal("<p>unchanged</p> <h3>Other Title</h3>", str(d))
+}

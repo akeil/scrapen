@@ -50,3 +50,14 @@ func normalizeSpace(doc *goquery.Document) error {
 
 	return err
 }
+
+func deduplicateTitle(doc *goquery.Document, title string) {
+	doc.Selection.Find("h1, h2, h3, h4, h5, h6").Each(func(i int, s *goquery.Selection) {
+		tag := goquery.NodeName(s)
+		log.Info(tag)
+		t := strings.TrimSpace(s.Text())
+		if strings.EqualFold(t, title) {
+			s.Remove()
+		}
+	})
+}
