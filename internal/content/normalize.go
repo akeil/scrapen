@@ -22,7 +22,10 @@ func Normalize(ctx context.Context, t *pipeline.Task) error {
 		return err
 	}
 
-	normalizeSpace(doc)
+	err = normalizeSpace(doc)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -31,12 +34,19 @@ func Normalize(ctx context.Context, t *pipeline.Task) error {
 // and after the tag.
 //
 // e.g.:    <h1> Abc </h1>  -->  <h1>Abc</h1>
-func normalizeSpace(doc *goquery.Document) {
+func normalizeSpace(doc *goquery.Document) error {
+	var err error
 	doc.Selection.Find("*").Each(func(i int, s *goquery.Selection) {
-
+		tag := goquery.NodeName(s)
+		if isBlocklevel(tag) {
+			h, e := s.Html()
+			if e != nil {
+				err = e
+				return
+			}
+			s.SetHtml(strings.TrimSpace(h))
+		}
 	})
-}
 
-func isBlocklevel(tagName string) bool {
-	return false
+	return err
 }

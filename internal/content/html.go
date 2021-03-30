@@ -97,3 +97,31 @@ func isWhitelistedTag(tag string) bool {
 	// tags we want empty, but NOT removed
 	return isGraylisted(tag)
 }
+
+// see
+// https://developer.mozilla.org/en-US/docs/Web/HTML/Block-level_elements
+var blocklevel = []string{
+	"p",
+	"h1", "h2", "h3", "h4", "h5", "h6",
+	"hr",
+	"aside",
+	"ul", "ol", "li",
+	"dl", "dd", "dt",
+	"blockquote",
+	"pre",
+	"figure", "figcaption",
+	// caption, th, td are actually not block-levels - but still can trim space
+	"table", "caption", "th", "td",
+}
+
+// tell if the given element is a block-level element.
+// works for whitelisted tags only.
+func isBlocklevel(tag string) bool {
+	for _, bl := range blocklevel {
+		if tag == bl {
+			return true
+		}
+	}
+
+	return false
+}
