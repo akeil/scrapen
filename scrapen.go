@@ -70,6 +70,9 @@ type Options struct {
 	Readability bool
 	// Clean controls whether the resulting HTML should be stripped of unwanted tags.
 	Clean bool
+	// Normalize controls whether we should attempt to normalize the HTML content,
+	// e.g. remove unnecessary whitespace.
+	Normalize bool
 	// DownloadImages controls whether images from the content should be downloaded.
 	DownloadImages bool
 	// Detect RSS feeds
@@ -84,6 +87,7 @@ func DefaultOptions() *Options {
 		Metadata:       true,
 		Readability:    true,
 		Clean:          true,
+		Normalize:      true,
 		DownloadImages: false,
 		FindFeeds:      false,
 		Store:          nil,
@@ -109,6 +113,9 @@ func configurePipeline(o *Options) pipeline.Pipeline {
 
 	if o.Clean {
 		p = append(p, content.Clean)
+	}
+	if o.Normalize {
+		p = append(p, content.Normalize)
 	}
 	p = append(p, content.ResolveURLs)
 

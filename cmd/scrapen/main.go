@@ -35,6 +35,7 @@ func run(url string) error {
 		Metadata:       true,
 		Readability:    true,
 		Clean:          true,
+		Normalize:      true,
 		DownloadImages: true,
 		FindFeeds:      true,
 		Store:          s,
@@ -83,7 +84,7 @@ func taskFromArticle(a scrapen.Result, s scrapen.Store) *pipeline.Task {
 		}
 	}
 
-	imgs := make([]pipeline.ImageInfo, len(a.Feeds))
+	imgs := make([]pipeline.ImageInfo, len(a.Images))
 	for i, img := range a.Images {
 		imgs[i] = pipeline.ImageInfo{
 			Key:         img.Key,
