@@ -237,6 +237,12 @@ func handleTitle(t html.Token, m *metadata) {
 	m.title = strings.TrimSpace(t.Data)
 }
 
+func fallbackImage(t *pipeline.Task) {
+	if t.ImageURL != "" {
+		return
+	}
+}
+
 func contains(haystack []string, needle string) bool {
 	for _, s := range haystack {
 		if s == needle {

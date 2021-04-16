@@ -119,6 +119,23 @@ func TestImageURL(t *testing.T) {
 	assert.Equal("https://example.com/foo.jpg", i.ImageURL)
 }
 
+func TestFallbackImage(t *testing.T) {
+	assert := assert.New(t)
+
+	// no image in metadata, use from content
+	html := `<html><head></head><body>
+		<p>Foo</p>
+		<img src="image.jpg"/>
+		<p>Bar</p>
+		<img src="other.jpg"/>
+	</body></html>`
+
+	i, err := readMeta(html)
+	assert.Nil(err)
+	assert.Equal("image.jpg", i.ImageURL)
+
+}
+
 func TestCanonicalURL(t *testing.T) {
 	assert := assert.New(t)
 
