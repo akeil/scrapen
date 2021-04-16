@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/PuerkitoBio/goquery"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/html"
 	"golang.org/x/net/html/atom"
@@ -14,6 +15,30 @@ import (
 )
 
 func ReadMetadata(ctx context.Context, t *pipeline.Task) error {
+	log.WithFields(log.Fields{
+		"task":   t.ID,
+		"module": "metadata",
+		"url":    t.ContentURL(),
+	}).Info("Extract metadata")
+
+	r := strings.NewReader(t.HTML)
+	doc, err := goquery.NewDocumentFromReader(r)
+	if err != nil {
+		return err
+	}
+
+	m := newMetadata()
+	findMeta(m, doc)
+	findLink(m, doc)
+	findTitle(m, doc)
+
+	setMetadata(m, t)
+	setSite(t)
+
+	return nil
+}
+
+func oldReadMetadata(ctx context.Context, t *pipeline.Task) error {
 
 	log.WithFields(log.Fields{
 		"task":   t.ID,
@@ -64,6 +89,75 @@ func ReadMetadata(ctx context.Context, t *pipeline.Task) error {
 	setSite(t)
 
 	return nil
+}
+
+func findMeta(m *metadata, doc *goquery.Document) {
+	doc.Selection.Find("meta").Each(func(i int, s *goquery.Selection) {
+		name, _ := s.Attr("name")
+		property, _ := s.Attr("property")
+		content, _ := s.Attr("content")
+
+		// property and name should not be present at the same time
+		// if they are, prefer name
+		if name == "" {
+			name = property
+		}
+
+		// Do we have any data at all?
+		if content == "" || name == "" {
+			return
+		}
+
+		if contains(descriptionPref, name) {
+			m.description[name] = content
+			return
+		}
+
+		if contains(imagePref, name) {
+			m.image[name] = content
+			return
+		}
+
+		if contains(urlPref, name) {
+			m.url[name] = content
+			return
+		}
+
+		if contains(authorPref, name) {
+			m.author[name] = content
+			return
+		}
+
+		if contains(pubDatePref, name) {
+			m.pubDate[name] = content
+			return
+		}
+	})
+}
+
+func findLink(m *metadata, doc *goquery.Document) {
+	doc.Selection.Find("link").Each(func(i int, s *goquery.Selection) {
+		rel, _ := s.Attr("rel")
+		href, _ := s.Attr("href")
+
+		if href == "" {
+			return
+		}
+
+		switch rel {
+		case "canonical":
+			m.url["link/canonical"] = href
+		case "image_src":
+			m.image["link/image_src"] = href
+		}
+	})
+}
+
+func findTitle(m *metadata, doc *goquery.Document) {
+
+	doc.Selection.Find("title").Each(func(i int, s *goquery.Selection) {
+		m.title = strings.TrimSpace(s.Text())
+	})
 }
 
 var (
