@@ -8,8 +8,6 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	log "github.com/sirupsen/logrus"
-	"golang.org/x/net/html"
-	"golang.org/x/net/html/atom"
 
 	"github.com/akeil/scrapen/internal/pipeline"
 )
@@ -32,59 +30,6 @@ func ReadMetadata(ctx context.Context, t *pipeline.Task) error {
 	findLink(m, doc)
 	findTitle(m, doc)
 	fallbackImage(m, doc)
-
-	setMetadata(m, t)
-	setSite(t)
-
-	return nil
-}
-
-func oldReadMetadata(ctx context.Context, t *pipeline.Task) error {
-
-	log.WithFields(log.Fields{
-		"task":   t.ID,
-		"module": "metadata",
-		"url":    t.ContentURL(),
-	}).Info("Extract metadata")
-
-	m := newMetadata()
-
-	titleFlag := false
-
-	reader := func(t html.Token) error {
-
-		tt := t.Type
-		switch tt {
-		case html.StartTagToken,
-			html.SelfClosingTagToken:
-			switch t.DataAtom {
-			case atom.Meta:
-				handleMeta(t, m)
-			case atom.Link:
-				handleLink(t, m)
-			case atom.Title:
-				titleFlag = true
-			}
-
-		case html.TextToken:
-			if titleFlag {
-				handleTitle(t, m)
-
-			}
-
-		case html.EndTagToken:
-			if titleFlag {
-				titleFlag = false
-			}
-		}
-
-		return nil
-	}
-
-	err := pipeline.ReadHTML(t.HTML, reader)
-	if err != nil {
-		return err
-	}
 
 	setMetadata(m, t)
 	setSite(t)
@@ -253,89 +198,6 @@ func newMetadata() *metadata {
 		author:      make(map[string]string),
 		pubDate:     make(map[string]string),
 	}
-}
-
-func handleMeta(t html.Token, m *metadata) {
-	var name string
-	var property string
-	var content string
-	for _, attr := range t.Attr {
-		k := strings.TrimSpace(strings.ToLower(attr.Key))
-		v := strings.TrimSpace(attr.Val)
-		switch k {
-		case "name":
-			name = v
-		case "property":
-			property = v
-		case "content":
-			content = v
-		}
-	}
-
-	// property and name should not be present at the same time
-	// if they are, prefer name
-	if name == "" {
-		name = property
-	}
-
-	if content == "" || name == "" {
-		return
-	}
-
-	if contains(descriptionPref, name) {
-		m.description[name] = content
-		return
-	}
-
-	if contains(imagePref, name) {
-		m.image[name] = content
-		return
-	}
-
-	if contains(urlPref, name) {
-		m.url[name] = content
-		return
-	}
-
-	if contains(authorPref, name) {
-		m.author[name] = content
-		return
-	}
-
-	if contains(pubDatePref, name) {
-		m.pubDate[name] = content
-		return
-	}
-}
-
-func handleLink(t html.Token, m *metadata) {
-	var rel string
-	var href string
-	for _, attr := range t.Attr {
-		k := strings.TrimSpace(strings.ToLower(attr.Key))
-		v := strings.TrimSpace(attr.Val)
-		switch k {
-		case "rel":
-			rel = v
-		case "href":
-			href = v
-		}
-	}
-
-	if href == "" {
-		return
-	}
-
-	switch rel {
-	case "canonical":
-		m.url["link/canonical"] = href
-	case "image_src":
-		m.image["link/image_src"] = href
-	}
-}
-
-func handleTitle(t html.Token, m *metadata) {
-	m.title = strings.TrimSpace(t.Data)
 }
 
 func contains(haystack []string, needle string) bool {
