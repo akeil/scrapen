@@ -31,6 +31,7 @@ func ReadMetadata(ctx context.Context, t *pipeline.Task) error {
 	findMeta(m, doc)
 	findLink(m, doc)
 	findTitle(m, doc)
+	fallbackImage(m, doc)
 
 	setMetadata(m, t)
 	setSite(t)
@@ -154,15 +155,21 @@ func findLink(m *metadata, doc *goquery.Document) {
 }
 
 func findTitle(m *metadata, doc *goquery.Document) {
-
-	doc.Selection.Find("title").Each(func(i int, s *goquery.Selection) {
+	doc.Selection.Find("title").First().Each(func(i int, s *goquery.Selection) {
 		m.title = strings.TrimSpace(s.Text())
+	})
+}
+
+func fallbackImage(m *metadata, doc *goquery.Document) {
+	doc.Selection.Find("img").First().Each(func(i int, s *goquery.Selection) {
+		src, _ := s.Attr("src")
+		m.image["content/img"] = src
 	})
 }
 
 var (
 	descriptionPref = []string{"description", "og:description", "twitter:description"}
-	imagePref       = []string{"og:image:secure_url", "og:image", "link/image_src", "twitter:image", "twitter:image:src"}
+	imagePref       = []string{"og:image:secure_url", "og:image", "link/image_src", "twitter:image", "twitter:image:src", "content/img"}
 	urlPref         = []string{"link/canonical", "og:url", "twitter:url"}
 	authorPref      = []string{"author", "article:author", "book:author", "twitter:creator"}
 	pubDatePref     = []string{"article:published_time", "article:modified_time", "og:updated_time", "date", "last-modified"}
@@ -329,12 +336,6 @@ func handleLink(t html.Token, m *metadata) {
 
 func handleTitle(t html.Token, m *metadata) {
 	m.title = strings.TrimSpace(t.Data)
-}
-
-func fallbackImage(t *pipeline.Task) {
-	if t.ImageURL != "" {
-		return
-	}
 }
 
 func contains(haystack []string, needle string) bool {
