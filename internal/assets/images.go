@@ -10,6 +10,7 @@ import (
 
 	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
+	"github.com/vincent-petithory/dataurl"
 	"golang.org/x/net/html"
 	"golang.org/x/net/html/atom"
 
@@ -29,7 +30,14 @@ func DownloadImages(ctx context.Context, t *pipeline.Task) error {
 	}).Info("Download images")
 
 	fetch := func(src string) (string, error) {
-		i, data, err := fetchHTTP(ctx, src)
+		var i pipeline.ImageInfo
+		var data []byte
+		var err error
+		if strings.HasPrefix(src, "data:") {
+			i, data, err = fetchData(src)
+		} else { // assume HTTP
+			i, data, err = fetchHTTP(ctx, src)
+		}
 
 		if err != nil {
 			return "", err
@@ -198,9 +206,28 @@ func fetchHTTP(ctx context.Context, src string) (pipeline.ImageInfo, []byte, err
 	return i, data, nil
 }
 
-func fetchData(src string) ([]byte, string, error) {
+func fetchData(src string) (pipeline.ImageInfo, []byte, error) {
+	d, err := dataurl.DecodeString(src)
+	if err != nil {
+		return pipeline.ImageInfo{}, nil, err
+	}
 
-	return nil, "", nil
+	mime := d.MediaType.ContentType()
+
+	// note: may be empty for non-supported types.
+	fileExt := fileExt(mime)
+
+	id := uuid.New().String() + fileExt
+	newSrc := pipeline.StoreURL(id)
+
+	i := pipeline.ImageInfo{
+		Key:         id,
+		ContentURL:  newSrc,
+		OriginalURL: "",
+		ContentType: mime,
+	}
+
+	return i, d.Data, nil
 }
 
 func doMetadataImages(f fetchFunc, t *pipeline.Task) error {
