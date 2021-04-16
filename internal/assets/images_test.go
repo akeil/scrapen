@@ -92,3 +92,18 @@ func doFetchImages(html string) (pipeline.Task, error) {
 
 	return i, doImages(fetch, &i)
 }
+
+func TestDataURL(t *testing.T) {
+	assert := assert.New(t)
+	task := pipeline.NewTask(pipeline.NewMemoryStore(), "task-id", "https://example.com")
+	task.HTML = `<html><body>
+		<p>Text</p>
+		<img src="data:image/jpeg;base64,SGVsbG8sIFdvcmxkIQ=="/>
+	</body></html>`
+
+	err := DownloadImages(nil, task)
+	assert.Nil(err)
+	assert.Equal(1, len(task.Images))
+	assert.NotEqual("", task.Images[0].ContentURL)
+	assert.Equal("image/jpeg", task.Images[0].ContentType)
+}
