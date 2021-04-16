@@ -114,10 +114,10 @@ func configurePipeline(o *Options) pipeline.Pipeline {
 	if o.Clean {
 		p = append(p, content.Clean)
 	}
+	p = append(p, content.ResolveURLs)
 	if o.Normalize {
 		p = append(p, content.Normalize)
 	}
-	p = append(p, content.ResolveURLs)
 
 	// we should call this AFTER modifiying the HTML
 	p = append(p, content.Sanitize)

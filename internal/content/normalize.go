@@ -27,6 +27,15 @@ func Normalize(ctx context.Context, t *pipeline.Task) error {
 		return err
 	}
 
+	deduplicateImage(t, doc)
+	deduplicateTitle(doc, t.Title)
+
+	html, err := doc.Selection.Find("body").First().Html()
+	if err != nil {
+		return err
+	}
+	t.HTML = html
+
 	return nil
 }
 
@@ -57,6 +66,25 @@ func deduplicateTitle(doc *goquery.Document, title string) {
 		log.Info(tag)
 		t := strings.TrimSpace(s.Text())
 		if strings.EqualFold(t, title) {
+			s.Remove()
+		}
+	})
+}
+
+// If the same image URL that is the "main" image for the article
+// also appears in the content, remove it from content.
+func deduplicateImage(t *pipeline.Task, doc *goquery.Document) {
+	if t.ImageURL == "" {
+		return
+	}
+
+	doc.Selection.Find("img").Each(func(i int, s *goquery.Selection) {
+		src, exists := s.Attr("src")
+		if !exists {
+			return
+		}
+
+		if src == t.ImageURL {
 			s.Remove()
 		}
 	})
