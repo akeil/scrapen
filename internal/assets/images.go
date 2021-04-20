@@ -75,6 +75,7 @@ func doImages(f fetchFunc, t *pipeline.Task) error {
 	}
 
 	var wg sync.WaitGroup
+	var l sync.Lock
 
 	doc.Selection.Find("img").Each(func(i int, s *goquery.Selection) {
 		wg.Add(1)
@@ -95,8 +96,9 @@ func doImages(f fetchFunc, t *pipeline.Task) error {
 				// logging is sufficiently donw in fetch function
 				return
 			}
-
+			l.Lock()
 			s.SetAttr("src", newSrc)
+			l.Unlock()
 		}()
 	})
 
