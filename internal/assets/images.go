@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/PuerkitoBio/goquery"
 	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 	"github.com/vincent-petithory/dataurl"
@@ -22,7 +23,7 @@ var client = &http.Client{}
 // DownloadImages finds img tags in the HTML and downloads the referenced images.
 //
 // Replaces the images src attribute with a "store://xyz..." url.
-func DownloadImages(ctx context.Context, t *pipeline.Task) error {
+func _DownloadImages(ctx context.Context, t *pipeline.Task) error {
 
 	log.WithFields(log.Fields{
 		"task":   t.ID,
@@ -66,9 +67,85 @@ func DownloadImages(ctx context.Context, t *pipeline.Task) error {
 	return doMetadataImages(fetch, t)
 }
 
+// DownloadImages finds img tags in the HTML and downloads the referenced images.
+//
+// Replaces the images src attribute with a "store://xyz..." url.
+func DownloadImages(ctx context.Context, t *pipeline.Task) error {
+	log.WithFields(log.Fields{
+		"task":   t.ID,
+		"module": "assets",
+	}).Info("Download images")
+
+	f := func(src string) (string, error) {
+		var i pipeline.ImageInfo
+		var data []byte
+		var err error
+		if strings.HasPrefix(src, "data:") {
+			i, data, err = fetchData(src)
+		} else { // assume HTTP
+			i, data, err = fetchHTTP(ctx, src)
+		}
+
+		if err != nil {
+			return "", err
+		}
+
+		err = t.AddImage(i, data)
+		if err != nil {
+
+			log.WithFields(log.Fields{
+				"task":   t.ID,
+				"module": "assets",
+				"error":  err,
+			}).Warning("Failed to save image")
+
+			return "", err
+		}
+
+		return i.ContentURL, nil
+	}
+
+	return doImages(f, t)
+}
+
 type fetchFunc func(src string) (string, error)
 
 func doImages(f fetchFunc, t *pipeline.Task) error {
+	r := strings.NewReader(t.HTML)
+	doc, err := goquery.NewDocumentFromReader(r)
+	if err != nil {
+		return err
+	}
+
+	doc.Selection.Find("img").Each(func(i int, s *goquery.Selection) {
+		src, ok := s.Attr("src")
+		if !ok || src == "" {
+			// if do not understand how to download,
+			// leave the image as is
+			return
+		}
+
+		newSrc, err := f(src)
+		if err != nil {
+			// not much we can do about the error
+			// we do not want to cancel the whole process
+			// logging is sufficiently donw in fetch function
+			return
+		}
+
+		s.SetAttr("src", newSrc)
+	})
+
+	html, err := doc.Selection.Find("body").First().Html()
+	if err != nil {
+		return err
+	}
+	t.HTML = html
+
+	return nil
+}
+
+func _doImages(f fetchFunc, t *pipeline.Task) error {
 	handler := func(tk html.Token, w io.StringWriter) (bool, error) {
 		if tk.DataAtom != atom.Img {
 			return false, nil
