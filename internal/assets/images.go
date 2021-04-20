@@ -69,7 +69,7 @@ type fetchFunc func(src string) (string, error)
 
 func doImages(f fetchFunc, t *pipeline.Task) error {
 	doc := t.Document()
-	
+
 	var wg sync.WaitGroup
 	var m sync.Mutex
 
