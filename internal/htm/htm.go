@@ -149,7 +149,7 @@ func writeContent(b *strings.Builder, t *pipeline.Task) error {
 		return false, nil
 	}
 
-	return pipeline.WalkHTML(b, t.HTML, handler)
+	return pipeline.WalkHTML(b, t.HTML(), handler)
 }
 
 func dataImage(a []html.Attribute, t *pipeline.Task, w io.StringWriter) error {

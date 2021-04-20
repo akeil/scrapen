@@ -68,14 +68,13 @@ func DownloadImages(ctx context.Context, t *pipeline.Task) error {
 type fetchFunc func(src string) (string, error)
 
 func doImages(f fetchFunc, t *pipeline.Task) error {
-	r := strings.NewReader(t.HTML)
-	doc, err := goquery.NewDocumentFromReader(r)
+	doc, err := t.Document()
 	if err != nil {
 		return err
 	}
 
 	var wg sync.WaitGroup
-	var l sync.Lock
+	var m sync.Mutex
 
 	doc.Selection.Find("img").Each(func(i int, s *goquery.Selection) {
 		wg.Add(1)
@@ -96,19 +95,13 @@ func doImages(f fetchFunc, t *pipeline.Task) error {
 				// logging is sufficiently donw in fetch function
 				return
 			}
-			l.Lock()
+			m.Lock()
 			s.SetAttr("src", newSrc)
-			l.Unlock()
+			m.Unlock()
 		}()
 	})
 
 	wg.Wait()
-
-	html, err := doc.Selection.Find("body").First().Html()
-	if err != nil {
-		return err
-	}
-	t.HTML = html
 
 	return nil
 }

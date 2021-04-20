@@ -19,8 +19,7 @@ func ReadMetadata(ctx context.Context, t *pipeline.Task) error {
 		"url":    t.ContentURL(),
 	}).Info("Extract metadata")
 
-	r := strings.NewReader(t.HTML)
-	doc, err := goquery.NewDocumentFromReader(r)
+	doc, err := t.Document()
 	if err != nil {
 		return err
 	}

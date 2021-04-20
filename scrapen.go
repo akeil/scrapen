@@ -195,7 +195,7 @@ func resultFromTask(t *pipeline.Task) Result {
 		ActualURL:    t.ActualURL,
 		CanonicalURL: t.CanonicalURL,
 		StatusCode:   t.StatusCode,
-		HTML:         t.HTML,
+		HTML:         t.HTML(),
 		Title:        t.Title,
 		Retrieved:    t.Retrieved,
 		Description:  t.Description,

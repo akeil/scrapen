@@ -23,26 +23,26 @@ func TestResolveURLs(t *testing.T) {
 	assert.Equal("https://example.com/images/image.jpg", task.ImageURL)
 
 	// resolve relative
-	task.HTML = `<a href="./relative.html">foo</a>`
+	task.SetHTML(`<a href="./relative.html">foo</a>`)
 	err = ResolveURLs(nil, task)
 	assert.Nil(err)
-	assert.Equal(`<a href="https://example.com/abc/relative.html">foo</a>`, task.HTML)
+	assert.Equal(`<a href="https://example.com/abc/relative.html">foo</a>`, task.HTML())
 
 	// resolve absolute
-	task.HTML = `<a href="/absolute.html">foo</a>`
+	task.SetHTML(`<a href="/absolute.html">foo</a>`)
 	err = ResolveURLs(nil, task)
 	assert.Nil(err)
-	assert.Equal(`<a href="https://example.com/absolute.html">foo</a>`, task.HTML)
+	assert.Equal(`<a href="https://example.com/absolute.html">foo</a>`, task.HTML())
 
 	// external links unchanged
-	task.HTML = `<a href="https://elsewhere.com/index.html">foo</a>`
+	task.SetHTML(`<a href="https://elsewhere.com/index.html">foo</a>`)
 	err = ResolveURLs(nil, task)
 	assert.Nil(err)
-	assert.Equal(`<a href="https://elsewhere.com/index.html">foo</a>`, task.HTML)
+	assert.Equal(`<a href="https://elsewhere.com/index.html">foo</a>`, task.HTML())
 
 	// img
-	task.HTML = `<img src="/images/img.jpg"/>`
+	task.SetHTML(`<img src="/images/img.jpg"/>`)
 	err = ResolveURLs(nil, task)
 	assert.Nil(err)
-	assert.Equal(`<img src="https://example.com/images/img.jpg"/>`, task.HTML)
+	assert.Equal(`<img src="https://example.com/images/img.jpg"/>`, task.HTML())
 }

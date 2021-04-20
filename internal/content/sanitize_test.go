@@ -31,13 +31,12 @@ func TestSanitize(t *testing.T) {
 
 func callSanitize(t *testing.T, html, expected string) {
 	assert := assert.New(t)
-	task := &pipeline.Task{
-		HTML: html,
-	}
+	task := &pipeline.Task{}
+	task.SetHTML(html)
 	ctx := context.TODO()
 	var err error
 
 	err = Sanitize(ctx, task)
 	assert.Nil(err)
-	assert.Equal(expected, task.HTML)
+	assert.Equal(expected, task.HTML())
 }

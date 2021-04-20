@@ -16,8 +16,7 @@ func Normalize(ctx context.Context, t *pipeline.Task) error {
 		"module": "content",
 	}).Info("Normalize HTML")
 
-	r := strings.NewReader(t.HTML)
-	doc, err := goquery.NewDocumentFromReader(r)
+	doc, err := t.Document()
 	if err != nil {
 		return err
 	}
@@ -29,12 +28,6 @@ func Normalize(ctx context.Context, t *pipeline.Task) error {
 
 	deduplicateImage(t, doc)
 	deduplicateTitle(doc, t.Title)
-
-	html, err := doc.Selection.Find("body").First().Html()
-	if err != nil {
-		return err
-	}
-	t.HTML = html
 
 	return nil
 }

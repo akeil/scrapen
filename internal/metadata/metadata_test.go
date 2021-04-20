@@ -14,9 +14,8 @@ func TestMeta(t *testing.T) {
 	html := `<html><head>
         <meta name="foo" content="bar" />
     </head><body>foo</body></html>`
-	i := &pipeline.Task{
-		HTML: html,
-	}
+	i := &pipeline.Task{}
+	i.SetHTML(html)
 
 	err := ReadMetadata(nil, i)
 	assert.Nil(err)
@@ -241,9 +240,8 @@ func TestParseTime(t *testing.T) {
 }
 
 func readMeta(html string) (*pipeline.Task, error) {
-	t := &pipeline.Task{
-		HTML: html,
-	}
+	t := &pipeline.Task{}
+	t.SetHTML(html)
 
 	return t, ReadMetadata(nil, t)
 }

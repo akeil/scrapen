@@ -51,7 +51,7 @@ func FindFeeds(ctx context.Context, t *pipeline.Task) error {
 		return nil
 	}
 
-	err := pipeline.ReadHTML(t.HTML, reader)
+	err := pipeline.ReadHTML(t.HTML(), reader)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"task":   t.ID,
