@@ -12,60 +12,11 @@ import (
 	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 	"github.com/vincent-petithory/dataurl"
-	"golang.org/x/net/html"
-	"golang.org/x/net/html/atom"
 
 	"github.com/akeil/scrapen/internal/pipeline"
 )
 
 var client = &http.Client{}
-
-// DownloadImages finds img tags in the HTML and downloads the referenced images.
-//
-// Replaces the images src attribute with a "store://xyz..." url.
-func _DownloadImages(ctx context.Context, t *pipeline.Task) error {
-
-	log.WithFields(log.Fields{
-		"task":   t.ID,
-		"module": "assets",
-	}).Info("Download images")
-
-	fetch := func(src string) (string, error) {
-		var i pipeline.ImageInfo
-		var data []byte
-		var err error
-		if strings.HasPrefix(src, "data:") {
-			i, data, err = fetchData(src)
-		} else { // assume HTTP
-			i, data, err = fetchHTTP(ctx, src)
-		}
-
-		if err != nil {
-			return "", err
-		}
-
-		err = t.AddImage(i, data)
-		if err != nil {
-
-			log.WithFields(log.Fields{
-				"task":   t.ID,
-				"module": "assets",
-				"error":  err,
-			}).Warning("Failed to save image")
-
-			return "", err
-		}
-
-		return i.ContentURL, nil
-	}
-
-	err := doImages(fetch, t)
-	if err != nil {
-		return err
-	}
-
-	return doMetadataImages(fetch, t)
-}
 
 // DownloadImages finds img tags in the HTML and downloads the referenced images.
 //
@@ -147,78 +98,6 @@ func doImages(f fetchFunc, t *pipeline.Task) error {
 	}
 	t.HTML = html
 
-	return nil
-}
-
-func _doImages(f fetchFunc, t *pipeline.Task) error {
-	handler := func(tk html.Token, w io.StringWriter) (bool, error) {
-		if tk.DataAtom != atom.Img {
-			return false, nil
-		}
-
-		// TODO: account for duplicates
-		// i.e. if we already have the image, re-use it
-
-		var err error
-		var tmp strings.Builder
-		tt := tk.Type
-		switch tt {
-		case html.StartTagToken:
-			tmp.WriteString("<")
-			tmp.WriteString(tk.Data)
-			err = localImage(tk.Attr, f, &tmp)
-			tmp.WriteString(">")
-		case html.SelfClosingTagToken:
-			tmp.WriteString("<")
-			tmp.WriteString(tk.Data)
-			err = localImage(tk.Attr, f, &tmp)
-			tmp.WriteString("/>")
-		default:
-			// should not be possible
-			return false, nil
-		}
-
-		// if we encounter a download error,
-		// leave the image as is.
-		if err != nil {
-			log.WithFields(log.Fields{
-				"task":   t.ID,
-				"module": "assets",
-				"error":  err,
-			}).Warning("Failed to download image")
-
-			return false, nil
-		}
-		w.WriteString(tmp.String())
-		return true, nil
-	}
-
-	var b strings.Builder
-	err := pipeline.WalkHTML(&b, t.HTML, handler)
-	if err != nil {
-		return err
-	}
-
-	t.HTML = b.String()
-	return nil
-}
-
-func localImage(a []html.Attribute, f fetchFunc, w io.StringWriter) error {
-	for _, attr := range a {
-		if attr.Key == "src" {
-			newSrc, err := f(attr.Val)
-			if err != nil {
-				return err
-			}
-			pipeline.WriteAttr(html.Attribute{
-				Namespace: "",
-				Key:       "src",
-				Val:       newSrc,
-			}, w)
-		} else {
-			pipeline.WriteAttr(attr, w)
-		}
-	}
 	return nil
 }
 
