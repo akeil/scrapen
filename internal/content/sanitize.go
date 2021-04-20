@@ -18,7 +18,7 @@ func Sanitize(ctx context.Context, t *pipeline.Task) error {
 	//p := bluemonday.UGCPolicy()
 	p := createPolicy()
 
-	t.HTML = p.Sanitize(t.HTML)
+	t.SetHTML(p.Sanitize(t.HTML()))
 
 	return nil
 }

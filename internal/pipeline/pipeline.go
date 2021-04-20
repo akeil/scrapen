@@ -6,6 +6,8 @@ import (
 	"net/url"
 	"strings"
 	"time"
+
+	"github.com/PuerkitoBio/goquery"
 )
 
 type Pipeline func(ctx context.Context, t *Task) error
@@ -24,7 +26,6 @@ type Task struct {
 	ActualURL    string
 	CanonicalURL string
 	StatusCode   int
-	HTML         string
 	Title        string
 	Retrieved    time.Time
 	Description  string
@@ -36,6 +37,7 @@ type Task struct {
 	Images       []ImageInfo
 	Feeds        []FeedInfo
 	Store        Store
+	document     *goquery.Document
 }
 
 func NewTask(s Store, id, url string) *Task {
@@ -46,6 +48,40 @@ func NewTask(s Store, id, url string) *Task {
 		Store:     s,
 		Images:    make([]ImageInfo, 0),
 	}
+}
+
+// Document returns the HTML content of this task as a DOM document.
+// The document can be edited in place, i.e. all changes made to the document
+// directly affect the task content.
+func (t *Task) Document() *goquery.Document {
+	return t.document
+}
+
+// HTML returns the HTML content for this task as a string.
+func (t *Task) HTML() string {
+	if t.document == nil {
+		return ""
+	}
+
+	html, err := t.document.Selection.Find("html").First().Html()
+	if err != nil {
+		// TODO: log? panic?
+		return ""
+	}
+	return html
+}
+
+// SetHTML sets the given string as the new HTML content.
+// This will invalidate previous references to the goquery document.
+// If you need a DOM document, call `Document()` again to retrieve one.
+func (t *Task) SetHTML(s string) {
+	r := strings.NewReader(s)
+	doc, err := goquery.NewDocumentFromReader(r)
+	if err != nil {
+		// TODO: log? panic?
+		return
+	}
+	t.document = doc
 }
 
 // TODO: still needed?

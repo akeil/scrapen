@@ -16,25 +16,15 @@ func Normalize(ctx context.Context, t *pipeline.Task) error {
 		"module": "content",
 	}).Info("Normalize HTML")
 
-	r := strings.NewReader(t.HTML)
-	doc, err := goquery.NewDocumentFromReader(r)
-	if err != nil {
-		return err
-	}
+	doc := t.Document()
 
-	err = normalizeSpace(doc)
+	err := normalizeSpace(doc)
 	if err != nil {
 		return err
 	}
 
 	deduplicateImage(t, doc)
 	deduplicateTitle(doc, t.Title)
-
-	html, err := doc.Selection.Find("body").First().Html()
-	if err != nil {
-		return err
-	}
-	t.HTML = html
 
 	return nil
 }

@@ -44,7 +44,7 @@ func Fetch(ctx context.Context, t *pipeline.Task) error {
 		}
 	}
 
-	t.HTML = html
+	t.SetHTML(html)
 	return nil
 }
 

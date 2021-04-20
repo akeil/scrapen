@@ -60,7 +60,7 @@ func (b *builder) title() {
 }
 
 func (b *builder) walk() error {
-	r := strings.NewReader(b.task.HTML)
+	r := strings.NewReader(b.task.HTML())
 	z := html.NewTokenizer(r)
 
 	var c renderer
@@ -141,7 +141,7 @@ func (b *builder) setup() {
 }
 
 func (b *builder) parse() error {
-	r := strings.NewReader(b.task.HTML)
+	r := strings.NewReader(b.task.HTML())
 	dom, err := goquery.NewDocumentFromReader(r)
 	if err != nil {
 		return err

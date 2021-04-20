@@ -34,11 +34,12 @@ func ResolveURLs(ctx context.Context, t *pipeline.Task) error {
 		t.ImageURL = img
 	}
 
-	s, err := resolveContentURLs(base, t.HTML)
+	// TODO: replace the std lib parser w/ goquery
+	s, err := resolveContentURLs(base, t.HTML())
 	if err != nil {
 		return err
 	}
-	t.HTML = s
+	t.SetHTML(s)
 
 	return nil
 }

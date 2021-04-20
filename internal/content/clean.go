@@ -2,7 +2,6 @@ package content
 
 import (
 	"context"
-	"strings"
 
 	"github.com/PuerkitoBio/goquery"
 	log "github.com/sirupsen/logrus"
@@ -17,11 +16,7 @@ func Clean(ctx context.Context, t *pipeline.Task) error {
 		"module": "content",
 	}).Info("Clean HTML")
 
-	r := strings.NewReader(t.HTML)
-	doc, err := goquery.NewDocumentFromReader(r)
-	if err != nil {
-		return err
-	}
+	doc := t.Document()
 
 	// TODO: does not really belong here
 	resolvePicture(doc)
@@ -29,12 +24,6 @@ func Clean(ctx context.Context, t *pipeline.Task) error {
 	removeUnwantedElements(doc)
 	unwrapTags(doc)
 	removeUnwantedAttributes(doc)
-
-	html, err := doc.Selection.Find("body").First().Html()
-	if err != nil {
-		return err
-	}
-	t.HTML = html
 
 	return nil
 }

@@ -94,12 +94,11 @@ func taskFromArticle(a scrapen.Result, s scrapen.Store) *pipeline.Task {
 		}
 	}
 
-	return &pipeline.Task{
+	t := &pipeline.Task{
 		URL:          a.URL,
 		ActualURL:    a.ActualURL,
 		CanonicalURL: a.CanonicalURL,
 		StatusCode:   a.StatusCode,
-		HTML:         a.HTML,
 		Title:        a.Title,
 		Retrieved:    a.Retrieved,
 		Description:  a.Description,
@@ -112,4 +111,6 @@ func taskFromArticle(a scrapen.Result, s scrapen.Store) *pipeline.Task {
 		Feeds:        fs,
 		Store:        s,
 	}
+	t.SetHTML(a.HTML)
+	return t
 }

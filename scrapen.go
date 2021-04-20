@@ -190,12 +190,18 @@ func resultFromTask(t *pipeline.Task) Result {
 		}
 	}
 
+	doc := t.Document()
+	html := ""
+	if doc != nil {
+		html, _ = doc.Selection.Find("body").First().Html()
+	}
+
 	return Result{
 		URL:          t.URL,
 		ActualURL:    t.ActualURL,
 		CanonicalURL: t.CanonicalURL,
 		StatusCode:   t.StatusCode,
-		HTML:         t.HTML,
+		HTML:         html,
 		Title:        t.Title,
 		Retrieved:    t.Retrieved,
 		Description:  t.Description,
