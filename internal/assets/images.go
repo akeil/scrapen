@@ -7,6 +7,7 @@ import (
 	"mime"
 	"net/http"
 	"strings"
+	"sync"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/google/uuid"
@@ -73,24 +74,33 @@ func doImages(f fetchFunc, t *pipeline.Task) error {
 		return err
 	}
 
+	var wg sync.WaitGroup
+
 	doc.Selection.Find("img").Each(func(i int, s *goquery.Selection) {
-		src, ok := s.Attr("src")
-		if !ok || src == "" {
-			// if do not understand how to download,
-			// leave the image as is
-			return
-		}
+		wg.Add(1)
 
-		newSrc, err := f(src)
-		if err != nil {
-			// not much we can do about the error
-			// we do not want to cancel the whole process
-			// logging is sufficiently donw in fetch function
-			return
-		}
+		go func() {
+			defer wg.Done()
+			src, ok := s.Attr("src")
+			if !ok || src == "" {
+				// if do not understand how to download,
+				// leave the image as is
+				return
+			}
 
-		s.SetAttr("src", newSrc)
+			newSrc, err := f(src)
+			if err != nil {
+				// not much we can do about the error
+				// we do not want to cancel the whole process
+				// logging is sufficiently donw in fetch function
+				return
+			}
+
+			s.SetAttr("src", newSrc)
+		}()
 	})
+
+	wg.Wait()
 
 	html, err := doc.Selection.Find("body").First().Html()
 	if err != nil {
