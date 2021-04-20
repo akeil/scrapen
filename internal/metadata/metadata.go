@@ -19,10 +19,7 @@ func ReadMetadata(ctx context.Context, t *pipeline.Task) error {
 		"url":    t.ContentURL(),
 	}).Info("Extract metadata")
 
-	doc, err := t.Document()
-	if err != nil {
-		return err
-	}
+	doc := t.Document()
 
 	m := newMetadata()
 	findMeta(m, doc)

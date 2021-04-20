@@ -190,8 +190,8 @@ func resultFromTask(t *pipeline.Task) Result {
 		}
 	}
 
+	doc := t.Document()
 	html := ""
-	doc, _ := t.Document()
 	if doc != nil {
 		html, _ = doc.Selection.Find("body").First().Html()
 	}

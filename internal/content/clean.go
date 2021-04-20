@@ -16,10 +16,7 @@ func Clean(ctx context.Context, t *pipeline.Task) error {
 		"module": "content",
 	}).Info("Clean HTML")
 
-	doc, err := t.Document()
-	if err != nil {
-		return err
-	}
+	doc := t.Document()
 
 	// TODO: does not really belong here
 	resolvePicture(doc)

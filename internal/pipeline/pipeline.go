@@ -26,7 +26,6 @@ type Task struct {
 	ActualURL    string
 	CanonicalURL string
 	StatusCode   int
-	html         string
 	Title        string
 	Retrieved    time.Time
 	Description  string
@@ -54,19 +53,8 @@ func NewTask(s Store, id, url string) *Task {
 // Document returns the HTML content of this task as a DOM document.
 // The document can be edited in place, i.e. all changes made to the document
 // directly affect the task content.
-func (t *Task) Document() (*goquery.Document, error) {
-	if t.document != nil {
-		return t.document, nil
-	}
-
-	r := strings.NewReader(t.html)
-	doc, err := goquery.NewDocumentFromReader(r)
-	if err != nil {
-		return nil, err
-	}
-
-	t.document = doc
-	return t.document, nil
+func (t *Task) Document() *goquery.Document {
+	return t.document
 }
 
 // HTML returns the HTML content for this task as a string.

@@ -68,11 +68,8 @@ func DownloadImages(ctx context.Context, t *pipeline.Task) error {
 type fetchFunc func(src string) (string, error)
 
 func doImages(f fetchFunc, t *pipeline.Task) error {
-	doc, err := t.Document()
-	if err != nil {
-		return err
-	}
-
+	doc := t.Document()
+	
 	var wg sync.WaitGroup
 	var m sync.Mutex
 

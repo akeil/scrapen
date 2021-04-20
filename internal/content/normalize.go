@@ -16,12 +16,9 @@ func Normalize(ctx context.Context, t *pipeline.Task) error {
 		"module": "content",
 	}).Info("Normalize HTML")
 
-	doc, err := t.Document()
-	if err != nil {
-		return err
-	}
+	doc := t.Document()
 
-	err = normalizeSpace(doc)
+	err := normalizeSpace(doc)
 	if err != nil {
 		return err
 	}
