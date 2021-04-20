@@ -177,7 +177,11 @@ func setSite(t *pipeline.Task) {
 	if err != nil {
 		return
 	}
-	t.Site = u.Host
+	h := u.Host
+	if strings.HasPrefix(h, "www.") {
+		h = h[4:]
+	}
+	t.Site = h
 	t.SiteScheme = u.Scheme
 }
 

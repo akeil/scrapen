@@ -222,6 +222,13 @@ func TestSite(t *testing.T) {
 	i.CanonicalURL = "https://foo.com/path/page.html"
 	setSite(i)
 	assert.Equal("foo.com", i.Site)
+
+	// strip www. prefix
+	i.URL = "https://www.example.com/xyz"
+	i.ActualURL = ""
+	i.CanonicalURL = ""
+	setSite(i)
+	assert.Equal("example.com", i.Site)
 }
 
 func TestParseTime(t *testing.T) {
