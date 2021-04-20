@@ -118,11 +118,10 @@ func TestFindFeeds(t *testing.T) {
 }
 
 func findRss(base, html string) ([]pipeline.FeedInfo, error) {
-
 	task := &pipeline.Task{
-		HTML:      html,
 		ActualURL: base,
 	}
+	task.SetHTML(html)
 
 	err := FindFeeds(nil, task)
 	return task.Feeds, err

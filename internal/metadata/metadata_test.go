@@ -14,9 +14,8 @@ func TestMeta(t *testing.T) {
 	html := `<html><head>
         <meta name="foo" content="bar" />
     </head><body>foo</body></html>`
-	i := &pipeline.Task{
-		HTML: html,
-	}
+	i := &pipeline.Task{}
+	i.SetHTML(html)
 
 	err := ReadMetadata(nil, i)
 	assert.Nil(err)
@@ -222,6 +221,13 @@ func TestSite(t *testing.T) {
 	i.CanonicalURL = "https://foo.com/path/page.html"
 	setSite(i)
 	assert.Equal("foo.com", i.Site)
+
+	// strip www. prefix
+	i.URL = "https://www.example.com/xyz"
+	i.ActualURL = ""
+	i.CanonicalURL = ""
+	setSite(i)
+	assert.Equal("example.com", i.Site)
 }
 
 func TestParseTime(t *testing.T) {
@@ -234,9 +240,8 @@ func TestParseTime(t *testing.T) {
 }
 
 func readMeta(html string) (*pipeline.Task, error) {
-	t := &pipeline.Task{
-		HTML: html,
-	}
+	t := &pipeline.Task{}
+	t.SetHTML(html)
 
 	return t, ReadMetadata(nil, t)
 }

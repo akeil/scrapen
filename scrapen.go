@@ -9,11 +9,9 @@ import (
 
 	"github.com/akeil/scrapen/internal/assets"
 	"github.com/akeil/scrapen/internal/content"
-	//	"github.com/akeil/scrapen/internal/ebook"
 	"github.com/akeil/scrapen/internal/fetch"
 	//	"github.com/akeil/scrapen/internal/htm"
 	"github.com/akeil/scrapen/internal/metadata"
-	//	"github.com/akeil/scrapen/internal/pdf"
 	"github.com/akeil/scrapen/internal/pipeline"
 	"github.com/akeil/scrapen/internal/readable"
 	"github.com/akeil/scrapen/internal/rss"
@@ -190,12 +188,18 @@ func resultFromTask(t *pipeline.Task) Result {
 		}
 	}
 
+	doc := t.Document()
+	html := ""
+	if doc != nil {
+		html, _ = doc.Selection.Find("body").First().Html()
+	}
+
 	return Result{
 		URL:          t.URL,
 		ActualURL:    t.ActualURL,
 		CanonicalURL: t.CanonicalURL,
 		StatusCode:   t.StatusCode,
-		HTML:         t.HTML,
+		HTML:         html,
 		Title:        t.Title,
 		Retrieved:    t.Retrieved,
 		Description:  t.Description,

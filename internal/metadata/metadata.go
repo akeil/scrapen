@@ -19,11 +19,7 @@ func ReadMetadata(ctx context.Context, t *pipeline.Task) error {
 		"url":    t.ContentURL(),
 	}).Info("Extract metadata")
 
-	r := strings.NewReader(t.HTML)
-	doc, err := goquery.NewDocumentFromReader(r)
-	if err != nil {
-		return err
-	}
+	doc := t.Document()
 
 	m := newMetadata()
 	findMeta(m, doc)
@@ -177,7 +173,11 @@ func setSite(t *pipeline.Task) {
 	if err != nil {
 		return
 	}
-	t.Site = u.Host
+	h := u.Host
+	if strings.HasPrefix(h, "www.") {
+		h = h[4:]
+	}
+	t.Site = h
 	t.SiteScheme = u.Scheme
 }
 

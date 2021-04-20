@@ -7,9 +7,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/akeil/scrapen/internal/ebook"
 	"github.com/akeil/scrapen/internal/htm"
-	"github.com/akeil/scrapen/internal/pdf"
 	"github.com/akeil/scrapen/internal/pipeline"
 
 	"github.com/akeil/scrapen"
@@ -46,19 +44,6 @@ func run(url string) error {
 	}
 
 	format := "html"
-
-	var compose composeFunc
-	switch format {
-	case "pdf":
-		compose = pdf.Compose
-	case "html":
-		compose = htm.Compose
-	case "epub":
-		compose = ebook.Compose
-	default:
-		return fmt.Errorf("unsupported format: %q", format)
-	}
-
 	outfile := fmt.Sprintf("output.%v", format)
 	log.Info(fmt.Sprintf("Output to %q\n", outfile))
 
@@ -67,7 +52,7 @@ func run(url string) error {
 		return err
 	}
 	defer f.Close()
-	err = compose(f, taskFromArticle(a, s))
+	err = htm.Compose(f, taskFromArticle(a, s))
 	if err != nil {
 		return err
 	}
@@ -94,12 +79,11 @@ func taskFromArticle(a scrapen.Result, s scrapen.Store) *pipeline.Task {
 		}
 	}
 
-	return &pipeline.Task{
+	t := &pipeline.Task{
 		URL:          a.URL,
 		ActualURL:    a.ActualURL,
 		CanonicalURL: a.CanonicalURL,
 		StatusCode:   a.StatusCode,
-		HTML:         a.HTML,
 		Title:        a.Title,
 		Retrieved:    a.Retrieved,
 		Description:  a.Description,
@@ -112,4 +96,6 @@ func taskFromArticle(a scrapen.Result, s scrapen.Store) *pipeline.Task {
 		Feeds:        fs,
 		Store:        s,
 	}
+	t.SetHTML(a.HTML)
+	return t
 }
