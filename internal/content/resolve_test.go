@@ -23,26 +23,26 @@ func TestResolveURLs(t *testing.T) {
 	assert.Equal("https://example.com/images/image.jpg", task.ImageURL)
 
 	// resolve relative
-	task.SetHTML(`<a href="./relative.html">foo</a>`)
-	err = ResolveURLs(nil, task)
-	assert.Nil(err)
-	assert.Equal(`<a href="https://example.com/abc/relative.html">foo</a>`, task.HTML())
+	resolveTest(t, task, `<a href="./relative.html">foo</a>`, `<a href="https://example.com/abc/relative.html">foo</a>`)
 
 	// resolve absolute
-	task.SetHTML(`<a href="/absolute.html">foo</a>`)
-	err = ResolveURLs(nil, task)
-	assert.Nil(err)
-	assert.Equal(`<a href="https://example.com/absolute.html">foo</a>`, task.HTML())
+	resolveTest(t, task, `<a href="/absolute.html">foo</a>`, `<a href="https://example.com/absolute.html">foo</a>`)
 
 	// external links unchanged
-	task.SetHTML(`<a href="https://elsewhere.com/index.html">foo</a>`)
-	err = ResolveURLs(nil, task)
-	assert.Nil(err)
-	assert.Equal(`<a href="https://elsewhere.com/index.html">foo</a>`, task.HTML())
+	resolveTest(t, task, `<a href="https://elsewhere.com/index.html">foo</a>`, `<a href="https://elsewhere.com/index.html">foo</a>`)
 
 	// img
-	task.SetHTML(`<img src="/images/img.jpg"/>`)
-	err = ResolveURLs(nil, task)
+	resolveTest(t, task, `<img src="/images/img.jpg"/>`, `<img src="https://example.com/images/img.jpg"/>`)
+}
+
+func resolveTest(t *testing.T, task *pipeline.Task, html, expected string) {
+	assert := assert.New(t)
+
+	task.SetHTML(html)
+	err := ResolveURLs(nil, task)
 	assert.Nil(err)
-	assert.Equal(`<img src="https://example.com/images/img.jpg"/>`, task.HTML())
+
+	// goquery will automatically insert head and body
+	expected = "<head></head><body>" + expected + "</body>"
+	assert.Equal(expected, task.HTML())
 }

@@ -38,5 +38,7 @@ func callSanitize(t *testing.T, html, expected string) {
 
 	err = Sanitize(ctx, task)
 	assert.Nil(err)
+	// goquery will automatically insert head and body
+	expected = "<head></head><body>" + expected + "</body>"
 	assert.Equal(expected, task.HTML())
 }
