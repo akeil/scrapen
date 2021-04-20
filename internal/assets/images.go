@@ -105,7 +105,12 @@ func DownloadImages(ctx context.Context, t *pipeline.Task) error {
 		return i.ContentURL, nil
 	}
 
-	return doImages(f, t)
+	err := doImages(f, t)
+	if err != nil {
+		return err
+	}
+
+	return doMetadataImages(f, t)
 }
 
 type fetchFunc func(src string) (string, error)
