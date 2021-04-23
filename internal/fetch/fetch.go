@@ -55,34 +55,9 @@ func fetchURL(ctx context.Context, t *pipeline.Task, url string) (string, error)
 		"url":    url,
 	}).Info("Fetch URL")
 
-	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+	res, err := doRequest(ctx, url)
 	if err != nil {
 		return "", err
-	}
-
-	setHeaders(req)
-
-	for k, v := range req.Header {
-		log.WithFields(log.Fields{
-			"task":   t.ID,
-			"module": "fetch",
-			"url":    url,
-			"header": k,
-		}).Debug(fmt.Sprintf("Request Header: %v = %v", k, v))
-	}
-
-	res, err := client.Do(req)
-	if err != nil {
-		return "", err
-	}
-
-	for k, v := range res.Header {
-		log.WithFields(log.Fields{
-			"task":   t.ID,
-			"module": "fetch",
-			"url":    url,
-			"header": k,
-		}).Debug(fmt.Sprintf("Response Header: %v = %v", k, v))
 	}
 
 	t.StatusCode = res.StatusCode
@@ -117,6 +92,38 @@ func fetchURL(ctx context.Context, t *pipeline.Task, url string) (string, error)
 	}
 
 	return s, nil
+}
+
+func doRequest(ctx context.Context, url string) (*http.Response, error) {
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	setHeaders(req)
+
+	for k, v := range req.Header {
+		log.WithFields(log.Fields{
+			"module": "fetch",
+			"url":    url,
+			"header": k,
+		}).Debug(fmt.Sprintf("Request Header: %v = %v", k, v))
+	}
+
+	res, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range res.Header {
+		log.WithFields(log.Fields{
+			"module": "fetch",
+			"url":    url,
+			"header": k,
+		}).Debug(fmt.Sprintf("Response Header: %v = %v", k, v))
+	}
+
+	return res, nil
 }
 
 type browserProfile struct {
