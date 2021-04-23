@@ -2,6 +2,7 @@ package content
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
@@ -25,6 +26,7 @@ func Normalize(ctx context.Context, t *pipeline.Task) error {
 
 	deduplicateImage(t, doc)
 	deduplicateTitle(doc, t.Title)
+	normalizeHeadings(doc)
 
 	return nil
 }
@@ -52,8 +54,6 @@ func normalizeSpace(doc *goquery.Document) error {
 
 func deduplicateTitle(doc *goquery.Document, title string) {
 	doc.Selection.Find("h1, h2, h3, h4, h5, h6").Each(func(i int, s *goquery.Selection) {
-		tag := goquery.NodeName(s)
-		log.Info(tag)
 		t := strings.TrimSpace(s.Text())
 		if strings.EqualFold(t, title) {
 			s.Remove()
@@ -78,4 +78,42 @@ func deduplicateImage(t *pipeline.Task, doc *goquery.Document) {
 			s.Remove()
 		}
 	})
+}
+
+// normalizeHeadings reorders heading levels (h1 through h6). The result is a
+// consistent structure of headings without gaps between the levels.
+// Normalized headings start with h1.
+func normalizeHeadings(doc *goquery.Document) {
+	headings := []string{"h1", "h2", "h3", "h4", "h5", "h6"}
+	count := map[string]int{}
+
+	// collect the number of occurences for each heading level
+	for _, k := range headings {
+		doc.Selection.Find(k).Each(func(i int, s *goquery.Selection) {
+			count[k]++
+		})
+	}
+
+	// move all headers up by "n" levels, so that the highest level reaches h1
+	// fill gaps between headings
+	//var target string
+	target := -1
+	for i, k := range headings {
+
+		if count[k] == 0 {
+			if target < 0 {
+				target = i
+			}
+		} else {
+			if target >= 0 {
+				doc.Selection.Find(k).Each(func(i int, s *goquery.Selection) {
+					html, _ := s.Html()
+					h := headings[target]
+					new := fmt.Sprintf("<%v>%v</%v>", h, html, h)
+					s.ReplaceWithHtml(new)
+				})
+				target++
+			}
+		}
+	}
 }
