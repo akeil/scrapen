@@ -60,6 +60,21 @@ func fetchURL(ctx context.Context, t *pipeline.Task, url string) (string, error)
 		return "", err
 	}
 
+	if res.StatusCode != http.StatusOK {
+		if didReceiveCookie(res) {
+			log.WithFields(log.Fields{
+				"task":   t.ID,
+				"module": "fetch",
+				"url":    url,
+				"status": t.StatusCode,
+			}).Info("Repeat request with cookie")
+			res, err = doRequest(ctx, url)
+			if err != nil {
+				return "", err
+			}
+		}
+	}
+
 	t.StatusCode = res.StatusCode
 	// TODO: does not seem to work in all cases...
 	if res.Request.URL != nil {
@@ -161,6 +176,10 @@ func setHeaders(req *http.Request) {
 	req.Header.Add("Path", req.URL.Path)
 	req.Header.Add("Scheme", req.URL.Scheme)
 
+}
+
+func didReceiveCookie(res *http.Response) bool {
+	return true
 }
 
 func errorFromStatus(res *http.Response) error {
