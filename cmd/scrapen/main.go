@@ -26,8 +26,8 @@ func main() {
 type composeFunc func(w io.Writer, t *pipeline.Task) error
 
 func run(url string) error {
-	//log.SetLevel(log.DebugLevel)
-	log.SetLevel(log.InfoLevel)
+	log.SetLevel(log.DebugLevel)
+	//log.SetLevel(log.InfoLevel)
 	s := pipeline.NewMemoryStore()
 	o := &scrapen.Options{
 		Metadata:       true,

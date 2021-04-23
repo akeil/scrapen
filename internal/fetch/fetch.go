@@ -3,25 +3,33 @@ package fetch
 import (
 	"context"
 	"fmt"
+	"golang.org/x/net/publicsuffix"
 	"net/http"
+	"net/http/cookiejar"
 
 	log "github.com/sirupsen/logrus"
 
 	"github.com/akeil/scrapen/internal/pipeline"
 )
 
-var client = &http.Client{}
-
 // Fetch fetches the HTML content for the given item.
 func Fetch(ctx context.Context, t *pipeline.Task) error {
-
 	log.WithFields(log.Fields{
 		"task":   t.ID,
 		"module": "fetch",
 		"url":    t.ContentURL(),
 	}).Info("Fetch content")
 
-	html, err := fetchURL(ctx, t, t.URL)
+	opts := &cookiejar.Options{PublicSuffixList: publicsuffix.List}
+	jar, err := cookiejar.New(opts)
+	if err != nil {
+		return err
+	}
+	client := &http.Client{
+		Jar: jar,
+	}
+
+	html, err := fetchURL(ctx, client, t, t.URL)
 	if err != nil {
 		return err
 	}
@@ -38,7 +46,7 @@ func Fetch(ctx context.Context, t *pipeline.Task) error {
 			"url":    redirect,
 		}).Info("Redirect from <meta>")
 
-		html, err = fetchURL(ctx, t, redirect)
+		html, err = fetchURL(ctx, client, t, redirect)
 		if err != nil {
 			return err
 		}
@@ -48,14 +56,14 @@ func Fetch(ctx context.Context, t *pipeline.Task) error {
 	return nil
 }
 
-func fetchURL(ctx context.Context, t *pipeline.Task, url string) (string, error) {
+func fetchURL(ctx context.Context, client *http.Client, t *pipeline.Task, url string) (string, error) {
 	log.WithFields(log.Fields{
 		"task":   t.ID,
 		"module": "fetch",
 		"url":    url,
 	}).Info("Fetch URL")
 
-	res, err := doRequest(ctx, url)
+	res, err := doRequest(ctx, client, url)
 	if err != nil {
 		return "", err
 	}
@@ -66,9 +74,9 @@ func fetchURL(ctx context.Context, t *pipeline.Task, url string) (string, error)
 				"task":   t.ID,
 				"module": "fetch",
 				"url":    url,
-				"status": t.StatusCode,
-			}).Info("Repeat request with cookie")
-			res, err = doRequest(ctx, url)
+				"status": res.StatusCode,
+			}).Info("Repeat request with cookies")
+			res, err = doRequest(ctx, client, url)
 			if err != nil {
 				return "", err
 			}
@@ -76,7 +84,6 @@ func fetchURL(ctx context.Context, t *pipeline.Task, url string) (string, error)
 	}
 
 	t.StatusCode = res.StatusCode
-	// TODO: does not seem to work in all cases...
 	if res.Request.URL != nil {
 		t.ActualURL = res.Request.URL.String()
 	}
@@ -109,10 +116,17 @@ func fetchURL(ctx context.Context, t *pipeline.Task, url string) (string, error)
 	return s, nil
 }
 
-func doRequest(ctx context.Context, url string) (*http.Response, error) {
+func doRequest(ctx context.Context, client *http.Client, url string) (*http.Response, error) {
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, err
+	}
+
+	// Add cookies collected in previous requests
+	log.Info(fmt.Sprintf("Set cookies for %v", req.URL))
+	for _, c := range client.Jar.Cookies(req.URL) {
+		log.Info(fmt.Sprintf("Cookie: %v", c.String()))
+		req.AddCookie(c)
 	}
 
 	setHeaders(req)
@@ -122,7 +136,7 @@ func doRequest(ctx context.Context, url string) (*http.Response, error) {
 			"module": "fetch",
 			"url":    url,
 			"header": k,
-		}).Debug(fmt.Sprintf("Request Header: %v = %v", k, v))
+		}).Debug(fmt.Sprintf("Header value: %v", v))
 	}
 
 	res, err := client.Do(req)
@@ -137,6 +151,9 @@ func doRequest(ctx context.Context, url string) (*http.Response, error) {
 			"header": k,
 		}).Debug(fmt.Sprintf("Response Header: %v = %v", k, v))
 	}
+
+	// Set cookies for all subsequent requests
+	client.Jar.SetCookies(res.Request.URL, res.Cookies())
 
 	return res, nil
 }
@@ -179,7 +196,8 @@ func setHeaders(req *http.Request) {
 }
 
 func didReceiveCookie(res *http.Response) bool {
-	return true
+	c := res.Header.Get("Set-Cookie")
+	return c != ""
 }
 
 func errorFromStatus(res *http.Response) error {
