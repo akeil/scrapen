@@ -27,6 +27,14 @@ func TestCountWords(t *testing.T) {
         <!-- Empty -->
     </body></html>`
 	countWords(t, html, 0)
+
+	// Punctuation, stopwords and quotes
+	html = `<html><head></head><body>
+    <h1>Headline Nr. 5</h1>
+        <p>Foo a Bar.</p>
+        <div>Foo "Bar" Baz!</div>
+    </body></html>`
+	countWords(t, html, 9)
 }
 
 func countWords(t *testing.T, html string, expected int) {
