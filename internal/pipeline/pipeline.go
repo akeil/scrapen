@@ -36,6 +36,7 @@ type Task struct {
 	ImageURL     string
 	Images       []ImageInfo
 	Feeds        []FeedInfo
+	WordCount    int
 	Store        Store
 	document     *goquery.Document
 }
