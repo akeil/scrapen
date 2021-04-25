@@ -120,6 +120,8 @@ func configurePipeline(o *Options) pipeline.Pipeline {
 	// we should call this AFTER modifiying the HTML
 	p = append(p, content.Sanitize)
 
+	// working on the final content HTML
+	p = append(p, metadata.CountWords)
 	if o.DownloadImages {
 		p = append(p, assets.DownloadImages)
 	}
