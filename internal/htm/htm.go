@@ -107,6 +107,13 @@ func writeMetadata(b *strings.Builder, t *pipeline.Task) error {
 		b.WriteString("</a></p>")
 	}
 
+	if t.WordCount != 0 {
+		b.WriteString("<p>")
+		b.WriteString(fmt.Sprintf("%v", t.WordCount))
+		b.WriteString(" words")
+		b.WriteString("</p>")
+	}
+
 	if t.Description != "" {
 		b.WriteString("<p>")
 		b.WriteString(t.Description)

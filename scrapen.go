@@ -152,6 +152,7 @@ type Result struct {
 	Site         string
 	SiteScheme   string
 	Author       string
+	WordCount    int
 	Feeds        []Feed
 	Images       []Image
 	ImageURL     string
@@ -207,6 +208,7 @@ func resultFromTask(t *pipeline.Task) Result {
 		Site:         t.Site,
 		SiteScheme:   t.SiteScheme,
 		Author:       t.Author,
+		WordCount:    t.WordCount,
 		Feeds:        fs,
 		Images:       imgs,
 		ImageURL:     t.ImageURL,

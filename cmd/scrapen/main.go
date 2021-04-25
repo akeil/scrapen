@@ -92,6 +92,7 @@ func taskFromArticle(a scrapen.Result, s scrapen.Store) *pipeline.Task {
 		SiteScheme:   a.SiteScheme,
 		Author:       a.Author,
 		ImageURL:     a.ImageURL,
+		WordCount:    a.WordCount,
 		Images:       imgs,
 		Feeds:        fs,
 		Store:        s,
