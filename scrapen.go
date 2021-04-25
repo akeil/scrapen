@@ -120,6 +120,8 @@ func configurePipeline(o *Options) pipeline.Pipeline {
 	// we should call this AFTER modifiying the HTML
 	p = append(p, content.Sanitize)
 
+	// working on the final content HTML
+	p = append(p, metadata.CountWords)
 	if o.DownloadImages {
 		p = append(p, assets.DownloadImages)
 	}
@@ -152,6 +154,7 @@ type Result struct {
 	Site         string
 	SiteScheme   string
 	Author       string
+	WordCount    int
 	Feeds        []Feed
 	Images       []Image
 	ImageURL     string
@@ -207,6 +210,7 @@ func resultFromTask(t *pipeline.Task) Result {
 		Site:         t.Site,
 		SiteScheme:   t.SiteScheme,
 		Author:       t.Author,
+		WordCount:    t.WordCount,
 		Feeds:        fs,
 		Images:       imgs,
 		ImageURL:     t.ImageURL,
