@@ -6,6 +6,8 @@ import (
 	"io"
 	"mime"
 	"net/http"
+	"net/url"
+	"path"
 	"strings"
 	"sync"
 
@@ -62,7 +64,17 @@ func DownloadImages(ctx context.Context, t *pipeline.Task) error {
 		return err
 	}
 
-	return doMetadataImages(f, t)
+	err = doMetadataImages(f, t)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"task":   t.ID,
+			"module": "assets",
+			"error":  err,
+		}).Warning("Failed to download metadata image")
+	}
+
+	// ignore errors - all image downloads are optional
+	return nil
 }
 
 type fetchFunc func(src string) (string, error)
@@ -80,7 +92,7 @@ func doImages(f fetchFunc, t *pipeline.Task) error {
 			defer wg.Done()
 			src, ok := s.Attr("src")
 			if !ok || src == "" {
-				// if do not understand how to download,
+				// if we do not understand how to download,
 				// leave the image as is
 				return
 			}
@@ -89,7 +101,7 @@ func doImages(f fetchFunc, t *pipeline.Task) error {
 			if err != nil {
 				// not much we can do about the error
 				// we do not want to cancel the whole process
-				// logging is sufficiently donw in fetch function
+				// logging is sufficiently done in fetch function
 				return
 			}
 			m.Lock()
@@ -138,7 +150,7 @@ func fetchHTTP(ctx context.Context, src string) (pipeline.ImageInfo, []byte, err
 
 	// note: may be empty
 	contentType := res.Header.Get("content-type")
-	mime, _, err := mime.ParseMediaType(contentType)
+	m, err := determineMime(contentType, src, data)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"module": "assets",
@@ -150,7 +162,7 @@ func fetchHTTP(ctx context.Context, src string) (pipeline.ImageInfo, []byte, err
 	}
 
 	// note: may be empty for non-supported types.
-	fileExt := fileExt(mime)
+	fileExt := fileExt(m)
 
 	id := uuid.New().String() + fileExt
 	newSrc := pipeline.StoreURL(id)
@@ -158,7 +170,7 @@ func fetchHTTP(ctx context.Context, src string) (pipeline.ImageInfo, []byte, err
 		Key:         id,
 		ContentURL:  newSrc,
 		OriginalURL: src,
-		ContentType: mime,
+		ContentType: m,
 	}
 
 	// in case there was a redirect on the image
@@ -223,4 +235,51 @@ func findExistingImage(t *pipeline.Task) pipeline.ImageInfo {
 		}
 	}
 	return pipeline.ImageInfo{}
+}
+
+func determineMime(contentType, src string, data []byte) (string, error) {
+	// prefer from content type header
+	m, _, err := mime.ParseMediaType(contentType)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"module": "assets",
+			"url":    src,
+			"error":  err,
+		}).Debug(fmt.Sprintf("Failed to parse MIME type from %q", contentType))
+	} else if m != "" {
+		return m, nil
+	}
+
+	// maybe there is a file extension in the URL
+	u, err := url.Parse(src)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"module": "assets",
+			"url":    src,
+			"error":  err,
+		}).Debug(fmt.Sprintf("Failed to parse URL"))
+	} else if u != nil {
+		ext := path.Ext(u.Path)
+		m = mime.TypeByExtension(ext)
+		if m != "" {
+			return m, nil
+		}
+	}
+
+	// last resort - guess from bytes content
+	ct := http.DetectContentType(data)
+	if ct != "application/octet-stream" && ct != "" {
+		m, _, err := mime.ParseMediaType(ct)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"module": "assets",
+				"url":    src,
+				"error":  err,
+			}).Debug(fmt.Sprintf("Failed to parse MIME type from %q", ct))
+		} else if m != "" {
+			return m, nil
+		}
+	}
+
+	return "", fmt.Errorf("could not determine content type for image")
 }

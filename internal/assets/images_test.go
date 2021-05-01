@@ -2,6 +2,7 @@ package assets
 
 import (
 	"errors"
+	"os"
 	"testing"
 
 	"github.com/akeil/scrapen/internal/pipeline"
@@ -90,4 +91,31 @@ func TestDataURL(t *testing.T) {
 	assert.Equal(1, len(task.Images))
 	assert.NotEqual("", task.Images[0].ContentURL)
 	assert.Equal("image/jpeg", task.Images[0].ContentType)
+}
+
+func TestDetermineMime(t *testing.T) {
+	assert := assert.New(t)
+
+	m, err := determineMime("image/jpeg", "", nil)
+	assert.Nil(err)
+	assert.Equal("image/jpeg", m)
+
+	m, err = determineMime("", "https://example.com/path/image.jpg", nil)
+	assert.Nil(err)
+	assert.Equal("image/jpeg", m)
+
+	m, err = determineMime("", "https://example.com/path/image.jpeg", nil)
+	assert.Nil(err)
+	assert.Equal("image/jpeg", m)
+
+	f, err := os.Open("example.jpg")
+	assert.Nil(err)
+	defer f.Close()
+	buf := make([]byte, 512) //only the first 512 bytes are required
+	_, err = f.Read(buf)
+	assert.Nil(err)
+	m, err = determineMime("", "", buf)
+	assert.Nil(err)
+	assert.Equal("image/jpeg", m)
+
 }
