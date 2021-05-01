@@ -238,7 +238,6 @@ func findExistingImage(t *pipeline.Task) pipeline.ImageInfo {
 }
 
 func determineMime(contentType, src string, data []byte) (string, error) {
-	fmt.Printf("%v", data)
 	// prefer from content type header
 	m, _, err := mime.ParseMediaType(contentType)
 	if err != nil {
