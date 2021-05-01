@@ -6,6 +6,8 @@ import (
 	"io"
 	"mime"
 	"net/http"
+	"net/url"
+	"path"
 	"strings"
 	"sync"
 
@@ -148,7 +150,7 @@ func fetchHTTP(ctx context.Context, src string) (pipeline.ImageInfo, []byte, err
 
 	// note: may be empty
 	contentType := res.Header.Get("content-type")
-	mime, _, err := mime.ParseMediaType(contentType)
+	m, err := determineMime(contentType, src, data)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"module": "assets",
@@ -160,7 +162,7 @@ func fetchHTTP(ctx context.Context, src string) (pipeline.ImageInfo, []byte, err
 	}
 
 	// note: may be empty for non-supported types.
-	fileExt := fileExt(mime)
+	fileExt := fileExt(m)
 
 	id := uuid.New().String() + fileExt
 	newSrc := pipeline.StoreURL(id)
@@ -168,7 +170,7 @@ func fetchHTTP(ctx context.Context, src string) (pipeline.ImageInfo, []byte, err
 		Key:         id,
 		ContentURL:  newSrc,
 		OriginalURL: src,
-		ContentType: mime,
+		ContentType: m,
 	}
 
 	// in case there was a redirect on the image
@@ -233,4 +235,52 @@ func findExistingImage(t *pipeline.Task) pipeline.ImageInfo {
 		}
 	}
 	return pipeline.ImageInfo{}
+}
+
+func determineMime(contentType, src string, data []byte) (string, error) {
+	fmt.Printf("%v", data)
+	// prefer from content type header
+	m, _, err := mime.ParseMediaType(contentType)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"module": "assets",
+			"url":    src,
+			"error":  err,
+		}).Debug(fmt.Sprintf("Failed to parse MIME type from %q", contentType))
+	} else if m != "" {
+		return m, nil
+	}
+
+	// maybe there is a file extension in the URL
+	u, err := url.Parse(src)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"module": "assets",
+			"url":    src,
+			"error":  err,
+		}).Debug(fmt.Sprintf("Failed to parse URL"))
+	} else if u != nil {
+		ext := path.Ext(u.Path)
+		m = mime.TypeByExtension(ext)
+		if m != "" {
+			return m, nil
+		}
+	}
+
+	// last resort - guess from bytes content
+	ct := http.DetectContentType(data)
+	if ct != "application/octet-stream" && ct != "" {
+		m, _, err := mime.ParseMediaType(ct)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"module": "assets",
+				"url":    src,
+				"error":  err,
+			}).Debug(fmt.Sprintf("Failed to parse MIME type from %q", ct))
+		} else if m != "" {
+			return m, nil
+		}
+	}
+
+	return "", fmt.Errorf("could not determine content type for image")
 }
