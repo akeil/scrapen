@@ -12,6 +12,7 @@ import (
 	"github.com/akeil/scrapen/internal/pipeline"
 )
 
+// ReadMetadata reads general metadata from the documents <head>.
 func ReadMetadata(ctx context.Context, t *pipeline.Task) error {
 	log.WithFields(log.Fields{
 		"task":   t.ID,
@@ -25,7 +26,6 @@ func ReadMetadata(ctx context.Context, t *pipeline.Task) error {
 	findMeta(m, doc)
 	findLink(m, doc)
 	findTitle(m, doc)
-	fallbackImage(m, doc)
 
 	setMetadata(m, t)
 	setSite(t)
@@ -101,16 +101,9 @@ func findTitle(m *metadata, doc *goquery.Document) {
 	})
 }
 
-func fallbackImage(m *metadata, doc *goquery.Document) {
-	doc.Selection.Find("img").First().Each(func(i int, s *goquery.Selection) {
-		src, _ := s.Attr("src")
-		m.image["content/img"] = src
-	})
-}
-
 var (
 	descriptionPref = []string{"description", "og:description", "twitter:description"}
-	imagePref       = []string{"og:image:secure_url", "og:image", "link/image_src", "twitter:image", "twitter:image:src", "content/img"}
+	imagePref       = []string{"og:image:secure_url", "og:image", "link/image_src", "twitter:image", "twitter:image:src"}
 	urlPref         = []string{"link/canonical", "og:url", "twitter:url"}
 	authorPref      = []string{"author", "article:author", "book:author", "twitter:creator"}
 	pubDatePref     = []string{"article:published_time", "article:modified_time", "og:updated_time", "date", "last-modified"}
