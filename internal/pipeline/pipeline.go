@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/url"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
@@ -153,6 +154,7 @@ func BuildPipeline(f ...Pipeline) Pipeline {
 
 type memoryStore struct {
 	assets map[string]asset
+	mx sync.Mutex
 }
 
 func NewMemoryStore() Store {
@@ -162,11 +164,17 @@ func NewMemoryStore() Store {
 }
 
 func (m *memoryStore) Put(k, contentType string, data []byte) error {
+	m.mx.Lock()
+	defer m.mx.Unlock()
+
 	m.assets[k] = asset{contentType: contentType, data: data}
 	return nil
 }
 
 func (m *memoryStore) Get(k string) (string, []byte, error) {
+	m.mx.Lock()
+	defer m.mx.Unlock()
+
 	asset, ok := m.assets[k]
 	if !ok {
 		return "", nil, fmt.Errorf("no asset with id %q", k)
