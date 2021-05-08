@@ -186,13 +186,15 @@ func setHeaders(req *http.Request) {
 
 	req.Header.Add("Accept-Encoding", supportedCompressions)
 
-	//req.Header.Add("Connection", "keep-alive")
-
 	// These seem to be relevant for bloomberg.com
 	// (protected by Perimeterx Bot Defender)
 	req.Header.Add("Path", req.URL.Path)
 	req.Header.Add("Scheme", req.URL.Scheme)
 
+	// might be relevant for other "bot detection" mechanisms
+	req.Header.Add("Authority", req.URL.Host)
+	req.Header.Add("Method", req.Method)
+	req.Header.Add("Connection", "keep-alive")
 }
 
 func didReceiveCookie(res *http.Response) bool {
