@@ -40,6 +40,7 @@ type Task struct {
 	WordCount    int
 	Store        Store
 	document     *goquery.Document
+	mx           sync.Mutex
 }
 
 func NewTask(s Store, id, url string) *Task {
@@ -100,6 +101,10 @@ func (t *Task) AddImage(i ImageInfo, data []byte) error {
 	if err != nil {
 		return err
 	}
+
+	t.mx.Lock()
+	defer t.mx.Unlock()
+
 	t.Images = append(t.Images, i)
 	return nil
 }

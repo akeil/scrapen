@@ -51,9 +51,14 @@ func DownloadImages(ctx context.Context, t *pipeline.Task) error {
 			return "", err
 		}
 
+		log.WithFields(log.Fields{
+			"task":    t.ID,
+			"module":  "assets",
+			"imageID": i.Key,
+		}).Warning("Add image to task")
+
 		err = t.AddImage(i, data)
 		if err != nil {
-
 			log.WithFields(log.Fields{
 				"task":   t.ID,
 				"module": "assets",
