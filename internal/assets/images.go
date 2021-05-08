@@ -127,16 +127,15 @@ func fetchHTTP(ctx context.Context, src string) (pipeline.ImageInfo, []byte, err
 	}).Info("Fetch image")
 
 	res, err := client.Do(req)
+	if err != nil {
+		return pipeline.ImageInfo{}, nil, err
+	}
 
 	log.WithFields(log.Fields{
 		"module": "assets",
 		"url":    src,
 		"status": res.StatusCode,
 	}).Info("Got image response")
-
-	if err != nil {
-		return pipeline.ImageInfo{}, nil, err
-	}
 
 	if res.StatusCode != http.StatusOK {
 		return pipeline.ImageInfo{}, nil, fmt.Errorf("got HTTP status %v", res.StatusCode)
