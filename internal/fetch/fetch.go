@@ -52,6 +52,22 @@ func Fetch(ctx context.Context, t *pipeline.Task) error {
 		}
 	}
 
+	// If an AMP (https://amp.dev/) version is available, fetch that.
+	// Often easier to make readable.
+	amp := findAmpUrl(html)
+	if amp != "" {
+		log.WithFields(log.Fields{
+			"task":   t.ID,
+			"module": "fetch",
+			"url":    amp,
+		}).Info("Fetch AMP version")
+
+		html, err = fetchURL(ctx, client, t, amp)
+		if err != nil {
+			return err
+		}
+	}
+
 	t.SetHTML(html)
 	return nil
 }
@@ -186,13 +202,15 @@ func setHeaders(req *http.Request) {
 
 	req.Header.Add("Accept-Encoding", supportedCompressions)
 
-	//req.Header.Add("Connection", "keep-alive")
-
 	// These seem to be relevant for bloomberg.com
 	// (protected by Perimeterx Bot Defender)
 	req.Header.Add("Path", req.URL.Path)
 	req.Header.Add("Scheme", req.URL.Scheme)
 
+	// might be relevant for other "bot detection" mechanisms
+	req.Header.Add("Authority", req.URL.Host)
+	req.Header.Add("Method", req.Method)
+	req.Header.Add("Connection", "keep-alive")
 }
 
 func didReceiveCookie(res *http.Response) bool {

@@ -1,6 +1,7 @@
 package fetch
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"mime"
@@ -8,6 +9,8 @@ import (
 	"strings"
 
 	log "github.com/sirupsen/logrus"
+	"golang.org/x/net/html"
+	"golang.org/x/net/html/atom"
 	"golang.org/x/text/encoding"
 	"golang.org/x/text/encoding/charmap"
 
@@ -23,13 +26,31 @@ func readUTF8(t *pipeline.Task, r io.Reader, h http.Header) (string, error) {
 		"module": "fetch",
 	}).Info(fmt.Sprintf("Got charset %q from header", cs))
 
-	// TODO: we can also obtain the charset from <meta> tag
-	// ... and XML declaration
+	// we nned to copy the reader into a buffer so we can read it multiple times.
+	buf := &bytes.Buffer{}
+	_, err := io.Copy(buf, r)
+	if err != nil {
+		return "", err
+	}
+
+	if cs == "" {
+		cs = charsetFromMeta(bytes.NewBuffer(buf.Bytes()))
+		log.WithFields(log.Fields{
+			"task":   t.ID,
+			"module": "fetch",
+		}).Info(fmt.Sprintf("Got charset %q from meta tag", cs))
+	}
+
+	// TODO: we can also obtain the charset from XML declaration
+
+	// needs type io.Reader to wrap into decoder
+	var rdr io.Reader
+	rdr = buf
 
 	if normalizeCharsetName(cs) != "utf-8" && cs != "" {
 		dec := decoderByName(cs)
 		if dec != nil {
-			r = dec.Reader(r)
+			rdr = dec.Reader(rdr)
 
 			log.WithFields(log.Fields{
 				"task":   t.ID,
@@ -44,7 +65,7 @@ func readUTF8(t *pipeline.Task, r io.Reader, h http.Header) (string, error) {
 		}
 	}
 
-	data, err := io.ReadAll(r)
+	data, err := io.ReadAll(rdr)
 	if err != nil {
 		return "", err
 	}
@@ -75,6 +96,36 @@ func charsetFromHeader(t *pipeline.Task, h http.Header) string {
 	}
 
 	return ""
+}
+
+func charsetFromMeta(r io.Reader) string {
+	var charset string
+
+	reader := func(t html.Token) error {
+		if charset != "" {
+			// returns error to exit early, error is later ignored
+			return fmt.Errorf("charset already set")
+		}
+
+		if t.DataAtom == atom.Meta {
+			for _, attr := range t.Attr {
+				if attr.Key == "charset" {
+					charset = attr.Val
+				}
+			}
+		}
+		return nil
+	}
+
+	var b strings.Builder
+	_, err := io.Copy(&b, r)
+	if err != nil {
+		return ""
+	}
+	pipeline.ReadHTML(b.String(), reader)
+
+	// set in the reader function
+	return charset
 }
 
 var charmaps = []*charmap.Charmap{

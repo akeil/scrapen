@@ -99,14 +99,11 @@ func configurePipeline(o *Options) pipeline.Pipeline {
 
 	if o.Metadata {
 		p = append(p, metadata.ReadMetadata)
+		p = append(p, metadata.FallbackImage)
 	}
 
 	if o.FindFeeds {
 		p = append(p, rss.FindFeeds)
-	}
-
-	if o.Readability {
-		p = append(p, readable.MakeReadable)
 	}
 
 	if o.Clean {
@@ -115,6 +112,10 @@ func configurePipeline(o *Options) pipeline.Pipeline {
 	p = append(p, content.ResolveURLs)
 	if o.Normalize {
 		p = append(p, content.Normalize)
+	}
+
+	if o.Readability {
+		p = append(p, readable.MakeReadable)
 	}
 
 	// we should call this AFTER modifiying the HTML

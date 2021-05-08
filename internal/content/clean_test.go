@@ -8,6 +8,15 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestUnwrapNoscript(t *testing.T) {
+	assert := assert.New(t)
+
+	d := doc("<p>foo <noscript><em>bar</em></noscript> baz</p>")
+	unwrapNoscript(d)
+	assert.Equal("<p>foo <em>bar</em> baz</p>", str(d))
+
+}
+
 func TestUnwrap(t *testing.T) {
 	assert := assert.New(t)
 
@@ -66,6 +75,67 @@ func TestRemoveElements(t *testing.T) {
 	d = doc("text<script></script>text")
 	removeUnwantedElements(d)
 	assert.Equal("texttext", str(d))
+}
+
+func TestRemoveUnsupportedScheme(t *testing.T) {
+	assert := assert.New(t)
+
+	d := doc("<img src=\"http://foo.png\"/>")
+	removeUnsupportedSchemes(d)
+	assert.Equal("<img src=\"http://foo.png\"/>", str(d))
+
+	d = doc("<img src=\"https://foo.png\"/>")
+	removeUnsupportedSchemes(d)
+	assert.Equal("<img src=\"https://foo.png\"/>", str(d))
+
+	d = doc("<img src=\"data:BASE64\"/>")
+	removeUnsupportedSchemes(d)
+	assert.Equal("<img src=\"data:BASE64\"/>", str(d))
+
+	d = doc("<img src=\"\"/>")
+	removeUnsupportedSchemes(d)
+	assert.Equal("<img src=\"\"/>", str(d))
+
+	// we need this to work as long as we resolve URLs *after* clean
+	d = doc("<img src=\"image.jpg\"/>")
+	removeUnsupportedSchemes(d)
+	assert.Equal("<img src=\"image.jpg\"/>", str(d))
+
+	d = doc("<p>unchanged</p>")
+	removeUnsupportedSchemes(d)
+	assert.Equal("<p>unchanged</p>", str(d))
+}
+
+func TestNormalizeUrls(t *testing.T) {
+	assert := assert.New(t)
+
+	d := doc(`<img src="normal.png"/>`)
+	normalizeUrls(d)
+	assert.Equal(`<img src="normal.png"/>`, str(d))
+
+	d = doc(`<img src="https://normal.png"/>`)
+	normalizeUrls(d)
+	assert.Equal(`<img src="https://normal.png"/>`, str(d))
+
+	// e.g. (URL) _> URL
+	d = doc(`<img src="(https://normal.png)"/>`)
+	normalizeUrls(d)
+	assert.Equal(`<img src="https://normal.png"/>`, str(d))
+
+	// or " URL " -> "URL"
+	d = doc(`<img src=" https://normal.png "/>`)
+	normalizeUrls(d)
+	assert.Equal(`<img src="https://normal.png"/>`, str(d))
+
+	// "something URL" -> "URL"
+	d = doc(`<img src="head https://normal.png"/>`)
+	normalizeUrls(d)
+	assert.Equal(`<img src="https://normal.png"/>`, str(d))
+
+	// "something URL" -> "URL"
+	d = doc(`<img src="https://normal.png tail"/>`)
+	normalizeUrls(d)
+	assert.Equal(`<img src="https://normal.png"/>`, str(d))
 }
 
 func doc(s string) *goquery.Document {
