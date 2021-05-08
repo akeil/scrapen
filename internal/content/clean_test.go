@@ -97,6 +97,38 @@ func TestRemoveUnsupportedScheme(t *testing.T) {
 	assert.Equal("<p>unchanged</p>", str(d))
 }
 
+func TestNormalizeUrls(t *testing.T) {
+	assert := assert.New(t)
+
+	d := doc(`<img src="normal.png"/>`)
+	normalizeUrls(d)
+	assert.Equal(`<img src="normal.png"/>`, str(d))
+
+	d = doc(`<img src="https://normal.png"/>`)
+	normalizeUrls(d)
+	assert.Equal(`<img src="https://normal.png"/>`, str(d))
+
+	// e.g. (URL) _> URL
+	d = doc(`<img src="(https://normal.png)"/>`)
+	normalizeUrls(d)
+	assert.Equal(`<img src="https://normal.png"/>`, str(d))
+
+	// or " URL " -> "URL"
+	d = doc(`<img src=" https://normal.png "/>`)
+	normalizeUrls(d)
+	assert.Equal(`<img src="https://normal.png"/>`, str(d))
+
+	// "something URL" -> "URL"
+	d = doc(`<img src="head https://normal.png"/>`)
+	normalizeUrls(d)
+	assert.Equal(`<img src="https://normal.png"/>`, str(d))
+
+	// "something URL" -> "URL"
+	d = doc(`<img src="https://normal.png tail"/>`)
+	normalizeUrls(d)
+	assert.Equal(`<img src="https://normal.png"/>`, str(d))
+}
+
 func doc(s string) *goquery.Document {
 	r := strings.NewReader(s)
 	doc, err := goquery.NewDocumentFromReader(r)
