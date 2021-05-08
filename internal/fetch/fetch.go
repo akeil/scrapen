@@ -52,6 +52,22 @@ func Fetch(ctx context.Context, t *pipeline.Task) error {
 		}
 	}
 
+	// If an AMP (https://amp.dev/) version is available, fetch that.
+	// Often easier to make readable.
+	amp := findAmpUrl(html)
+	if amp != "" {
+		log.WithFields(log.Fields{
+			"task":   t.ID,
+			"module": "fetch",
+			"url":    amp,
+		}).Info("Fetch AMP version")
+
+		html, err = fetchURL(ctx, client, t, amp)
+		if err != nil {
+			return err
+		}
+	}
+
 	t.SetHTML(html)
 	return nil
 }

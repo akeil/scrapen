@@ -108,10 +108,10 @@ func (t *Task) AddImage(i ImageInfo, data []byte) error {
 //
 // If available, the actual URL is returned. Otherwise, the requested URL is used.
 func (t *Task) ContentURL() string {
-	if t.ActualURL != "" {
-		return t.ActualURL
-	} else if t.CanonicalURL != "" {
+	if t.CanonicalURL != "" {
 		return t.CanonicalURL
+	} else if t.ActualURL != "" {
+		return t.ActualURL
 	}
 	return t.URL
 }
