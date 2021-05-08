@@ -16,7 +16,7 @@ import (
 
 // br = Brotli
 // compress = LZW
-const supportedCompressions = "gzip, deflate"
+const supportedCompressions = "gzip, deflate, br"
 
 func decompressed(t *pipeline.Task, r io.Reader, h http.Header) (io.Reader, error) {
 	// identity

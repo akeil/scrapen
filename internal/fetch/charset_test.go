@@ -2,6 +2,7 @@ package fetch
 
 import (
 	"net/http"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -36,6 +37,17 @@ func TestCharsetByName(t *testing.T) {
 	h.Add("Content-Type", "text/html; charset=utf-8")
 	cs = charsetFromHeader(task, h)
 	assert.Equal("iso-8859-1", cs)
+}
+
+func TestCharsetFromMeta(t *testing.T) {
+	assert := assert.New(t)
+
+	r := strings.NewReader(`<html><head>
+		<meta charset="windows-1252" />
+	</head><body>Content</body></html>`)
+
+	cs := charsetFromMeta(r)
+	assert.Equal("windows-1252", cs)
 }
 
 func TestDecoderByName(t *testing.T) {
