@@ -103,7 +103,8 @@ func charsetFromMeta(r io.Reader) string {
 
 	reader := func(t html.Token) error {
 		if charset != "" {
-			return nil
+			// returns error to exit early, error is later ignored
+			return fmt.Errorf("charset already set")
 		}
 
 		if t.DataAtom == atom.Meta {
