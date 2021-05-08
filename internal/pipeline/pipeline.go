@@ -154,7 +154,7 @@ func BuildPipeline(f ...Pipeline) Pipeline {
 
 type memoryStore struct {
 	assets map[string]asset
-	mx sync.Mutex
+	mx     sync.Mutex
 }
 
 func NewMemoryStore() Store {

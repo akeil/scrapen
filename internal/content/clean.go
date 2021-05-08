@@ -21,6 +21,8 @@ func Clean(ctx context.Context, t *pipeline.Task) error {
 
 	doc := t.Document()
 
+	unwrapNoscript(doc)
+
 	// TODO: does not really belong here
 	resolvePicture(doc)
 	normalizeUrls(doc)
@@ -31,6 +33,17 @@ func Clean(ctx context.Context, t *pipeline.Task) error {
 	removeUnwantedAttributes(doc)
 
 	return nil
+}
+
+// <noscript> element has a special behaviour in that it is not parsed.
+// But it should.
+// We want to remove the <noscript> element, but keep its content as HTML.
+func unwrapNoscript(doc *goquery.Document) {
+	doc.Selection.Find("noscript").Each(func(i int, s *goquery.Selection) {
+		// note: do not use noscript.Unwrap()
+		// the content of noscript is not parsed as HTML and returns escaped strings
+		s.ReplaceWithHtml(s.Text())
+	})
 }
 
 // dropUnwantedTags finds tags from the greylists an removes the *markup*
