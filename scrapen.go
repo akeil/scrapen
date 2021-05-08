@@ -99,6 +99,7 @@ func configurePipeline(o *Options) pipeline.Pipeline {
 
 	if o.Metadata {
 		p = append(p, metadata.ReadMetadata)
+		p = append(p, metadata.FallbackImage)
 	}
 
 	if o.FindFeeds {
