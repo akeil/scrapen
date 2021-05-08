@@ -39,12 +39,17 @@ func DownloadImages(ctx context.Context, t *pipeline.Task) error {
 			return "", err
 		}
 
+		log.WithFields(log.Fields{
+			"task":   t.ID,
+			"module": "assets",
+		}).Info("Fetch image...")
+
 		if u.Scheme == "data" {
 			i, data, err = fetchData(src)
 		} else if u.Scheme == "http" || u.Scheme == "https" { // assume HTTP
 			i, data, err = fetchHTTP(ctx, src)
 		} else {
-			return "", fmt.Errorf("unsupported scheme %q", u.Scheme)
+			err = fmt.Errorf("unsupported scheme %q", u.Scheme)
 		}
 
 		if err != nil {
@@ -52,10 +57,9 @@ func DownloadImages(ctx context.Context, t *pipeline.Task) error {
 		}
 
 		log.WithFields(log.Fields{
-			"task":    t.ID,
-			"module":  "assets",
-			"imageID": i.Key,
-		}).Warning("Add image to task")
+			"task":   t.ID,
+			"module": "assets",
+		}).Info("Add image...")
 
 		err = t.AddImage(i, data)
 		if err != nil {
