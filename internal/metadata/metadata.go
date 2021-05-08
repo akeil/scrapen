@@ -103,8 +103,8 @@ func findTitle(m *metadata, doc *goquery.Document) {
 
 var (
 	descriptionPref = []string{"description", "og:description", "twitter:description"}
-	imagePref       = []string{"og:image:secure_url", "og:image", "link/image_src", "twitter:image", "twitter:image:src"}
-	urlPref         = []string{"link/canonical", "og:url", "twitter:url"}
+	imagePref       = []string{"og:image:secure_url", "og:image:url", "og:image", "link/image_src", "twitter:image", "twitter:image:src"}
+	urlPref         = []string{"link/canonical", "canonicalURL", "og:url", "twitter:url"}
 	authorPref      = []string{"author", "article:author", "book:author", "twitter:creator"}
 	pubDatePref     = []string{"article:published_time", "article:modified_time", "og:updated_time", "date", "last-modified"}
 	// title: og:title
@@ -191,15 +191,6 @@ func newMetadata() *metadata {
 		author:      make(map[string]string),
 		pubDate:     make(map[string]string),
 	}
-}
-
-func contains(haystack []string, needle string) bool {
-	for _, s := range haystack {
-		if s == needle {
-			return true
-		}
-	}
-	return false
 }
 
 var layouts = []string{
