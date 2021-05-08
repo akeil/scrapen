@@ -114,6 +114,12 @@ func doImages(f fetchFunc, t *pipeline.Task) error {
 				return
 			}
 
+			log.WithFields(log.Fields{
+				"task":   t.ID,
+				"module": "assets",
+				"src": src,
+			}).Info("Found image, will download")
+
 			newSrc, err := f(src)
 			if err != nil {
 				// not much we can do about the error
