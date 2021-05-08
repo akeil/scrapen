@@ -42,6 +42,7 @@ func DownloadImages(ctx context.Context, t *pipeline.Task) error {
 		log.WithFields(log.Fields{
 			"task":   t.ID,
 			"module": "assets",
+			"url": src,
 		}).Info("Fetch image...")
 
 		if u.Scheme == "data" {
