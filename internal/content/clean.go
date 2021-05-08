@@ -2,6 +2,7 @@ package content
 
 import (
 	"context"
+	"net/url"
 
 	"github.com/PuerkitoBio/goquery"
 	log "github.com/sirupsen/logrus"
@@ -20,6 +21,7 @@ func Clean(ctx context.Context, t *pipeline.Task) error {
 
 	// TODO: does not really belong here
 	resolvePicture(doc)
+	removeUnsupportedSchemes(doc)
 
 	removeUnwantedElements(doc)
 	unwrapTags(doc)
@@ -78,6 +80,43 @@ func removeUnwantedElements(doc *goquery.Document) {
 	doc.Selection.Find("*").Each(func(i int, s *goquery.Selection) {
 		tag := goquery.NodeName(s)
 		if !isWhitelistedTag(tag) {
+			s.Remove()
+		}
+	})
+}
+
+func removeUnsupportedSchemes(doc *goquery.Document) {
+	doc.Selection.Find("img").Each(func(i int, s *goquery.Selection) {
+		src, _ := s.Attr("src")
+		if src == "" {
+			return
+		}
+
+		u, err := url.Parse(src)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"module": "content",
+				"url":    src,
+				"error":  err,
+			}).Info("Error parsing image src, removing element")
+			s.Remove()
+			return
+		}
+
+		switch u.Scheme {
+		case "data", "http", "https":
+			// supported
+			return
+		case "":
+			// empty scheme is supported because we resolve it later
+			// against the HTTP(S) base url
+			return
+		default:
+			log.WithFields(log.Fields{
+				"module": "content",
+				"url":    src,
+				"scheme": u.Scheme,
+			}).Info("Removing image with unsupported scheme in src")
 			s.Remove()
 		}
 	})

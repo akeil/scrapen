@@ -68,6 +68,35 @@ func TestRemoveElements(t *testing.T) {
 	assert.Equal("texttext", str(d))
 }
 
+func TestRemoveUnsupportedScheme(t *testing.T) {
+	assert := assert.New(t)
+
+	d := doc("<img src=\"http://foo.png\"/>")
+	removeUnsupportedSchemes(d)
+	assert.Equal("<img src=\"http://foo.png\"/>", str(d))
+
+	d = doc("<img src=\"https://foo.png\"/>")
+	removeUnsupportedSchemes(d)
+	assert.Equal("<img src=\"https://foo.png\"/>", str(d))
+
+	d = doc("<img src=\"data:BASE64\"/>")
+	removeUnsupportedSchemes(d)
+	assert.Equal("<img src=\"data:BASE64\"/>", str(d))
+
+	d = doc("<img src=\"\"/>")
+	removeUnsupportedSchemes(d)
+	assert.Equal("<img src=\"\"/>", str(d))
+
+	// we need this to work as long as we resolve URLs *after* clean
+	d = doc("<img src=\"image.jpg\"/>")
+	removeUnsupportedSchemes(d)
+	assert.Equal("<img src=\"image.jpg\"/>", str(d))
+
+	d = doc("<p>unchanged</p>")
+	removeUnsupportedSchemes(d)
+	assert.Equal("<p>unchanged</p>", str(d))
+}
+
 func doc(s string) *goquery.Document {
 	r := strings.NewReader(s)
 	doc, err := goquery.NewDocumentFromReader(r)

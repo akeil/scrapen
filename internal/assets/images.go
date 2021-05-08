@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"net/url"
 	"path"
-	"strings"
 	"sync"
 
 	"github.com/PuerkitoBio/goquery"
@@ -34,10 +33,18 @@ func DownloadImages(ctx context.Context, t *pipeline.Task) error {
 		var i pipeline.ImageInfo
 		var data []byte
 		var err error
-		if strings.HasPrefix(src, "data:") {
+
+		u, err := url.Parse(src)
+		if err != nil {
+			return "", err
+		}
+
+		if u.Scheme == "data" {
 			i, data, err = fetchData(src)
-		} else { // assume HTTP
+		} else if u.Scheme == "http" || u.Scheme == "https" { // assume HTTP
 			i, data, err = fetchHTTP(ctx, src)
+		} else {
+			return "", fmt.Errorf("unsupported scheme %q", u.Scheme)
 		}
 
 		if err != nil {
