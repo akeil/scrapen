@@ -24,6 +24,7 @@ func Prepare(ctx context.Context, t *pipeline.Task) error {
 
 	unwrapNoscript(doc)
 	convertAmpImg(doc)
+	resolveSrcset(doc)
 
 	return nil
 }

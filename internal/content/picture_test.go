@@ -43,7 +43,6 @@ func TestAmpImg(t *testing.T) {
 	convertAmpImg(d)
 
 	assert.Equal(expect, str(d))
-
 }
 
 func TestDataSrcset(t *testing.T) {
@@ -63,4 +62,17 @@ func TestDataSrcset(t *testing.T) {
 	d = doc(html)
 	resolvePicture(d)
 	assert.Equal("<img src=\"large.png\"/>", strings.TrimSpace(str(d)))
+}
+
+func TestResolveSrcset(t *testing.T) {
+	assert := assert.New(t)
+
+	html := "<picture><img src=\"default.jpg\"/></picture>"
+	d := doc(html)
+	resolveSrcset(d)
+	assert.Equal(html, str(d))
+
+	d = doc(`<img src="foo.jpg" srcset="small.jpg 100w, large.jpg 200w"/>`)
+	resolveSrcset(d)
+	assert.Equal(`<img src="large.jpg" srcset="small.jpg 100w, large.jpg 200w"/>`, str(d))
 }
