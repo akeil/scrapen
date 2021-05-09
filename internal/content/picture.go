@@ -65,6 +65,30 @@ func resolvePicture(doc *goquery.Document) {
 	})
 }
 
+var specialSrc = []string{
+	"ix-path", // https://www.imgix.com/
+}
+
+// fixSrcs Re-replaces images srcs created by various javascript frameworks
+// and establishes a "normal" src value for the image.
+func fixSrcs(doc *goquery.Document) {
+	// TODO: for imgix, we would also need to look at ix-host="..."
+	doc.Selection.Find("img").Each(func(i int, s *goquery.Selection) {
+		for _, name := range specialSrc {
+			val, _ := s.Attr(name)
+			if val != "" {
+				log.WithFields(log.Fields{
+					"module": "content",
+					"src":    val,
+				}).Debug("Fixed src")
+
+				s.RemoveAttr("src")
+				s.SetAttr("src", val)
+			}
+		}
+	})
+}
+
 // ResolveSrcset looks for the srcset attribute in images (img) and selects the
 // best (highest resolution) src.
 // Replaces the original src.
@@ -77,6 +101,12 @@ func resolveSrcset(doc *goquery.Document) {
 		set := selectSrcset(srcsets)
 
 		if set.url != "" {
+			log.WithFields(log.Fields{
+				"module": "content",
+				"src":    set.url,
+			}).Debug("Replaced image src from srcset")
+
+			s.RemoveAttr("src")
 			s.SetAttr("src", set.url)
 		}
 	})

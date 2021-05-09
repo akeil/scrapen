@@ -108,6 +108,8 @@ func configurePipeline(o *Options) pipeline.Pipeline {
 
 	p = append(p, content.Prepare)
 
+	// Do this *before* Readability
+	p = append(p, content.ResolveURLs)
 	if o.Readability {
 		p = append(p, readable.MakeReadable)
 	}
@@ -115,7 +117,6 @@ func configurePipeline(o *Options) pipeline.Pipeline {
 	if o.Clean {
 		p = append(p, content.Clean)
 	}
-	p = append(p, content.ResolveURLs)
 	if o.Normalize {
 		p = append(p, content.Normalize)
 	}

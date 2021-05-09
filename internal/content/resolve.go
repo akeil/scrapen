@@ -46,6 +46,13 @@ func resolveContentURLs(t *pipeline.Task) {
 			if val != "" {
 				newVal, err := t.ResolveURL(val)
 				if err == nil {
+					log.WithFields(log.Fields{
+						"module": "content",
+						"name":   name,
+						"old":    val,
+						"new":    newVal,
+					}).Debug("Replacing URL")
+
 					s.RemoveAttr(name)
 					s.SetAttr(name, newVal)
 				}
