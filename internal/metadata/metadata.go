@@ -106,7 +106,7 @@ var (
 	imagePref       = []string{"og:image:secure_url", "og:image:url", "og:image", "link/image_src", "twitter:image", "twitter:image:src"}
 	urlPref         = []string{"link/canonical", "canonicalURL", "og:url", "twitter:url"}
 	authorPref      = []string{"author", "article:author", "book:author", "twitter:creator"}
-	pubDatePref     = []string{"article:published_time", "article:modified_time", "og:updated_time", "date", "last-modified"}
+	pubDatePref     = []string{"article:published_time", "article:modified_time", "og:updated_time", "date", "last-modified", "iso-8601-publish-date"}
 	// title: og:title
 )
 
