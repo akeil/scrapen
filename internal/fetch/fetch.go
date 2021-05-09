@@ -61,6 +61,10 @@ func Fetch(ctx context.Context, t *pipeline.Task) error {
 			"module": "fetch",
 			"url":    amp,
 		}).Info("Fetch AMP version")
+		amp, err = t.ResolveURL(amp)
+		if err != nil {
+			return err
+		}
 
 		html, err = fetchURL(ctx, client, t, amp)
 		if err != nil {

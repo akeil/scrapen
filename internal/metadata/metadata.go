@@ -102,12 +102,47 @@ func findTitle(m *metadata, doc *goquery.Document) {
 }
 
 var (
-	descriptionPref = []string{"description", "og:description", "twitter:description"}
-	imagePref       = []string{"og:image:secure_url", "og:image:url", "og:image", "link/image_src", "twitter:image", "twitter:image:src"}
-	urlPref         = []string{"link/canonical", "canonicalURL", "og:url", "twitter:url"}
-	authorPref      = []string{"author", "article:author", "book:author", "twitter:creator"}
-	pubDatePref     = []string{"article:published_time", "article:modified_time", "og:updated_time", "date", "last-modified"}
-	// title: og:title
+	descriptionPref = []string{
+		"description",
+		"og:description",
+		"twitter:description",
+		"sailthru.description",
+		"preview",
+		"krux:description",
+	}
+	imagePref = []string{
+		"og:image:secure_url",
+		"og:image:url",
+		"og:image",
+		"link/image_src",
+		"twitter:image",
+		"twitter:image:src",
+	}
+	urlPref = []string{
+		"link/canonical",
+		"canonicalURL",
+		"og:url",
+		"twitter:url",
+	}
+	authorPref = []string{
+		"author",
+		"article:author",
+		"book:author",
+		"twitter:creator",
+		"parsely-author",
+		"sailthru.author",
+	}
+	pubDatePref = []string{
+		"article:published_time",
+		"article:modified_time",
+		"og:updated_time",
+		"date",
+		"last-modified",
+		"iso-8601-publish-date",
+		"parsely-pub-date",
+		"sailthru.date",
+	}
+	// title: og:title, twitter:title, parsely-title, sailthru.title, krux:title
 )
 
 func setMetadata(m *metadata, t *pipeline.Task) {
@@ -161,14 +196,26 @@ func setMetadata(m *metadata, t *pipeline.Task) {
 	}
 }
 
+var prefixes = []string{
+	"www.",
+	"www1.",
+	"www2.",
+}
+
 func setSite(t *pipeline.Task) {
-	u, err := url.Parse(t.ContentURL())
+	s := t.CanonicalURL
+	if s == "" {
+		s = t.ContentURL()
+	}
+	u, err := url.Parse(s)
 	if err != nil {
 		return
 	}
 	h := u.Host
-	if strings.HasPrefix(h, "www.") {
-		h = h[4:]
+	for _, prefix := range prefixes {
+		if strings.HasPrefix(h, prefix) {
+			h = h[len(prefix):]
+		}
 	}
 	t.Site = h
 	t.SiteScheme = u.Scheme

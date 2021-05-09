@@ -106,16 +106,19 @@ func configurePipeline(o *Options) pipeline.Pipeline {
 		p = append(p, rss.FindFeeds)
 	}
 
+	p = append(p, content.Prepare)
+
+	// Do this *before* Readability
+	p = append(p, content.ResolveURLs)
+	if o.Readability {
+		p = append(p, readable.MakeReadable)
+	}
+
 	if o.Clean {
 		p = append(p, content.Clean)
 	}
-	p = append(p, content.ResolveURLs)
 	if o.Normalize {
 		p = append(p, content.Normalize)
-	}
-
-	if o.Readability {
-		p = append(p, readable.MakeReadable)
 	}
 
 	// we should call this AFTER modifiying the HTML

@@ -21,7 +21,7 @@ func MakeReadable(ctx context.Context, t *pipeline.Task) error {
 	p := readability.NewParser()
 	r := strings.NewReader(t.HTML())
 
-	a, err := p.Parse(r, t.URL)
+	a, err := p.Parse(r, t.ContentURL())
 	if err != nil {
 		return err
 	}

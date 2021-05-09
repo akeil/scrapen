@@ -9,6 +9,8 @@ import (
 	"github.com/akeil/scrapen/internal/pipeline"
 )
 
+// Sanitize removes malicious content from the HTML document.
+// This should be called after all other modifications have been performed.
 func Sanitize(ctx context.Context, t *pipeline.Task) error {
 	log.WithFields(log.Fields{
 		"task":   t.ID,
