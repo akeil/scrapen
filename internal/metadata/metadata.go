@@ -196,6 +196,12 @@ func setMetadata(m *metadata, t *pipeline.Task) {
 	}
 }
 
+var prefixes = []string{
+	"www.",
+	"www1.",
+	"www2.",
+}
+
 func setSite(t *pipeline.Task) {
 	s := t.CanonicalURL
 	if s == "" {
@@ -206,8 +212,10 @@ func setSite(t *pipeline.Task) {
 		return
 	}
 	h := u.Host
-	if strings.HasPrefix(h, "www.") {
-		h = h[4:]
+	for _, prefix := range prefixes {
+		if strings.HasPrefix(h, prefix) {
+			h = h[len(prefix):]
+		}
 	}
 	t.Site = h
 	t.SiteScheme = u.Scheme
