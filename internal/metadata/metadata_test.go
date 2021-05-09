@@ -197,7 +197,7 @@ func TestSite(t *testing.T) {
 	i.ActualURL = "https://mobile.foo.com/path/page.html"
 	i.CanonicalURL = "https://foo.com/path/page.html"
 	setSite(i)
-	assert.Equal("mobile.foo.com", i.Site)
+	assert.Equal("foo.com", i.Site)
 
 	i.URL = "https://shorten.it/xyz"
 	i.ActualURL = ""

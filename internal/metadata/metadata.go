@@ -162,7 +162,11 @@ func setMetadata(m *metadata, t *pipeline.Task) {
 }
 
 func setSite(t *pipeline.Task) {
-	u, err := url.Parse(t.ContentURL())
+	s := t.CanonicalURL
+	if s == "" {
+		s = t.ContentURL()
+	}
+	u, err := url.Parse(s)
 	if err != nil {
 		return
 	}
