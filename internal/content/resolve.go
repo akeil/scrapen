@@ -13,6 +13,10 @@ import (
 	"github.com/akeil/scrapen/internal/pipeline"
 )
 
+// ResolveURLs resolve any URLs in the content against the base URLs.
+// Specifically, this will convert relative URLs into absolute ones so that
+// they remain valid when the content is viewed offline or served from another
+// host.
 func ResolveURLs(ctx context.Context, t *pipeline.Task) error {
 
 	log.WithFields(log.Fields{
