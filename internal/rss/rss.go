@@ -4,9 +4,8 @@ import (
 	"context"
 	"strings"
 
+	"github.com/PuerkitoBio/goquery"
 	log "github.com/sirupsen/logrus"
-	"golang.org/x/net/html"
-	"golang.org/x/net/html/atom"
 
 	"github.com/akeil/scrapen/internal/pipeline"
 )
@@ -35,85 +34,53 @@ func FindFeeds(ctx context.Context, t *pipeline.Task) error {
 	}).Info("Find feeds")
 
 	t.Feeds = make([]pipeline.FeedInfo, 0)
+	doc := t.Document()
 
-	reader := func(tk html.Token) error {
+	doc.Selection.Find("link").Each(func(i int, s *goquery.Selection) {
+		rel, _ := s.Attr("rel")
+		typ, _ := s.Attr("type")
+		href, _ := s.Attr("href")
+		title, _ := s.Attr("title")
 
-		tt := tk.Type
-		switch tt {
-		case html.StartTagToken,
-			html.SelfClosingTagToken:
-			switch tk.DataAtom {
-			case atom.Link:
-				handleLink(tk, t)
-			}
+		rel = strings.ToLower(rel)
+		typ = strings.ToLower(typ)
+
+		// exclude non-RSS and incomplete
+		if typ != ctRSS && typ != ctAtom && typ != ctXML {
+			return
+		}
+		if rel != "alternate" {
+			return
+		}
+		if href == "" {
+			return
 		}
 
-		return nil
-	}
+		// Found a valid RSS link - make it absolute
+		url, err := t.ResolveURL(href)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"task":   t.ID,
+				"module": "rss",
+				"error":  err,
+				"href":   href,
+			}).Warning("Failed to resolve feed URL")
+			return
+		}
 
-	err := pipeline.ReadHTML(t.HTML(), reader)
-	if err != nil {
+		// Found a RSS feed
 		log.WithFields(log.Fields{
 			"task":   t.ID,
 			"module": "rss",
-			"error":  err,
-		}).Warn("Failed to find feeds")
+			"rss":    url,
+		}).Info("found link")
 
-		return err
-	}
+		t.Feeds = append(t.Feeds, pipeline.FeedInfo{
+			URL:   url,
+			Title: title,
+		})
+
+	})
 
 	return nil
-}
-
-func handleLink(tk html.Token, t *pipeline.Task) {
-	var (
-		rel   string
-		typ   string
-		href  string
-		title string
-	)
-	for _, attr := range tk.Attr {
-		k := strings.ToLower(attr.Key)
-		switch k {
-		case "rel":
-			rel = strings.ToLower(attr.Val)
-		case "type":
-			typ = strings.ToLower(attr.Val)
-		case "href":
-			h, err := t.ResolveURL(attr.Val)
-			if err != nil {
-				log.WithFields(log.Fields{
-					"task":   t.ID,
-					"module": "rss",
-					"error":  err,
-				}).Warn("Could not resolve feed URL")
-				return
-			}
-			href = h
-		case "title":
-			// TODO: unescape HTML
-			title = attr.Val
-		}
-	}
-
-	if typ != ctRSS && typ != ctAtom && typ != ctXML {
-		return
-	}
-	if rel != "alternate" {
-		return
-	}
-	if href == "" {
-		return
-	}
-
-	log.WithFields(log.Fields{
-		"task":   t.ID,
-		"module": "rss",
-		"rss":    href,
-	}).Info("found link")
-
-	t.Feeds = append(t.Feeds, pipeline.FeedInfo{
-		URL:   href,
-		Title: title,
-	})
 }

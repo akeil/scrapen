@@ -2,13 +2,9 @@ package content
 
 import (
 	"context"
-	"io"
-	"net/url"
-	"strings"
 
+	"github.com/PuerkitoBio/goquery"
 	log "github.com/sirupsen/logrus"
-	"golang.org/x/net/html"
-	"golang.org/x/net/html/atom"
 
 	"github.com/akeil/scrapen/internal/pipeline"
 )
@@ -18,108 +14,42 @@ import (
 // they remain valid when the content is viewed offline or served from another
 // host.
 func ResolveURLs(ctx context.Context, t *pipeline.Task) error {
-
 	log.WithFields(log.Fields{
 		"task":   t.ID,
 		"module": "content",
 		"url":    t.ContentURL(),
 	}).Info("Resolve URLs in content")
 
-	base, err := url.Parse(t.ContentURL())
-	if err != nil {
-		return err
-	}
-
 	if t.ImageURL != "" {
-		img, err := resolve(base, t.ImageURL)
+		u, err := t.ResolveURL(t.ImageURL)
 		if err != nil {
 			return err
 		}
-		t.ImageURL = img
+		t.ImageURL = u
 	}
 
-	// TODO: replace the std lib parser w/ goquery
-	s, err := resolveContentURLs(base, t.HTML())
-	if err != nil {
-		return err
-	}
-	t.SetHTML(s)
+	resolveContentURLs(t)
 
 	return nil
 }
 
-func resolveContentURLs(base *url.URL, s string) (string, error) {
-	handler := func(tk html.Token, w io.StringWriter) (bool, error) {
-		var name string
-
-		switch tk.DataAtom {
-		case atom.Img:
-			name = "src"
-		case atom.A:
-			name = "href"
-		default:
-			return false, nil
-		}
-
-		var err error
-		tt := tk.Type
-		switch tt {
-		case html.StartTagToken:
-			w.WriteString("<")
-			w.WriteString(tk.Data)
-			err = resolveAttr(base, tk.Attr, name, w)
-			if err != nil {
-				return false, err
-			}
-			w.WriteString(">")
-			return true, nil
-		case html.SelfClosingTagToken:
-			w.WriteString("<")
-			w.WriteString(tk.Data)
-			err = resolveAttr(base, tk.Attr, name, w)
-			if err != nil {
-				return false, err
-			}
-			w.WriteString("/>")
-			return true, nil
-		}
-
-		return false, nil
-	}
-
-	var b strings.Builder
-	err := pipeline.WalkHTML(&b, s, handler)
-	if err != nil {
-		return "", err
-	}
-
-	return b.String(), nil
+var urlAttrs = []string{
+	"src",
+	"href",
 }
 
-func resolveAttr(base *url.URL, a []html.Attribute, name string, w io.StringWriter) error {
-	for _, attr := range a {
-		if attr.Key == name {
-			newHref, err := resolve(base, attr.Val)
-			if err != nil {
-				return err
+func resolveContentURLs(t *pipeline.Task) {
+	doc := t.Document()
+	doc.Selection.Find("*").Each(func(i int, s *goquery.Selection) {
+		for _, name := range urlAttrs {
+			val, _ := s.Attr(name)
+			if val != "" {
+				newVal, err := t.ResolveURL(val)
+				if err == nil {
+					s.RemoveAttr(name)
+					s.SetAttr(name, newVal)
+				}
 			}
-			pipeline.WriteAttr(html.Attribute{
-				Namespace: "",
-				Key:       name,
-				Val:       newHref,
-			}, w)
-		} else {
-			pipeline.WriteAttr(attr, w)
 		}
-	}
-	return nil
-}
-
-func resolve(base *url.URL, href string) (string, error) {
-	ref, err := url.Parse(href)
-	if err != nil {
-		return "", err
-	}
-
-	return base.ResolveReference(ref).String(), nil
+	})
 }
