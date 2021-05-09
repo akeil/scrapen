@@ -7,7 +7,29 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	log "github.com/sirupsen/logrus"
+	"golang.org/x/net/html"
+	"golang.org/x/net/html/atom"
 )
+
+// ConvertAmpImg converts an amp-img to a "normal" img element.
+func convertAmpImg(doc *goquery.Document) {
+	doc.Selection.Find("amp-img").Each(func(i int, s *goquery.Selection) {
+		// Copy all attributes (list of Nodes should be exactly one)
+		attrs := s.Nodes[0].Attr
+
+		// Drop children and text content
+		s.Contents().Remove()
+
+		// Replace with img element
+		node := &html.Node{
+			Type:     html.ElementNode,
+			Data:     "img",
+			DataAtom: atom.Img,
+			Attr:     attrs,
+		}
+		s.ReplaceWithNodes(node)
+	})
+}
 
 func resolvePicture(doc *goquery.Document) {
 	doc.Selection.Find("picture").Each(func(i int, s *goquery.Selection) {
