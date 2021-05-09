@@ -39,12 +39,6 @@ func DownloadImages(ctx context.Context, t *pipeline.Task) error {
 			return "", err
 		}
 
-		log.WithFields(log.Fields{
-			"task":   t.ID,
-			"module": "assets",
-			"url": src,
-		}).Info("Fetch image...")
-
 		if u.Scheme == "data" {
 			i, data, err = fetchData(src)
 		} else if u.Scheme == "http" || u.Scheme == "https" { // assume HTTP
@@ -113,12 +107,6 @@ func doImages(f fetchFunc, t *pipeline.Task) error {
 				// leave the image as is
 				return
 			}
-
-			log.WithFields(log.Fields{
-				"task":   t.ID,
-				"module": "assets",
-				"src": src,
-			}).Info("Found image, will download")
 
 			newSrc, err := f(src)
 			if err != nil {
