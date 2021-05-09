@@ -102,12 +102,47 @@ func findTitle(m *metadata, doc *goquery.Document) {
 }
 
 var (
-	descriptionPref = []string{"description", "og:description", "twitter:description"}
-	imagePref       = []string{"og:image:secure_url", "og:image:url", "og:image", "link/image_src", "twitter:image", "twitter:image:src"}
-	urlPref         = []string{"link/canonical", "canonicalURL", "og:url", "twitter:url"}
-	authorPref      = []string{"author", "article:author", "book:author", "twitter:creator", "parsely-author"}
-	pubDatePref     = []string{"article:published_time", "article:modified_time", "og:updated_time", "date", "last-modified", "iso-8601-publish-date"}
-	// title: og:title
+	descriptionPref = []string{
+		"description",
+		"og:description",
+		"twitter:description",
+		"sailthru.description",
+		"preview",
+		"krux:description",
+	}
+	imagePref = []string{
+		"og:image:secure_url",
+		"og:image:url",
+		"og:image",
+		"link/image_src",
+		"twitter:image",
+		"twitter:image:src",
+	}
+	urlPref = []string{
+		"link/canonical",
+		"canonicalURL",
+		"og:url",
+		"twitter:url",
+	}
+	authorPref = []string{
+		"author",
+		"article:author",
+		"book:author",
+		"twitter:creator",
+		"parsely-author",
+		"sailthru.author",
+	}
+	pubDatePref = []string{
+		"article:published_time",
+		"article:modified_time",
+		"og:updated_time",
+		"date",
+		"last-modified",
+		"iso-8601-publish-date",
+		"parsely-pub-date",
+		"sailthru.date",
+	}
+	// title: og:title, twitter:title, parsely-title, sailthru.title, krux:title
 )
 
 func setMetadata(m *metadata, t *pipeline.Task) {
