@@ -83,7 +83,7 @@ func TestFindFeeds(t *testing.T) {
 
 	fi, err = findRss(base, html)
 	assert.Nil(err)
-	assert.Equal(1, len(fi))
+	assert.Equal(0, len(fi))
 
 	// invalid RSS link, missing type` AND rel
 	html = `<html><head>
