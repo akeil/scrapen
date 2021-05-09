@@ -2,7 +2,6 @@ package content
 
 import (
 	"context"
-	"net/url"
 
 	"github.com/PuerkitoBio/goquery"
 	log "github.com/sirupsen/logrus"
@@ -15,24 +14,18 @@ import (
 // they remain valid when the content is viewed offline or served from another
 // host.
 func ResolveURLs(ctx context.Context, t *pipeline.Task) error {
-
 	log.WithFields(log.Fields{
 		"task":   t.ID,
 		"module": "content",
 		"url":    t.ContentURL(),
 	}).Info("Resolve URLs in content")
 
-	base, err := url.Parse(t.ContentURL())
-	if err != nil {
-		return err
-	}
-
 	if t.ImageURL != "" {
-		img, err := resolve(base, t.ImageURL)
+		u, err := t.ResolveURL(t.ImageURL)
 		if err != nil {
 			return err
 		}
-		t.ImageURL = img
+		t.ImageURL = u
 	}
 
 	resolveContentURLs(t)
@@ -59,13 +52,4 @@ func resolveContentURLs(t *pipeline.Task) {
 			}
 		}
 	})
-}
-
-func resolve(base *url.URL, href string) (string, error) {
-	ref, err := url.Parse(href)
-	if err != nil {
-		return "", err
-	}
-
-	return base.ResolveReference(ref).String(), nil
 }
