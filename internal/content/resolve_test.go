@@ -17,6 +17,7 @@ func TestResolveURLs(t *testing.T) {
 		ActualURL: "https://example.com/abc/index.html",
 		ImageURL:  "/images/image.jpg",
 	}
+	task.SetHTML("")
 
 	err := ResolveURLs(nil, task)
 	assert.Nil(err)
