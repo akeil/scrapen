@@ -12,6 +12,8 @@ import (
 	"github.com/akeil/scrapen/internal/pipeline"
 )
 
+// Prepare tries to "fix" the HTML and make it easier to find and extract
+// the main content.
 func Prepare(ctx context.Context, t *pipeline.Task) error {
 	log.WithFields(log.Fields{
 		"task":   t.ID,
@@ -25,6 +27,7 @@ func Prepare(ctx context.Context, t *pipeline.Task) error {
 	return nil
 }
 
+// Clean removes unwanted elements and attributes from the content.
 func Clean(ctx context.Context, t *pipeline.Task) error {
 	log.WithFields(log.Fields{
 		"task":   t.ID,

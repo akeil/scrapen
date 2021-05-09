@@ -11,6 +11,7 @@ import (
 	"github.com/akeil/scrapen/internal/pipeline"
 )
 
+// Normalize improves the HTML document by (slightly) modifying its content.
 func Normalize(ctx context.Context, t *pipeline.Task) error {
 	log.WithFields(log.Fields{
 		"task":   t.ID,
