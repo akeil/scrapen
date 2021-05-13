@@ -9,7 +9,7 @@ import (
 	"github.com/akeil/scrapen/internal/pipeline"
 )
 
-var pattern = regexp.MustCompile("\\w+")
+var pattern = regexp.MustCompile(`\w+`)
 
 // CountWords adds the `WordCount` property to the the Task.
 // It counts the number of all words in the content.

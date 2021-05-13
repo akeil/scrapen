@@ -1,6 +1,7 @@
 package metadata
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -16,7 +17,7 @@ func TestFallbackImage(t *testing.T) {
 
 	// image already set
 	task.ImageURL = "something.jpg"
-	err = FallbackImage(nil, task)
+	err = FallbackImage(context.TODO(), task)
 	assert.Nil(err)
 	assert.Equal("something.jpg", task.ImageURL)
 
@@ -31,7 +32,7 @@ func TestFallbackImage(t *testing.T) {
 	task.ImageURL = ""
 	task.SetHTML(html)
 
-	err = FallbackImage(nil, task)
+	err = FallbackImage(context.TODO(), task)
 	assert.Nil(err)
 	assert.Equal("image.jpg", task.ImageURL)
 
@@ -43,7 +44,7 @@ func TestFallbackImage(t *testing.T) {
     `
 	task.SetHTML(html)
 	task.ImageURL = ""
-	err = FallbackImage(nil, task)
+	err = FallbackImage(context.TODO(), task)
 	assert.Nil(err)
 	assert.Equal("icon.png", task.ImageURL)
 
@@ -55,7 +56,7 @@ func TestFallbackImage(t *testing.T) {
     `
 	task.SetHTML(html)
 	task.ImageURL = ""
-	err = FallbackImage(nil, task)
+	err = FallbackImage(context.TODO(), task)
 	assert.Nil(err)
 	assert.Equal("pref.png", task.ImageURL)
 }

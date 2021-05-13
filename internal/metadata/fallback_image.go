@@ -47,10 +47,6 @@ var iconRels = []string{
 	"shortcut icon",
 }
 
-var iconMetas = []string{
-	"msapplication-TileImage",
-}
-
 func fallbackImageFromIcon(t *pipeline.Task) {
 	doc := t.Document()
 	var icons iconList

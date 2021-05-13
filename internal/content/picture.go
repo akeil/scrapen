@@ -161,7 +161,7 @@ func parseSrcsetOption(o string) (srcset, error) {
 		return srcset{}, fmt.Errorf("got invalid srcset %q", o)
 		// we expect two entries per option (URL and width)
 	} else if len(parts) > 2 {
-		return srcset{}, fmt.Errorf("Invalid srcset: %q", o)
+		return srcset{}, fmt.Errorf("invalid srcset: %q", o)
 	}
 
 	// The first part is the URL
@@ -174,14 +174,14 @@ func parseSrcsetOption(o string) (srcset, error) {
 		if strings.HasSuffix(x, "w") {
 			width, err := strconv.ParseUint(strings.TrimSuffix(x, "w"), 10, 64)
 			if err != nil {
-				return srcset{}, fmt.Errorf("Failed to parse int from %q", x)
+				return srcset{}, fmt.Errorf("failed to parse int from %q", x)
 			}
 			set.width = width
 
 		} else if strings.HasSuffix(x, "x") {
 			density, err := strconv.ParseFloat(strings.TrimSuffix(x, "x"), 64)
 			if err != nil {
-				return srcset{}, fmt.Errorf("Failed to parse float from %q", x)
+				return srcset{}, fmt.Errorf("failed to parse float from %q", x)
 			}
 			set.density = density
 		}

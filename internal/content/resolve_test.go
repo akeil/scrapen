@@ -1,6 +1,7 @@
 package content
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -11,15 +12,13 @@ import (
 func TestResolveURLs(t *testing.T) {
 	assert := assert.New(t)
 
-	var task *pipeline.Task
-
-	task = &pipeline.Task{
+	task := &pipeline.Task{
 		ActualURL: "https://example.com/abc/index.html",
 		ImageURL:  "/images/image.jpg",
 	}
 	task.SetHTML("")
 
-	err := ResolveURLs(nil, task)
+	err := ResolveURLs(context.TODO(), task)
 	assert.Nil(err)
 	assert.Equal("https://example.com/images/image.jpg", task.ImageURL)
 
@@ -40,7 +39,7 @@ func resolveTest(t *testing.T, task *pipeline.Task, html, expected string) {
 	assert := assert.New(t)
 
 	task.SetHTML(html)
-	err := ResolveURLs(nil, task)
+	err := ResolveURLs(context.TODO(), task)
 	assert.Nil(err)
 
 	// goquery will automatically insert head and body

@@ -213,9 +213,7 @@ func setSite(t *pipeline.Task) {
 	}
 	h := u.Host
 	for _, prefix := range prefixes {
-		if strings.HasPrefix(h, prefix) {
-			h = h[len(prefix):]
-		}
+		h = strings.TrimPrefix(h, prefix)
 	}
 	t.Site = h
 	t.SiteScheme = u.Scheme
