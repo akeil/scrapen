@@ -41,6 +41,7 @@ type Task struct {
 	Store        Store
 	document     *goquery.Document
 	altDocument  *goquery.Document
+	AltURL       string
 	mx           sync.Mutex
 }
 

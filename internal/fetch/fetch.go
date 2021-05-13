@@ -88,6 +88,7 @@ func fetchAMP(ctx context.Context, client *http.Client, t *pipeline.Task, url st
 	}
 
 	t.SetAltHTML(html)
+	t.AltURL = url
 	return nil
 }
 

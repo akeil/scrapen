@@ -21,18 +21,17 @@ func MakeReadable(ctx context.Context, t *pipeline.Task) error {
 	}).Info("Apply readability")
 
 	baseURL := t.ContentURL()
-	candidates := make([]readability.Article, 0)
+	candidates := make([]candidate, 0)
 
 	a, err := doReadability(t.Document(), baseURL)
 	if err != nil {
 		return err
 	}
-	candidates = append(candidates, a)
+	candidates = append(candidates, candidate{baseURL, a})
 
 	altDoc := t.AltDocument()
 	if altDoc != nil {
-		// TODO: bseURL is not correct here
-		altA, err := doReadability(altDoc, baseURL)
+		altA, err := doReadability(altDoc, t.AltURL)
 		if err != nil {
 			log.WithFields(log.Fields{
 				"task":   t.ID,
@@ -41,15 +40,16 @@ func MakeReadable(ctx context.Context, t *pipeline.Task) error {
 				"error":  err,
 			}).Warning("Readability failed for alternate content")
 		} else {
-			candidates = append(candidates, altA)
+			candidates = append(candidates, candidate{t.AltURL, altA})
 		}
 	}
 
 	// TODO: keep the alt URL depending on whoch article we selected
-	article := selectArticle(candidates)
+	winner := selectArticle(candidates)
 
-	t.SetHTML(article.Content)
-	t.Title = article.Title
+	t.SetHTML(winner.Article.Content)
+	t.Title = winner.Article.Title
+	t.ActualURL = winner.URL
 
 	return nil
 }
@@ -72,12 +72,12 @@ func doReadability(doc *goquery.Document, baseURL string) (readability.Article, 
 	return a, nil
 }
 
-func selectArticle(candidates []readability.Article) readability.Article {
-	var result readability.Article
+func selectArticle(candidates []candidate) candidate {
+	var result candidate
 	maxlen := -1
 
-	for _, a := range candidates {
-		r := strings.NewReader(a.Content)
+	for _, c := range candidates {
+		r := strings.NewReader(c.Article.Content)
 		doc, err := goquery.NewDocumentFromReader(r)
 		if err != nil {
 			log.WithFields(log.Fields{
@@ -91,9 +91,14 @@ func selectArticle(candidates []readability.Article) readability.Article {
 		l := len(text)
 		if l > maxlen {
 			maxlen = l
-			result = a
+			result = c
 		}
 	}
 
 	return result
+}
+
+type candidate struct {
+	URL     string
+	Article readability.Article
 }

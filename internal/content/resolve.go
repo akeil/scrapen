@@ -37,8 +37,9 @@ func ResolveURLs(ctx context.Context, t *pipeline.Task) error {
 	resolveContentURLs(doc, base)
 
 	altDoc := t.AltDocument()
-	if altDoc != nil {
-		resolveContentURLs(altDoc, base)
+	altURL, err := url.Parse(t.AltURL)
+	if altDoc != nil && err != nil {
+		resolveContentURLs(altDoc, altURL)
 	}
 
 	return nil
