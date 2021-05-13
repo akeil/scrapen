@@ -95,6 +95,12 @@ func selectArticle(candidates []candidate) candidate {
 		}
 	}
 
+	log.WithFields(log.Fields{
+		"module":       "readable",
+		"url":          result.URL,
+		"alternatives": len(candidates),
+	}).Info("Selected best article by text length")
+
 	return result
 }
 
