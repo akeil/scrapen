@@ -40,6 +40,7 @@ type Task struct {
 	WordCount    int
 	Store        Store
 	document     *goquery.Document
+	altDocument  *goquery.Document
 	mx           sync.Mutex
 }
 
@@ -85,6 +86,22 @@ func (t *Task) SetHTML(s string) {
 		return
 	}
 	t.document = doc
+}
+
+// SetAltHTML sets the alternate HTML content.
+func (t *Task) SetAltHTML(s string) {
+	r := strings.NewReader(s)
+	doc, err := goquery.NewDocumentFromReader(r)
+	if err != nil {
+		// TODO: log? panic?
+		return
+	}
+	t.altDocument = doc
+}
+
+// AltDocument is the altrnate HTML document.
+func (t *Task) AltDocument() *goquery.Document {
+	return t.altDocument
 }
 
 // TODO: still needed?
