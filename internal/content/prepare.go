@@ -18,13 +18,21 @@ func Prepare(ctx context.Context, t *pipeline.Task) error {
 	}).Info("Prepare HTML")
 
 	doc := t.Document()
+	doPrepare(doc)
 
+	altDoc := t.AltDocument()
+	if altDoc != nil {
+		doPrepare(altDoc)
+	}
+
+	return nil
+}
+
+func doPrepare(doc *goquery.Document) {
 	unwrapNoscript(doc)
 	fixSrcs(doc)
 	convertAmpImg(doc)
 	resolveSrcset(doc)
-
-	return nil
 }
 
 // <noscript> element has a special behaviour in that it is not parsed.
