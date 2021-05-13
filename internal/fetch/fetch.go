@@ -29,7 +29,7 @@ func Fetch(ctx context.Context, t *pipeline.Task) error {
 		Jar: jar,
 	}
 
-	html, err := fetchURL(ctx, client, t, t.URL)
+	actURL, html, err := fetchURL(ctx, client, t, t.URL)
 	if err != nil {
 		return err
 	}
@@ -46,13 +46,14 @@ func Fetch(ctx context.Context, t *pipeline.Task) error {
 			"url":    redirect,
 		}).Info("Redirect from <meta>")
 
-		html, err = fetchURL(ctx, client, t, redirect)
+		actURL, html, err = fetchURL(ctx, client, t, redirect)
 		if err != nil {
 			return err
 		}
 	}
 
 	t.SetHTML(html)
+	t.ActualURL = actURL
 
 	// If an AMP (https://amp.dev/) version is available, fetch that.
 	// Often easier to make readable.
@@ -82,28 +83,31 @@ func fetchAMP(ctx context.Context, client *http.Client, t *pipeline.Task, url st
 		return err
 	}
 
-	html, err := fetchURL(ctx, client, t, url)
+	actURL, html, err := fetchURL(ctx, client, t, url)
 	if err != nil {
 		return err
 	}
 
 	t.SetAltHTML(html)
-	t.AltURL = url
+	t.AltURL = actURL
 	return nil
 }
 
-func fetchURL(ctx context.Context, client *http.Client, t *pipeline.Task, url string) (string, error) {
+func fetchURL(ctx context.Context, client *http.Client, t *pipeline.Task, url string) (string, string, error) {
 	log.WithFields(log.Fields{
 		"task":   t.ID,
 		"module": "fetch",
 		"url":    url,
 	}).Info("Fetch URL")
 
+	var actURL string
+
 	res, err := doRequest(ctx, client, url)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
+	// if failed, repeat the request with cookies
 	if res.StatusCode != http.StatusOK {
 		if didReceiveCookie(res) {
 			log.WithFields(log.Fields{
@@ -114,14 +118,14 @@ func fetchURL(ctx context.Context, client *http.Client, t *pipeline.Task, url st
 			}).Info("Repeat request with cookies")
 			res, err = doRequest(ctx, client, url)
 			if err != nil {
-				return "", err
+				return "", "", err
 			}
 		}
 	}
 
 	t.StatusCode = res.StatusCode
 	if res.Request.URL != nil {
-		t.ActualURL = res.Request.URL.String()
+		actURL = res.Request.URL.String()
 	}
 
 	log.WithFields(log.Fields{
@@ -133,23 +137,23 @@ func fetchURL(ctx context.Context, client *http.Client, t *pipeline.Task, url st
 
 	err = errorFromStatus(res)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 	defer res.Body.Close()
 
 	// decompress
 	r, err := decompressed(t, res.Body, res.Header)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
 	// decode charset
 	s, err := readUTF8(t, r, res.Header)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
-	return s, nil
+	return actURL, s, nil
 }
 
 func doRequest(ctx context.Context, client *http.Client, url string) (*http.Response, error) {
