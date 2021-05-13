@@ -11,6 +11,8 @@ import (
 	"github.com/akeil/scrapen/internal/pipeline"
 )
 
+// MakeReadable applies the readability script to each content alternative
+// and selects the best content as the HTML for the task.
 func MakeReadable(ctx context.Context, t *pipeline.Task) error {
 	log.WithFields(log.Fields{
 		"task":   t.ID,
@@ -29,6 +31,7 @@ func MakeReadable(ctx context.Context, t *pipeline.Task) error {
 
 	altDoc := t.AltDocument()
 	if altDoc != nil {
+		// TODO: bseURL is not correct here
 		altA, err := doReadability(altDoc, baseURL)
 		if err != nil {
 			log.WithFields(log.Fields{
@@ -42,6 +45,7 @@ func MakeReadable(ctx context.Context, t *pipeline.Task) error {
 		}
 	}
 
+	// TODO: keep the alt URL depending on whoch article we selected
 	article := selectArticle(candidates)
 
 	t.SetHTML(article.Content)

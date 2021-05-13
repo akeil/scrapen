@@ -2,6 +2,7 @@ package content
 
 import (
 	"context"
+	"net/url"
 
 	"github.com/PuerkitoBio/goquery"
 	log "github.com/sirupsen/logrus"
@@ -28,7 +29,17 @@ func ResolveURLs(ctx context.Context, t *pipeline.Task) error {
 		t.ImageURL = u
 	}
 
-	resolveContentURLs(t)
+	doc := t.Document()
+	base, err := url.Parse(t.ContentURL())
+	if err != nil {
+		return err
+	}
+	resolveContentURLs(doc, base)
+
+	altDoc := t.AltDocument()
+	if altDoc != nil {
+		resolveContentURLs(altDoc, base)
+	}
 
 	return nil
 }
@@ -38,14 +49,13 @@ var urlAttrs = []string{
 	"href",
 }
 
-func resolveContentURLs(t *pipeline.Task) {
-	doc := t.Document()
+func resolveContentURLs(doc *goquery.Document, base *url.URL) {
 	doc.Selection.Find("*").Each(func(i int, s *goquery.Selection) {
 		for _, name := range urlAttrs {
 			val, _ := s.Attr(name)
 			if val != "" {
-				newVal, err := t.ResolveURL(val)
-				if err == nil {
+				newVal, err := resolveURL(base, val)
+				if err == nil && val != newVal {
 					log.WithFields(log.Fields{
 						"module": "content",
 						"name":   name,
@@ -59,4 +69,13 @@ func resolveContentURLs(t *pipeline.Task) {
 			}
 		}
 	})
+}
+
+func resolveURL(base *url.URL, href string) (string, error) {
+	h, err := url.Parse(href)
+	if err != nil {
+		return "", err
+	}
+
+	return base.ResolveReference(h).String(), nil
 }
