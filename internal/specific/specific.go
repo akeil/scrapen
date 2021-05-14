@@ -24,7 +24,16 @@ func SiteSpecific(ctx context.Context, t *pipeline.Task) error {
 
 	h := strings.TrimPrefix(u.Host, "www.")
 	switch h {
-	case "stackoverflow.com":
+	case "stackoverflow.com",
+		"stackexchange.com",
+		"superuser.com",
+		"askubuntu.com",
+		"ux.stackexchange.com",
+		"unix.stackexchange.com",
+		"datascience.stackexchange.com",
+		"codereview.stackexchange.com":
+		// TODO: too lazy to add them all:
+		// https://stackexchange.com/sites
 		stackoverflow(t)
 		break
 	}
