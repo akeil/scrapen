@@ -29,6 +29,7 @@ func Prepare(ctx context.Context, t *pipeline.Task) error {
 }
 
 func doPrepare(doc *goquery.Document) {
+	resolveIFrames(doc)
 	unwrapNoscript(doc)
 	fixSrcs(doc)
 	convertAmpImg(doc)
