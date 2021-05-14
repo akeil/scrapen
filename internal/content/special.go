@@ -163,27 +163,6 @@ func jsonLD(t *pipeline.Task) {
 }
 
 func ldAudio(t *pipeline.Task, m map[string]interface{}) {
-	/* {
-	   "@context": "http://schema.org",
-	   "@type": "Audio",
-	   "name": "Migration - Das US-Einwanderungsgesetz von 1921",
-	   "description": "",
-	   "contentUrl": "https://ondemand-mp3.dradio.de/file/dradio/2021/05/17/deutschlandfunknova_migration_das_20210517_8a14882a.mp3",
-	   "encodingFormat": "audio/mpeg",
-	   "contentSize": "39285987",
-	   "transcript": "",
-	   "uploadDate": "2021-05-04",
-	   "duration": "PT41M1S",
-	   "inLanguage": {
-	       "@type": "Language",
-	       "name": "German",
-	       "alternateName": "de"
-	   },
-	   "productionCompany": {
-	       "@type": "Organization",
-	       "name": "Deutschlandfunk Nova"
-	   }
-	   } */
 	if u, ok := m["contentUrl"].(string); ok {
 		u, err := t.ResolveURL(u)
 		if err != nil {
@@ -230,4 +209,6 @@ func ldArticle(t *pipeline.Task, m map[string]interface{}) {
 	    "description": "Der Emergency Quota Act von 1921 schloss alle Menschen aus asiatischen Ländern und Osteuropa von der Einwanderung in die USA aus.",
 	    "mainEntityOfPage": "https://www.deutschlandfunknova.de/beitrag/emergency-quota-act-einwanderung-in-die-usa-ab-1921"
 	    }     */
+
+    // TODO: these could be added to the metadata
 }
