@@ -216,6 +216,7 @@ func writeFooter(b *strings.Builder, t *pipeline.Task) {
 	b.WriteString("</p>")
 
 	writeFeeds(b, t)
+	writeEnclosures(b, t)
 
 	b.WriteString("</footer>")
 }
@@ -238,5 +239,29 @@ func writeFeeds(b *strings.Builder, t *pipeline.Task) {
 		}
 		b.WriteString("</a></li>")
 	}
+	b.WriteString("</ul")
+}
+
+func writeEnclosures(b *strings.Builder, t *pipeline.Task) {
+	if len(t.Enclosures) == 0 {
+		return
+	}
+
+	b.WriteString("<p>Enclosures:</p>")
+	b.WriteString("<ul>")
+	for _, enc := range t.Enclosures {
+		b.WriteString("<li>")
+		switch enc.Type {
+		case "Audio":
+			b.WriteString(fmt.Sprintf("<audio controls src=%q type=%q></audio>", enc.URL, enc.ContentType))
+			b.WriteString("<br/>")
+			b.WriteString(fmt.Sprintf("<strong>%v</strong>", enc.Title))
+			b.WriteString("<br/>")
+			b.WriteString(enc.Description)
+			break
+		}
+		b.WriteString("</li>")
+	}
+
 	b.WriteString("</ul")
 }

@@ -36,6 +36,7 @@ func run(url string) error {
 		Normalize:      true,
 		DownloadImages: true,
 		FindFeeds:      true,
+		SiteSpecific:   true,
 		Store:          s,
 	}
 	a, err := scrapen.Scrape(url, o)
@@ -79,6 +80,17 @@ func taskFromArticle(a scrapen.Result, s scrapen.Store) *pipeline.Task {
 		}
 	}
 
+	encs := make([]pipeline.Enclosure, len(a.Enclosures))
+	for i, e := range a.Enclosures {
+		encs[i] = pipeline.Enclosure{
+			Type:        e.Type,
+			Title:       e.Title,
+			URL:         e.URL,
+			ContentType: e.ContentType,
+			Description: e.Description,
+		}
+	}
+
 	t := &pipeline.Task{
 		URL:          a.URL,
 		ActualURL:    a.ActualURL,
@@ -95,6 +107,7 @@ func taskFromArticle(a scrapen.Result, s scrapen.Store) *pipeline.Task {
 		WordCount:    a.WordCount,
 		Images:       imgs,
 		Feeds:        fs,
+		Enclosures:   encs,
 		Store:        s,
 	}
 	t.SetHTML(a.HTML)

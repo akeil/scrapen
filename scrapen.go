@@ -15,6 +15,7 @@ import (
 	"github.com/akeil/scrapen/internal/pipeline"
 	"github.com/akeil/scrapen/internal/readable"
 	"github.com/akeil/scrapen/internal/rss"
+	"github.com/akeil/scrapen/internal/specific"
 )
 
 // Scrape creates and runs a scraping task for the given URL with given Options.
@@ -73,6 +74,8 @@ type Options struct {
 	Normalize bool
 	// DownloadImages controls whether images from the content should be downloaded.
 	DownloadImages bool
+	// SiteSpecific controls whether to apply site-specific content-selectors.
+	SiteSpecific bool
 	// Detect RSS feeds
 	FindFeeds bool
 	// A Store is required if DownloadImages is true.
@@ -87,6 +90,7 @@ func DefaultOptions() *Options {
 		Clean:          true,
 		Normalize:      true,
 		DownloadImages: false,
+		SiteSpecific:   false,
 		FindFeeds:      false,
 		Store:          nil,
 	}
@@ -104,6 +108,10 @@ func configurePipeline(o *Options) pipeline.Pipeline {
 
 	if o.FindFeeds {
 		p = append(p, rss.FindFeeds)
+	}
+
+	if o.SiteSpecific {
+		p = append(p, specific.SiteSpecific)
 	}
 
 	p = append(p, content.Prepare)
@@ -161,6 +169,7 @@ type Result struct {
 	WordCount    int
 	Feeds        []Feed
 	Images       []Image
+	Enclosures   []Enclosure
 	ImageURL     string
 }
 
@@ -174,6 +183,14 @@ type Image struct {
 	ContentURL  string
 	ContentType string
 	OriginalURL string
+}
+
+type Enclosure struct {
+	Type        string
+	Title       string
+	URL         string
+	ContentType string
+	Description string
 }
 
 func resultFromTask(t *pipeline.Task) Result {
@@ -192,6 +209,17 @@ func resultFromTask(t *pipeline.Task) Result {
 			ContentURL:  img.ContentURL,
 			ContentType: img.ContentType,
 			OriginalURL: img.OriginalURL,
+		}
+	}
+
+	encs := make([]Enclosure, len(t.Enclosures))
+	for i, e := range t.Enclosures {
+		encs[i] = Enclosure{
+			Type:        e.Type,
+			Title:       e.Title,
+			URL:         e.URL,
+			ContentType: e.ContentType,
+			Description: e.Description,
 		}
 	}
 
@@ -217,6 +245,7 @@ func resultFromTask(t *pipeline.Task) Result {
 		WordCount:    t.WordCount,
 		Feeds:        fs,
 		Images:       imgs,
+		Enclosures:   encs,
 		ImageURL:     t.ImageURL,
 	}
 }
