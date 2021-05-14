@@ -194,8 +194,6 @@ func ldAudio(t *pipeline.Task, m map[string]interface{}) {
 		ct, _ := m["encodingFormat"].(string)
 		desc, _ := m["description"].(string)
 
-		//size := m["contentSize"]
-		//description := m["description"]
 		enc := pipeline.Enclosure{
 			Type:        "Audio",
 			Title:       name,

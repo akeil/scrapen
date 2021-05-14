@@ -169,6 +169,7 @@ type Result struct {
 	WordCount    int
 	Feeds        []Feed
 	Images       []Image
+	Enclosures   []Enclosure
 	ImageURL     string
 }
 
@@ -182,6 +183,14 @@ type Image struct {
 	ContentURL  string
 	ContentType string
 	OriginalURL string
+}
+
+type Enclosure struct {
+	Type        string
+	Title       string
+	URL         string
+	ContentType string
+	Description string
 }
 
 func resultFromTask(t *pipeline.Task) Result {
@@ -200,6 +209,17 @@ func resultFromTask(t *pipeline.Task) Result {
 			ContentURL:  img.ContentURL,
 			ContentType: img.ContentType,
 			OriginalURL: img.OriginalURL,
+		}
+	}
+
+	encs := make([]Enclosure, len(t.Enclosures))
+	for i, e := range t.Enclosures {
+		encs[i] = Enclosure{
+			Type:        e.Type,
+			Title:       e.Title,
+			URL:         e.URL,
+			ContentType: e.ContentType,
+			Description: e.Description,
 		}
 	}
 
@@ -225,6 +245,7 @@ func resultFromTask(t *pipeline.Task) Result {
 		WordCount:    t.WordCount,
 		Feeds:        fs,
 		Images:       imgs,
+		Enclosures:   encs,
 		ImageURL:     t.ImageURL,
 	}
 }
