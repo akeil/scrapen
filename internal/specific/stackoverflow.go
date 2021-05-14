@@ -5,8 +5,6 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	log "github.com/sirupsen/logrus"
-	//"golang.org/x/net/html"
-	//"golang.org/x/net/html/atom"
 
 	"github.com/akeil/scrapen/internal/pipeline"
 )

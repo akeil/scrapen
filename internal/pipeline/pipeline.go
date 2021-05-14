@@ -37,6 +37,7 @@ type Task struct {
 	ImageURL     string
 	Images       []ImageInfo
 	Feeds        []FeedInfo
+	Enclosures   []Enclosure
 	WordCount    int
 	Store        Store
 	document     *goquery.Document
@@ -125,6 +126,15 @@ func (t *Task) AddImage(i ImageInfo, data []byte) error {
 
 	t.Images = append(t.Images, i)
 	return nil
+}
+
+func (t *Task) AddEnclosure(e Enclosure) {
+	t.mx.Lock()
+	defer t.mx.Unlock()
+	if t.Enclosures == nil {
+		t.Enclosures = make([]Enclosure, 0)
+	}
+	t.Enclosures = append(t.Enclosures, e)
 }
 
 // ContentURL is the "best" URL for an item.

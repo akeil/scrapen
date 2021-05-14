@@ -17,6 +17,8 @@ func Prepare(ctx context.Context, t *pipeline.Task) error {
 		"module": "content",
 	}).Info("Prepare HTML")
 
+	jsonLD(t)
+
 	doc := t.Document()
 	doPrepare(doc)
 
