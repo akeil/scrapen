@@ -1,6 +1,7 @@
 package assets
 
 import (
+	"context"
 	"errors"
 	"os"
 	"testing"
@@ -86,7 +87,7 @@ func TestDataURL(t *testing.T) {
 		<img src="data:image/jpeg;base64,SGVsbG8sIFdvcmxkIQ=="/>
 	</body></html>`)
 
-	err := DownloadImages(nil, task)
+	err := DownloadImages(context.TODO(), task)
 	assert.Nil(err)
 	assert.Equal(1, len(task.Images))
 	assert.NotEqual("", task.Images[0].ContentURL)

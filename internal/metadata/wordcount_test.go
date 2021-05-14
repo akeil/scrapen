@@ -1,6 +1,7 @@
 package metadata
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -42,7 +43,7 @@ func countWords(t *testing.T, html string, expected int) {
 	task := &pipeline.Task{}
 	task.SetHTML(html)
 
-	err := CountWords(nil, task)
+	err := CountWords(context.TODO(), task)
 	assert.Nil(err)
 	assert.Equal(expected, task.WordCount)
 }

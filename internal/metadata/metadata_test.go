@@ -1,6 +1,7 @@
 package metadata
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -17,7 +18,7 @@ func TestMeta(t *testing.T) {
 	i := &pipeline.Task{}
 	i.SetHTML(html)
 
-	err := ReadMetadata(nil, i)
+	err := ReadMetadata(context.TODO(), i)
 	assert.Nil(err)
 }
 
@@ -215,8 +216,7 @@ func TestSite(t *testing.T) {
 
 func TestParseTime(t *testing.T) {
 	assert := assert.New(t)
-	var ts *time.Time
-	ts = parseTime("2020-03-30T08:35:13+00:00")
+	ts := parseTime("2020-03-30T08:35:13+00:00")
 	assert.NotNil(ts)
 	assert.Equal(ts.Format(time.RFC3339), "2020-03-30T08:35:13Z")
 
@@ -226,5 +226,5 @@ func readMeta(html string) (*pipeline.Task, error) {
 	t := &pipeline.Task{}
 	t.SetHTML(html)
 
-	return t, ReadMetadata(nil, t)
+	return t, ReadMetadata(context.TODO(), t)
 }

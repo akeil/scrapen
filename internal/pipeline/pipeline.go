@@ -37,9 +37,12 @@ type Task struct {
 	ImageURL     string
 	Images       []ImageInfo
 	Feeds        []FeedInfo
+	Enclosures   []Enclosure
 	WordCount    int
 	Store        Store
 	document     *goquery.Document
+	altDocument  *goquery.Document
+	AltURL       string
 	mx           sync.Mutex
 }
 
@@ -87,6 +90,22 @@ func (t *Task) SetHTML(s string) {
 	t.document = doc
 }
 
+// SetAltHTML sets the alternate HTML content.
+func (t *Task) SetAltHTML(s string) {
+	r := strings.NewReader(s)
+	doc, err := goquery.NewDocumentFromReader(r)
+	if err != nil {
+		// TODO: log? panic?
+		return
+	}
+	t.altDocument = doc
+}
+
+// AltDocument is the altrnate HTML document.
+func (t *Task) AltDocument() *goquery.Document {
+	return t.altDocument
+}
+
 // TODO: still needed?
 func (t *Task) PutAsset(k, contentType string, data []byte) error {
 	return t.Store.Put(k, contentType, data)
@@ -107,6 +126,15 @@ func (t *Task) AddImage(i ImageInfo, data []byte) error {
 
 	t.Images = append(t.Images, i)
 	return nil
+}
+
+func (t *Task) AddEnclosure(e Enclosure) {
+	t.mx.Lock()
+	defer t.mx.Unlock()
+	if t.Enclosures == nil {
+		t.Enclosures = make([]Enclosure, 0)
+	}
+	t.Enclosures = append(t.Enclosures, e)
 }
 
 // ContentURL is the "best" URL for an item.

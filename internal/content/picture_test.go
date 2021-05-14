@@ -74,5 +74,7 @@ func TestResolveSrcset(t *testing.T) {
 
 	d = doc(`<img src="foo.jpg" srcset="small.jpg 100w, large.jpg 200w"/>`)
 	resolveSrcset(d)
-	assert.Equal(`<img src="large.jpg" srcset="small.jpg 100w, large.jpg 200w"/>`, str(d))
+	img := d.Selection.Find("img").First()
+	src, _ := img.Attr("src")
+	assert.Equal("large.jpg", src)
 }

@@ -267,7 +267,7 @@ func determineMime(contentType, src string, data []byte) (string, error) {
 			"module": "assets",
 			"url":    src,
 			"error":  err,
-		}).Debug(fmt.Sprintf("Failed to parse URL"))
+		}).Debug("Failed to parse URL")
 	} else if u != nil {
 		ext := path.Ext(u.Path)
 		m = mime.TypeByExtension(ext)

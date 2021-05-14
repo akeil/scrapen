@@ -80,7 +80,7 @@ var whitelist = []string{
 	"bdi", "bdo",
 	"time",
 	"wbr",
-	// audio, video, track, source
+	// "audio", "video", "track", "source",
 	// embed, iframe,
 	// object, param,
 	// picture, source

@@ -1,6 +1,7 @@
 package rss
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -123,6 +124,6 @@ func findRss(base, html string) ([]pipeline.FeedInfo, error) {
 	}
 	task.SetHTML(html)
 
-	err := FindFeeds(nil, task)
+	err := FindFeeds(context.TODO(), task)
 	return task.Feeds, err
 }
