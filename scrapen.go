@@ -15,6 +15,7 @@ import (
 	"github.com/akeil/scrapen/internal/pipeline"
 	"github.com/akeil/scrapen/internal/readable"
 	"github.com/akeil/scrapen/internal/rss"
+	"github.com/akeil/scrapen/internal/specific"
 )
 
 // Scrape creates and runs a scraping task for the given URL with given Options.
@@ -73,6 +74,8 @@ type Options struct {
 	Normalize bool
 	// DownloadImages controls whether images from the content should be downloaded.
 	DownloadImages bool
+	// SiteSpecific controls whether to apply site-specific content-selectors.
+	SiteSpecific bool
 	// Detect RSS feeds
 	FindFeeds bool
 	// A Store is required if DownloadImages is true.
@@ -87,6 +90,7 @@ func DefaultOptions() *Options {
 		Clean:          true,
 		Normalize:      true,
 		DownloadImages: false,
+		SiteSpecific:   false,
 		FindFeeds:      false,
 		Store:          nil,
 	}
@@ -104,6 +108,10 @@ func configurePipeline(o *Options) pipeline.Pipeline {
 
 	if o.FindFeeds {
 		p = append(p, rss.FindFeeds)
+	}
+
+	if o.SiteSpecific {
+		p = append(p, specific.SiteSpecific)
 	}
 
 	p = append(p, content.Prepare)

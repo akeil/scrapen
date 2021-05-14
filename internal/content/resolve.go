@@ -57,13 +57,6 @@ func resolveContentURLs(doc *goquery.Document, base *url.URL) {
 			if val != "" {
 				newVal, err := resolveURL(base, val)
 				if err == nil && val != newVal {
-					log.WithFields(log.Fields{
-						"module": "content",
-						"name":   name,
-						"old":    val,
-						"new":    newVal,
-					}).Debug("Replacing URL")
-
 					s.RemoveAttr(name)
 					s.SetAttr(name, newVal)
 				}

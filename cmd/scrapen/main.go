@@ -36,6 +36,7 @@ func run(url string) error {
 		Normalize:      true,
 		DownloadImages: true,
 		FindFeeds:      true,
+		SiteSpecific:   true,
 		Store:          s,
 	}
 	a, err := scrapen.Scrape(url, o)
