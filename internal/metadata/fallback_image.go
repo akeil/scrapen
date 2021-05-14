@@ -43,6 +43,7 @@ func fallbackImagefromContent(t *pipeline.Task) {
 var iconRels = []string{
 	"icon",
 	"apple-touch-icon",
+	"apple-touch-icon-precomposed",
 	"mask-icon",
 	"shortcut icon",
 }
@@ -51,10 +52,6 @@ func fallbackImageFromIcon(t *pipeline.Task) {
 	doc := t.Document()
 	var icons iconList
 	icons = make(iconList, 0)
-	// link rel="icon" w/ multiple sizes="16x16"
-	// link rel="mask-icon"
-	// link rel=shortcut icon"
-	// link rel=apple-touch-icon
 	doc.Selection.Find("link").Each(func(i int, s *goquery.Selection) {
 		rel, _ := s.Attr("rel")
 		if !contains(iconRels, rel) {

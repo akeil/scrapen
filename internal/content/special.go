@@ -210,5 +210,5 @@ func ldArticle(t *pipeline.Task, m map[string]interface{}) {
 	    "mainEntityOfPage": "https://www.deutschlandfunknova.de/beitrag/emergency-quota-act-einwanderung-in-die-usa-ab-1921"
 	    }     */
 
-    // TODO: these could be added to the metadata
+	// TODO: these could be added to the metadata
 }
