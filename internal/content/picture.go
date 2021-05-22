@@ -2,6 +2,8 @@ package content
 
 import (
 	"fmt"
+	"math"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -49,6 +51,8 @@ func resolvePicture(doc *goquery.Document) {
 				sources = append(sources, parsed)
 			}
 		})
+
+		sources = filterSourcesByMediaQuery(sources)
 
 		srcset := selectSrcsetFromSources(sources)
 		if srcset.url == "" {
@@ -120,10 +124,11 @@ func parseSource(s *goquery.Selection) source {
 	dataSrcs, _ := s.Attr("data-srcset")
 
 	srcsets := parseSrcset(srcs, dataSrcs)
+	mq := parseMediaQueryWidth(media)
 
 	return source{
 		contentType: typ,
-		media:       media,
+		media:       mq,
 		srcset:      srcsets,
 	}
 }
@@ -138,6 +143,9 @@ func parseSrcset(values ...string) []srcset {
 	sets := make([]srcset, 0)
 
 	for _, o := range options {
+		if strings.TrimSpace(o) == "" {
+			continue
+		}
 		srcset, err := parseSrcsetOption(o)
 		if err != nil {
 			log.WithFields(log.Fields{
@@ -190,6 +198,78 @@ func parseSrcsetOption(o string) (srcset, error) {
 	return set, nil
 }
 
+var widthMediaQuery = regexp.MustCompile(`.*?\(((?:min-width|max-width|width):\s*[0-9]+)px\).*?`)
+
+// Can only handle a single mediaquery for min-width, max-width or width
+// https://developer.mozilla.org/en-US/docs/Web/CSS/Media_Queries/Using_media_queries#media_features
+func parseMediaQueryWidth(s string) mediaQuery {
+	result := mediaQuery{}
+	// should give us exactly two matches,
+	// one for the whole pattern, another for the capturing group
+	matches := widthMediaQuery.FindStringSubmatch(s)
+	if len(matches) != 2 {
+		return result
+	}
+
+	// matche should look like this:
+	// max-width:  1024px
+	m := matches[1]
+
+	parts := strings.Split(m, ":")
+	if len(parts) != 2 {
+		return result
+	}
+
+	name := strings.TrimSpace(parts[0])
+	val, err := strconv.Atoi(strings.TrimSpace(parts[1]))
+	if err != nil {
+		log.WithFields(log.Fields{
+			"error":      err,
+			"raw":        parts[1],
+			"mediaQuery": s,
+		}).Warning("Failed to parse integer from media query")
+		return result
+	}
+
+	switch name {
+	case "min-width":
+		result.minWidth = val
+		return result
+	case "width":
+		result.width = val
+		return result
+	case "max-width":
+		result.maxWidth = val
+		return result
+	}
+
+	return result
+}
+
+func filterSourcesByMediaQuery(sources []source) []source {
+	var selected source
+
+	// by media query width
+	maxWidth := 0.0
+	for _, s := range sources {
+		if s.media.IsEmpty() {
+			continue
+		}
+		w := math.Max(float64(s.media.minWidth), float64(s.media.maxWidth))
+		w = math.Max(w, float64(s.media.width))
+		if w > maxWidth {
+			maxWidth = w
+			selected = s
+		}
+	}
+
+	if !selected.media.IsEmpty() {
+		return []source{selected}
+	}
+
+	return sources
+}
+
 func selectSrcsetFromSources(sources []source) srcset {
 	sets := make([]srcset, 0)
 	for _, source := range sources {
@@ -231,7 +311,7 @@ func selectSrcset(sets []srcset) srcset {
 
 type source struct {
 	contentType string
-	media       string
+	media       mediaQuery
 	srcset      []srcset
 }
 
@@ -239,4 +319,14 @@ type srcset struct {
 	url     string
 	width   uint64
 	density float64
+}
+
+type mediaQuery struct {
+	minWidth int
+	width    int
+	maxWidth int
+}
+
+func (m mediaQuery) IsEmpty() bool {
+	return m.minWidth == 0 && m.maxWidth == 0 && m.width == 0
 }

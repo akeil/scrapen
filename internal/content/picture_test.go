@@ -78,3 +78,59 @@ func TestResolveSrcset(t *testing.T) {
 	src, _ := img.Attr("src")
 	assert.Equal("large.jpg", src)
 }
+
+func TestSrcsetMedia(t *testing.T) {
+	assert := assert.New(t)
+
+	html := "<picture><img src=\"default.jpg\"/></picture>"
+	d := doc(html)
+	resolvePicture(d)
+	assert.Equal(html, str(d))
+
+	html = `<picture>
+        <source media="(max-width: 400px)" data-srcset="small.png" />
+        <source media="(max-width: 1000px)" data-srcset="large.png" />
+        <img src="default.jpg" />
+    </picture>`
+	d = doc(html)
+	resolvePicture(d)
+	assert.Equal("<img src=\"large.png\"/>", strings.TrimSpace(str(d)))
+}
+
+func TestParseMediaQueryWidth(t *testing.T) {
+	assert := assert.New(t)
+	var mq mediaQuery
+
+	// max, min
+	mq = parseMediaQueryWidth("(width:  1024px)")
+	assert.False(mq.IsEmpty())
+	assert.Equal(1024, mq.width)
+	assert.Equal(0, mq.minWidth)
+	assert.Equal(0, mq.maxWidth)
+
+	mq = parseMediaQueryWidth("(max-width:  1024px)")
+	assert.False(mq.IsEmpty())
+	assert.Equal(1024, mq.maxWidth)
+
+	mq = parseMediaQueryWidth("(min-width:  1024px)")
+	assert.False(mq.IsEmpty())
+	assert.Equal(1024, mq.minWidth)
+
+	// space is optional
+	mq = parseMediaQueryWidth("(width:1024px)")
+	assert.False(mq.IsEmpty())
+
+	// no match w/o "...px"
+	mq = parseMediaQueryWidth("(width:  1024)")
+	assert.True(mq.IsEmpty())
+
+	// multiple queries DO NOT WORK
+	// it should capture the first query and ignore the second one
+	mq = parseMediaQueryWidth("(max-width:  1024px) or (min-width: 500px)")
+	assert.False(mq.IsEmpty())
+	assert.Equal(1024, mq.maxWidth)
+
+	// may include stuff we don'T understand
+	mq = parseMediaQueryWidth("(width:  1024px) and (orientation: landscape)")
+	assert.False(mq.IsEmpty())
+}
