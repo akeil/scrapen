@@ -3,6 +3,7 @@ package readable
 import (
 	"context"
 	"strings"
+	"net/url"
 
 	"github.com/PuerkitoBio/goquery"
 	readability "github.com/go-shiori/go-readability"
@@ -66,7 +67,12 @@ func doReadability(doc *goquery.Document, baseURL string) (readability.Article, 
 
 	r := strings.NewReader(s)
 
-	a, err = p.Parse(r, baseURL)
+	u, err := url.Parse(baseURL)
+	if err != nil {
+		return a, err
+	}
+
+	a, err = p.Parse(r, u)
 	if err != nil {
 		return a, err
 	}
