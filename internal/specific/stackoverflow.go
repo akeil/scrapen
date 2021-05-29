@@ -13,7 +13,7 @@ func stackoverflow(t *pipeline.Task) {
 	log.WithFields(log.Fields{
 		"task":   t.ID,
 		"src":    t.ContentURL(),
-		"module": "content",
+		"module": "specific",
 	}).Debug("Apply stackoverflow")
 
 	doc := t.Document()

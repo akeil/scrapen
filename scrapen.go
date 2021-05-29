@@ -36,10 +36,10 @@ func doScrape(url string, o *Options) (*pipeline.Task, error) {
 	}
 	ctx := context.Background()
 	id := uuid.New().String()
-	t := pipeline.NewTask(o.Store, id, url)
-
 	p := configurePipeline(o)
-	err := p(ctx, t)
+	t := pipeline.NewTask(o.Store, id, url, p)
+
+	err := t.Run(ctx)
 	if err != nil {
 
 		log.WithFields(log.Fields{
