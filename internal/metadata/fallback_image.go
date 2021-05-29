@@ -18,6 +18,7 @@ func FallbackImage(ctx context.Context, t *pipeline.Task) error {
 	log.WithFields(log.Fields{
 		"task":   t.ID,
 		"module": "metadata",
+		"image":  t.ImageURL,
 		"url":    t.ContentURL(),
 	}).Info("Fallback Image")
 
@@ -34,7 +35,7 @@ func FallbackImage(ctx context.Context, t *pipeline.Task) error {
 // set the article image from the first image we find in the content.
 func fallbackImagefromContent(t *pipeline.Task) {
 	doc := t.Document()
-	doc.Selection.Find("img").First().Each(func(i int, s *goquery.Selection) {
+	doc.Selection.Find("img, amp-img").First().Each(func(i int, s *goquery.Selection) {
 		src, _ := s.Attr("src")
 		t.ImageURL = src
 	})
@@ -43,6 +44,7 @@ func fallbackImagefromContent(t *pipeline.Task) {
 var iconRels = []string{
 	"icon",
 	"apple-touch-icon",
+	"apple-touch-icon-precomposed",
 	"mask-icon",
 	"shortcut icon",
 }
@@ -51,10 +53,6 @@ func fallbackImageFromIcon(t *pipeline.Task) {
 	doc := t.Document()
 	var icons iconList
 	icons = make(iconList, 0)
-	// link rel="icon" w/ multiple sizes="16x16"
-	// link rel="mask-icon"
-	// link rel=shortcut icon"
-	// link rel=apple-touch-icon
 	doc.Selection.Find("link").Each(func(i int, s *goquery.Selection) {
 		rel, _ := s.Attr("rel")
 		if !contains(iconRels, rel) {

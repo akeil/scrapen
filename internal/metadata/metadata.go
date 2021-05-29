@@ -114,6 +114,7 @@ var (
 		"og:image:secure_url",
 		"og:image:url",
 		"og:image",
+		"thumbnail",
 		"link/image_src",
 		"twitter:image",
 		"twitter:image:src",
