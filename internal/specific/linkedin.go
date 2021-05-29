@@ -1,6 +1,7 @@
 package specific
 
 import (
+	"context"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
@@ -16,11 +17,11 @@ const (
 	linkedinPostClass    = "share-update-card"
 )
 
-func linkedin(t *pipeline.Task) {
+func linkedin(ctx context.Context, t *pipeline.Task) error {
 	log.WithFields(log.Fields{
 		"task":   t.ID,
 		"src":    t.ContentURL(),
-		"module": "content",
+		"module": "specific",
 	}).Debug("Apply linkedin")
 
 	// if you share a post/an article on linkedin,
@@ -50,10 +51,8 @@ func linkedin(t *pipeline.Task) {
 	doc.Find("div").Each(func(index int, s *goquery.Selection) {
 		c, _ := s.Attr("class")
 		classes := strings.Split(c, " ")
-		log.Debug(classes)
 		for _, class := range classes {
 			class = strings.TrimSpace(class)
-			log.Debug(class)
 
 			if strings.HasPrefix(class, linkedinArticleClass) {
 				log.Info("Found shared article")
@@ -65,13 +64,36 @@ func linkedin(t *pipeline.Task) {
 		}
 	})
 
-	if isPost {
-		sharedLinkedinPost(t)
-		return
+	if isArticle {
+		return sharedLinkedinArticle(ctx, t)
+	} else if isPost {
+		return sharedLinkedinPost(t)
 	}
+
+	return nil
 }
 
-func sharedLinkedinPost(t *pipeline.Task) {
+func sharedLinkedinArticle(ctx context.Context, t *pipeline.Task) error {
+	var url string
+	doc := t.Document()
+	doc.Find("div.share-article").First().Find("a.mini-card__title-link").Each(func(index int, sel *goquery.Selection) {
+		href, _ := sel.Attr("href")
+		if href != "" && url == "" {
+			url = href
+		}
+	})
+
+	log.WithFields(log.Fields{
+		"task":   t.ID,
+		"src":    t.ContentURL(),
+		"url":    url,
+		"module": "specific",
+	}).Debug("Found article URL in linkedin post")
+
+	return t.Restart(ctx, url)
+}
+
+func sharedLinkedinPost(t *pipeline.Task) error {
 	doc := t.Document()
 	c := doc.Clone()
 
@@ -94,4 +116,12 @@ func sharedLinkedinPost(t *pipeline.Task) {
 	}
 
 	doc.Find("article").First().AppendSelection(post)
+
+	log.WithFields(log.Fields{
+		"task":   t.ID,
+		"src":    t.ContentURL(),
+		"module": "specific",
+	}).Debug("Found linkedin post")
+
+	return nil
 }

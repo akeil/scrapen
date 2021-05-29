@@ -2,6 +2,7 @@ package pipeline
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/url"
 	"strings"
@@ -9,9 +10,15 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
+	log "github.com/sirupsen/logrus"
 )
 
 type Pipeline func(ctx context.Context, t *Task) error
+
+// Stop is used as a speicial error type which indicates that the pipeline
+// should stop but exist normally.
+//
+var stop = errors.New("pipeline stopped")
 
 type Store interface {
 	Put(k, contentType string, data []byte) error
@@ -24,6 +31,7 @@ type Store interface {
 type Task struct {
 	ID           string
 	URL          string
+	pipe         Pipeline
 	ActualURL    string
 	CanonicalURL string
 	StatusCode   int
@@ -46,14 +54,64 @@ type Task struct {
 	mx           sync.Mutex
 }
 
-func NewTask(s Store, id, url string) *Task {
+func NewTask(s Store, id, url string, p Pipeline) *Task {
 	return &Task{
 		ID:        id,
 		URL:       url,
+		pipe:      p,
 		Retrieved: time.Now().UTC(),
 		Store:     s,
 		Images:    make([]ImageInfo, 0),
 	}
+}
+
+// Run starts the pipeline for this task.
+// Returns the result (error) from the pipeline function.
+func (t *Task) Run(ctx context.Context) error {
+	return t.pipe(ctx, t)
+}
+
+// Restart cancels the current pipeline, resets all collected content
+// and re-runs the task with the newly set URL.
+func (t *Task) Restart(ctx context.Context, url string) error {
+	log.WithFields(log.Fields{
+		"task":   t.ID,
+		"url":    t.ContentURL(),
+		"newUrl": url,
+		"module": "pipeline",
+	}).Debug("Task is restarted")
+
+	t.reset()
+	t.URL = url
+
+	err := t.Run(ctx)
+	if err != nil {
+		return err
+	}
+
+	// Tells the "outer" loop of the Run to stop iterating over the pipeline
+	return stop
+}
+
+func (t *Task) reset() {
+	t.URL = ""
+	t.ActualURL = ""
+	t.CanonicalURL = ""
+	t.StatusCode = 0
+	t.Title = ""
+	t.Description = ""
+	t.PubDate = nil
+	t.Site = ""
+	t.SiteScheme = ""
+	t.Author = ""
+	t.ImageURL = ""
+	t.Images = make([]ImageInfo, 0)
+	t.Feeds = nil
+	t.Enclosures = nil
+	t.WordCount = 0
+	t.document = nil
+	t.altDocument = nil
+	t.AltURL = ""
 }
 
 // Document returns the HTML content of this task as a DOM document.
@@ -178,6 +236,11 @@ func BuildPipeline(f ...Pipeline) Pipeline {
 		for _, p := range f {
 			err = p(ctx, t)
 			if err != nil {
+				// TODO: this is using error handling for control flow. We can do better.
+				if err == stop {
+					log.Info("Pipeline stopped.")
+					return nil
+				}
 				return err
 			}
 		}

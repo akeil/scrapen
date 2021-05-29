@@ -37,7 +37,7 @@ func SiteSpecific(ctx context.Context, t *pipeline.Task) error {
 		stackoverflow(t)
 		break
 	case "linkedin.com":
-		linkedin(t)
+		return linkedin(ctx, t)
 	}
 
 	return nil
