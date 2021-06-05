@@ -121,3 +121,14 @@ func WriteAttr(a html.Attribute, w io.StringWriter) {
 	w.WriteString(a.Val) // TODO: escape?
 	w.WriteString("\"")
 }
+
+// ReadAttr reads the value of the first attribute with the given name.
+func ReadAttr(t html.Token, name string) (bool, string) {
+	for _, a := range t.Attr {
+		if a.Key == name {
+			return true, a.Val
+		}
+	}
+
+	return false, ""
+}
