@@ -37,3 +37,35 @@ func TestFindAMP(t *testing.T) {
 	s = findAmpUrl(html)
 	assert.Equal("https://example.com/amp.html", s)
 }
+
+func TestCheckAMP(t *testing.T) {
+	assert := assert.New(t)
+
+	// all criteria are met
+	html := `<html>
+	<head>
+        <link rel="canonical" href="https://example.com/canonical.html">
+		<script async="async" src="https://cdn.ampproject.org/v0.js"></script>
+    </head>
+	<body>
+		<p>Content</p>
+	</body>
+	<html>`
+	isAMP, canonical := checkAMP(html)
+	assert.True(isAMP)
+	assert.Equal("https://example.com/canonical.html", canonical)
+
+	// The canonical link alone is not enough
+	html = `<head>
+        <link rel="canonical" href="https://example.com/canonical.html">
+    </head>`
+	isAMP, _ = checkAMP(html)
+	assert.False(isAMP)
+
+	// AMP script alone is not enough
+	html = `<head>
+        <script async="async" src="https://cdn.ampproject.org/v0.js"></script>
+    </head>`
+	isAMP, _ = checkAMP(html)
+	assert.False(isAMP)
+}

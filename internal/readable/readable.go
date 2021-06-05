@@ -2,8 +2,8 @@ package readable
 
 import (
 	"context"
-	"strings"
 	"net/url"
+	"strings"
 
 	"github.com/PuerkitoBio/goquery"
 	readability "github.com/go-shiori/go-readability"
