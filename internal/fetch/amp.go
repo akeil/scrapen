@@ -46,7 +46,7 @@ func findAmpUrl(s string) string {
 	return amp
 }
 
-const ampScriptPrefix = "https://cdn.ampproject.org/v"
+const ampScriptPrefix = "https://cdn.ampproject.org/"
 
 // Tell if the document we have fetched is the AMP version of the page.
 // If so, swap the content to alternate HTML and alternate URL.
