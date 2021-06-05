@@ -52,20 +52,45 @@ func Fetch(ctx context.Context, t *pipeline.Task) error {
 		}
 	}
 
-	t.SetHTML(html)
-	t.ActualURL = actURL
+	// If the AMP URL was supplied, we want to fetch the canonical document
+	// for additional metadata.
+	// If the "normal" URL was supplied, we want to fetch the AMP document
+	// for better content extraction.
+	isAMP, canonicalURL := checkAMP(html)
+	if isAMP {
+		log.WithFields(log.Fields{
+			"task":      t.ID,
+			"module":    "fetch",
+			"url":       actURL,
+			"canonical": canonicalURL,
+		}).Debug("Initial URL is AMP, fetching canonical")
 
-	// If an AMP (https://amp.dev/) version is available, fetch that.
-	// Often easier to make readable.
-	amp := findAmpUrl(html)
-	if amp != "" {
-		err = fetchAMP(ctx, client, t, amp)
+		t.SetAltHTML(html)
+		t.AltURL = actURL
+
+		actURL, html, err = fetchURL(ctx, client, t, canonicalURL)
 		if err != nil {
-			log.WithFields(log.Fields{
-				"task":   t.ID,
-				"module": "fetch",
-				"url":    amp,
-			}).Info("Failed to fetch AMP version")
+			return err
+		}
+		t.SetHTML(html)
+		t.ActualURL = actURL
+
+	} else {
+		t.SetHTML(html)
+		t.ActualURL = actURL
+
+		// If an AMP (https://amp.dev/) version is available, fetch that.
+		// Often easier to make readable.
+		amp := findAmpUrl(html)
+		if amp != "" {
+			err = fetchAMP(ctx, client, t, amp)
+			if err != nil {
+				log.WithFields(log.Fields{
+					"task":   t.ID,
+					"module": "fetch",
+					"url":    amp,
+				}).Info("Failed to fetch AMP version")
+			}
 		}
 	}
 
