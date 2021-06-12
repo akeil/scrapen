@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"strings"
 	"sync"
 
 	"github.com/PuerkitoBio/goquery"
@@ -48,6 +49,11 @@ func DownloadImages(ctx context.Context, t *pipeline.Task) error {
 		}
 
 		if err != nil {
+			log.WithFields(log.Fields{
+				"task":   t.ID,
+				"module": "assets",
+				"error":  err,
+			}).Warning("Failed to fetch image")
 			return "", err
 		}
 
@@ -192,6 +198,12 @@ func fetchHTTP(ctx context.Context, src string) (pipeline.ImageInfo, []byte, err
 }
 
 func fetchData(src string) (pipeline.ImageInfo, []byte, error) {
+	log.WithFields(log.Fields{
+		"module": "assets",
+	}).Debug("Decode data-url.")
+
+	src = fixBase64(src)
+
 	d, err := dataurl.DecodeString(src)
 	if err != nil {
 		return pipeline.ImageInfo{}, nil, err
@@ -292,4 +304,31 @@ func determineMime(contentType, src string, data []byte) (string, error) {
 	}
 
 	return "", fmt.Errorf("could not determine content type for image")
+}
+
+func fixBase64(src string) string {
+	// split the encoded data from the metadata
+	parts := strings.Split(src, ",")
+	if len(parts) != 2 {
+		return src
+	}
+	data := parts[1]
+
+	meta := strings.Split(parts[0], ";")
+	if len(meta) != 2 {
+		return src
+	}
+
+	encoding := meta[1]
+	if encoding != "base64" {
+		return src
+	}
+
+	// add padding to fix invalid length base 64
+	remainder := len(data) % 4
+	for i := 0; i < remainder; i++ {
+		src += "="
+	}
+
+	return src
 }
