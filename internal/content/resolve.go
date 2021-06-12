@@ -48,6 +48,9 @@ func ResolveURLs(ctx context.Context, t *pipeline.Task) error {
 var urlAttrs = []string{
 	"src",
 	"href",
+	"srcset",
+	"data-srcset",
+	"data-src",
 }
 
 func resolveContentURLs(doc *goquery.Document, base *url.URL) {
