@@ -45,7 +45,7 @@ func MakeReadable(ctx context.Context, t *pipeline.Task) error {
 		}
 	}
 
-	// TODO: keep the alt URL depending on whoch article we selected
+	// TODO: keep the alt URL depending on which article we selected
 	winner := selectArticle(candidates)
 
 	t.SetHTML(winner.Article.Content)
@@ -58,8 +58,8 @@ func MakeReadable(ctx context.Context, t *pipeline.Task) error {
 func doReadability(doc *goquery.Document, baseURL string) (readability.Article, error) {
 	var a readability.Article
 	p := readability.NewParser()
+	p.TagsToScore = append(p.TagsToScore, "article", "h1", "blockquote", "figure", "figcaption", "img", "picture", "source")
 
-	p.TagsToScore = append(p.TagsToScore, "article", "h1", "blockquote", "figure", "figcaption")
 	s, err := doc.Selection.Find("html").First().Html()
 	if err != nil {
 		return a, err

@@ -105,9 +105,11 @@ func resolveSrcset(doc *goquery.Document) {
 		set := selectSrcset(srcsets)
 
 		if set.url != "" {
+			old, _ := s.Attr("src")
 			log.WithFields(log.Fields{
 				"module": "content",
 				"src":    set.url,
+				"old":    old,
 			}).Debug("Replaced image src from srcset")
 
 			s.RemoveAttr("src")

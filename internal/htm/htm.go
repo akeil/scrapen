@@ -116,7 +116,7 @@ func writeMetadata(b *strings.Builder, t *pipeline.Task) error {
 
 	if t.Description != "" {
 		b.WriteString("<p>")
-		b.WriteString(t.Description)
+		b.WriteString(html.EscapeString(t.Description))
 		b.WriteString("</p>")
 	}
 
@@ -239,7 +239,7 @@ func writeFeeds(b *strings.Builder, t *pipeline.Task) {
 		}
 		b.WriteString("</a></li>")
 	}
-	b.WriteString("</ul")
+	b.WriteString("</ul>")
 }
 
 func writeEnclosures(b *strings.Builder, t *pipeline.Task) {
@@ -263,5 +263,5 @@ func writeEnclosures(b *strings.Builder, t *pipeline.Task) {
 		b.WriteString("</li>")
 	}
 
-	b.WriteString("</ul")
+	b.WriteString("</ul>")
 }

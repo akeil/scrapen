@@ -81,7 +81,7 @@ func doFetchImages(t *testing.T, html, expected string) {
 
 func TestDataURL(t *testing.T) {
 	assert := assert.New(t)
-	task := pipeline.NewTask(pipeline.NewMemoryStore(), "task-id", "https://example.com")
+	task := pipeline.NewTask(pipeline.NewMemoryStore(), "task-id", "https://example.com", nil)
 	task.SetHTML(`<html><body>
 		<p>Text</p>
 		<img src="data:image/jpeg;base64,SGVsbG8sIFdvcmxkIQ=="/>
