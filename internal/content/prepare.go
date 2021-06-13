@@ -70,9 +70,6 @@ func resolveNoscriptImage(doc *goquery.Document) {
 			}
 		}
 	})
-
-	s, _ := doc.Selection.Find("html").First().Html()
-	log.Info(s)
 }
 
 // remove div's which wrap a only single element
@@ -82,7 +79,4 @@ func unwrapDivs(doc *goquery.Document) {
 			sel.Unwrap()
 		}
 	})
-
-	s, _ := doc.Selection.Find("html").First().Html()
-	log.Info(s)
 }
