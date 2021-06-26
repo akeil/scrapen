@@ -6,7 +6,7 @@ var unwrap = []string{
 	"span", "div",
 	"article", "section", "summary",
 	"address",
-	"main", "footer", "header", "nav",
+	"main", "footer", "header",
 	"hgroup",
 	"data",
 	"dfn",
@@ -85,6 +85,7 @@ var whitelist = []string{
 	// object, param,
 	// picture, source
 	// svg, path, g
+	// nav  <-- drop as it likely contains irrelevant content
 }
 
 // Tell if the given element is one that we wish to see in our clen content.
