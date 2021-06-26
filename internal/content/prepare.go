@@ -33,6 +33,7 @@ func Prepare(ctx context.Context, t *pipeline.Task) error {
 }
 
 func doPrepare(doc *goquery.Document) {
+	useMain(doc)
 	dropBlacklisted(doc)
 	dropLinkClouds(doc)
 	dropByClass(doc)
@@ -44,6 +45,19 @@ func doPrepare(doc *goquery.Document) {
 	fixSrcs(doc)
 	convertAmpImg(doc)
 	resolveSrcset(doc)
+}
+
+func useMain(doc *goquery.Document) {
+	hasMain := doc.Find("main").Length() == 1
+	if !hasMain {
+		return
+	}
+
+	main := doc.Find("main").First().Clone()
+	doc.Find("html body").First().Children().Remove()
+	doc.Find("html body").First().AppendSelection(main)
+
+	log.Info("Replaced content with <main> element")
 }
 
 // <noscript> element has a special behaviour in that it is not parsed.
@@ -239,7 +253,13 @@ var unwantedClasses = []string{
 	"donation",
 	"popular",
 	"groupon",
+	"share",
+	"tags",
 }
+
+// notes:
+//
+// maybe "teaser" should only be removed if it contains a link?
 
 func dropByClass(doc *goquery.Document) {
 	doc.Find("*").Each(func(i int, s *goquery.Selection) {

@@ -17,12 +17,11 @@ func SiteSpecific(ctx context.Context, t *pipeline.Task) error {
 		"module": "specific",
 	}).Info("Apply site-specific rules")
 
-	u, err := url.Parse(t.ContentURL())
+	h, err := host(t.ContentURL())
 	if err != nil {
 		return err
 	}
 
-	h := strings.TrimPrefix(u.Host, "www.")
 	switch h {
 	case "stackoverflow.com",
 		"stackexchange.com",
@@ -41,4 +40,13 @@ func SiteSpecific(ctx context.Context, t *pipeline.Task) error {
 	}
 
 	return nil
+}
+
+func host(s string) (string, error) {
+	u, err := url.Parse(s)
+	if err != nil {
+		return "", err
+	}
+
+	return strings.TrimPrefix(u.Host, "www."), nil
 }
