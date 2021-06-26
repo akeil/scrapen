@@ -82,7 +82,7 @@ func TestDropNavList(t *testing.T) {
 	assert.Equal(`<p>head</p><p>tail</p>`, str(d))
 
 	// this list should be kept
-	d = doc(`<p>head</p><ul><li><a>link</a></li><li>Not a link</li></ul><p>tail</p>`)
+	d = doc(`<p>head</p><ul><li><a>link</a></li><li>Not a link</li><li>Also not a link</li></ul><p>tail</p>`)
 	dropNavLists(d)
-	assert.Equal(`<p>head</p><ul><li><a>link</a></li><li>Not a link</li></ul><p>tail</p>`, str(d))
+	assert.Equal(`<p>head</p><ul><li><a>link</a></li><li>Not a link</li><li>Also not a link</li></ul><p>tail</p>`, str(d))
 }
