@@ -29,6 +29,8 @@ func Clean(ctx context.Context, t *pipeline.Task) error {
 	unwrapTags(doc)
 	removeUnwantedAttributes(doc)
 
+	dropNavLists(doc)
+
 	return nil
 }
 
@@ -173,4 +175,26 @@ func findURL(s string) string {
 	}
 
 	return ""
+}
+
+// dropNavList attempts to find list elements that are used for navigation
+// and removes them.
+// "Nav Lists" are lists that have only links as content.
+func dropNavLists(doc *goquery.Document) {
+	doc.Find("ul, ol").Each(func(i int, s *goquery.Selection) {
+		// check if all items consist only of links
+		onlyLinks := true
+		s.Find("li").Each(func(j int, item *goquery.Selection) {
+			a := item.Find("a").First().Text()
+			b := item.Text()
+			if strings.TrimSpace(a) != strings.TrimSpace(b) {
+				onlyLinks = false
+			}
+		})
+
+		if onlyLinks {
+			log.Debug("Remove list with (only) link-content")
+			s.Remove()
+		}
+	})
 }

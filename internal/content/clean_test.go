@@ -129,6 +129,20 @@ func TestNormalizeUrls(t *testing.T) {
 	assert.Equal(`<img src="https://normal.png"/>`, str(d))
 }
 
+func TestDropNavList(t *testing.T) {
+	assert := assert.New(t)
+
+	// this list should be dropped
+	d := doc(`<p>head</p><ul><li><a>link</a></li><li><a>link 2</a></li></ul><p>tail</p>`)
+	dropNavLists(d)
+	assert.Equal(`<p>head</p><p>tail</p>`, str(d))
+
+	// this list should be kept
+	d = doc(`<p>head</p><ul><li><a>link</a></li><li>Not a link</li></ul><p>tail</p>`)
+	dropNavLists(d)
+	assert.Equal(`<p>head</p><ul><li><a>link</a></li><li>Not a link</li></ul><p>tail</p>`, str(d))
+}
+
 func doc(s string) *goquery.Document {
 	r := strings.NewReader(s)
 	doc, err := goquery.NewDocumentFromReader(r)
