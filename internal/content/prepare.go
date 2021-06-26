@@ -83,10 +83,74 @@ func unwrapDivs(doc *goquery.Document) {
 	})
 }
 
+// see AMP components list:
+// https://amp.dev/documentation/components/?format=websites
 var blacklist = []string{
 	"amp-ad",
+	"amp-ad-exit",
+	"amp-analytics",
+	"amp-auto-ads",
+	"amp-call-tracking",
+	"amp-social-share",
 	"amp-sticky-ad",
+
+	// almos all of the "dynamic content" elements
+	"amp-access-laterpay",
+	"amp-access-poool",
+	"amp-access-scroll",
+	"amp-access",
+	"amp-action-macro",
+	"amp-autocomplete",
+	"amp-bind",
+	"amp-byside-content",
+	"amp-consent",
+	"amp-date-picker",
+	"amp-form",
+	"amp-geo",
+	"amp-gist",
+	"amp-google-assistant-assistjs",
+	"amp-google-document-embed",
+	"amp-inpumask",
+	"amp-install-serviceworker",
+	//"amp-layout",
+	"amp-link-rewriter",
 	"amp-list",
+	"amp-live-list",
+	"amp-minute-media-player",
+	"amp-mustache",
+	"amp-next-page",
+	"amp-pixel",
+	"amp-recaptcha-input",
+	"amp-render",
+	"amp-script",
+	"amp-selector",
+	"amp-smartlinks",
+	"amp-subscriptions-google",
+	"amp-subscriptions",
+	"amp-user-notification",
+	"amp-video-docking",
+	"amp-web-push",
+
+	// social
+	"amp-addthis",
+	"amp-beopinion",
+	"amp-facebook-comments",
+	"amp-facebook-like",
+	"amp-facebook-page",
+	"amp-facebook",
+	"amp-gfycat",
+	"amp-iframely",
+	"amp-instagram",
+	"amp-pinterest",
+	"amp-reddit",
+	"amp-riddle-quiz",
+	"amp-twitter",
+	"amp-vine",
+	"amp-vk",
+
+	// social login
+	"amp-onetap-google",
+
 	"amp-state",
 
 	"template",
