@@ -2,6 +2,7 @@ package content
 
 import (
 	"context"
+	"regexp"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
@@ -33,10 +34,13 @@ func Prepare(ctx context.Context, t *pipeline.Task) error {
 
 func doPrepare(doc *goquery.Document) {
 	dropBlacklisted(doc)
+	dropLinkClouds(doc)
+	dropByClass(doc)
 	resolveIFrames(doc)
 	resolveNoscriptImage(doc)
 	unwrapNoscript(doc)
 	unwrapDivs(doc)
+	dropNavLists(doc)
 	fixSrcs(doc)
 	convertAmpImg(doc)
 	resolveSrcset(doc)
@@ -86,6 +90,13 @@ func unwrapDivs(doc *goquery.Document) {
 // see AMP components list:
 // https://amp.dev/documentation/components/?format=websites
 var blacklist = []string{
+	"header",
+	"footer",
+	"nav",
+	"template",
+
+	"script",
+
 	"amp-ad",
 	"amp-ad-exit",
 	"amp-analytics",
@@ -105,6 +116,7 @@ var blacklist = []string{
 	"amp-byside-content",
 	"amp-consent",
 	"amp-date-picker",
+	"amp-delight-player",
 	"amp-form",
 	"amp-geo",
 	"amp-gist",
@@ -152,8 +164,10 @@ var blacklist = []string{
 	"amp-onetap-google",
 
 	"amp-state",
-
-	"template",
+	"amp-sidebar",
+	"amp-carousel",
+	"amp-app-banner",
+	"amp-consent",
 }
 
 // Drop all unwantedelements including their content.
@@ -163,5 +177,77 @@ func dropBlacklisted(doc *goquery.Document) {
 	match := strings.Join(blacklist, ",")
 	doc.Find(match).Each(func(index int, sel *goquery.Selection) {
 		sel.Remove()
+	})
+}
+
+var whitespace = regexp.MustCompile(`\s`)
+
+// dropNavList attempts to find list elements that are used for navigation
+// and removes them.
+// "Nav Lists" are lists that have only links as content.
+//
+// This is done before readability and clean to include links without href
+func dropNavLists(doc *goquery.Document) {
+	doc.Find("ul, ol").Each(func(i int, s *goquery.Selection) {
+		// check if all items consist only of links
+		linkOnly := 0
+		others := 0
+		s.Find("li").Each(func(j int, item *goquery.Selection) {
+			a := whitespace.ReplaceAllString(item.Find("a").First().Text(), "")
+			b := whitespace.ReplaceAllString(item.Text(), "")
+			ratio := float32(len(a)) / float32(len(b))
+			if ratio > 0.5 {
+				linkOnly++
+			} else {
+				others++
+			}
+		})
+
+		if linkOnly >= others {
+			log.Debug("Remove list with mostly link-content")
+			s.Remove()
+		}
+	})
+}
+
+func dropLinkClouds(doc *goquery.Document) {
+	doc.Find("div").Each(func(i int, s *goquery.Selection) {
+		a := s.Find("*").Text()
+		b := s.Find("a").Text()
+		a = whitespace.ReplaceAllString(a, "")
+		b = whitespace.ReplaceAllString(b, "")
+		aLen := len(a)
+		bLen := len(b)
+
+		if bLen == 0 {
+			return
+		}
+
+		ratio := float32(bLen) / float32(aLen)
+		if ratio >= 0.5 {
+			log.Debug("Remove link cloud")
+			s.Remove()
+		}
+	})
+}
+
+var unwantedClasses = []string{
+	"adblock",
+	"teaser",
+	"recommendation",
+	"newsletter",
+	"donation",
+	"popular",
+	"groupon",
+}
+
+func dropByClass(doc *goquery.Document) {
+	doc.Find("*").Each(func(i int, s *goquery.Selection) {
+		classes, _ := s.Attr("class")
+		for _, c := range unwantedClasses {
+			if strings.Contains(strings.ToLower(classes), c) {
+				s.Remove()
+			}
+		}
 	})
 }
