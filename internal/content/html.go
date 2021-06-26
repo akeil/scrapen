@@ -6,16 +6,20 @@ var unwrap = []string{
 	"span", "div",
 	"article", "section", "summary",
 	"address",
-	"main", "footer", "header", "nav",
+	"main", "footer", "header",
 	"hgroup",
 	"data",
 	"dfn",
+	"time",
 	// deprecated elements
 	"acronym", "basefont", "big", "blink", "center",
 	"content", "font", "listing",
 	"marquee", "nobr", "plaintext", "spacer",
 	"strike", "tt",
 	"picture",
+
+	// amp
+	"amp-accordion",
 }
 
 // Tells if the given tag is "gray", e.g. we do want to keep its text content
@@ -61,7 +65,7 @@ var whitelist = []string{
 	"p",
 	"a",
 	"h1", "h2", "h3", "h4", "h5", "h6",
-	"br", "hr",
+	"br",
 	"b", "u", "i", "s",
 	"em", "strong", "small",
 	"sub", "sup",
@@ -78,13 +82,17 @@ var whitelist = []string{
 	"img",
 	"figure", "figcaption",
 	"bdi", "bdo",
-	"time",
 	"wbr",
+	// would not hurt, but not needed either
+	// "hr",
+
+	// unsupported
 	// "audio", "video", "track", "source",
 	// embed, iframe,
 	// object, param,
 	// picture, source
 	// svg, path, g
+	// nav  <-- drop as it likely contains irrelevant content
 }
 
 // Tell if the given element is one that we wish to see in our clen content.

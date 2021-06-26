@@ -71,6 +71,7 @@ func resolvePicture(doc *goquery.Document) {
 
 var specialSrc = []string{
 	"ix-path", // https://www.imgix.com/
+	"data-src",
 }
 
 // fixSrcs Re-replaces images srcs created by various javascript frameworks

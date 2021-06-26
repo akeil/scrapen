@@ -38,3 +38,51 @@ func TestUnwrapDivs(t *testing.T) {
 	assert.Equal(2, d.Find("div").Length())
 
 }
+
+func TestDropTemplates(t *testing.T) {
+	assert := assert.New(t)
+
+	d := doc(`
+	<p>One</p>
+	<template>some content</template>
+	<p>Two</p>
+	<template>
+		<p>Template with HTML</p>
+	</template>
+	<p>Three</p>
+	`)
+	dropBlacklisted(d)
+	assert.Equal(0, d.Find("template").Length())
+	assert.Equal(3, d.Find("p").Length())
+
+	d = doc(`
+	<p>One</p>
+	<amp-list>
+		<template>
+			<p>{{placeholder}}</p>
+		</template>
+	</amp-list>
+	<p>Two</p>
+	<amp-ad>something</amp-ad>
+	<p>Three</p>
+	`)
+	dropBlacklisted(d)
+	assert.Equal(3, d.Find("p").Length())
+	assert.Equal(0, d.Find("amp-list").Length())
+	assert.Equal(0, d.Find("amp-ad").Length())
+	assert.Equal(0, d.Find("amp-template").Length())
+}
+
+func TestDropNavList(t *testing.T) {
+	assert := assert.New(t)
+
+	// this list should be dropped
+	d := doc(`<p>head</p><ul><li><a>link</a></li><li><a>link 2</a></li></ul><p>tail</p>`)
+	dropNavLists(d)
+	assert.Equal(`<p>head</p><p>tail</p>`, str(d))
+
+	// this list should be kept
+	d = doc(`<p>head</p><ul><li><a>link</a></li><li>Not a link</li><li>Also not a link</li></ul><p>tail</p>`)
+	dropNavLists(d)
+	assert.Equal(`<p>head</p><ul><li><a>link</a></li><li>Not a link</li><li>Also not a link</li></ul><p>tail</p>`, str(d))
+}
