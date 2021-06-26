@@ -38,3 +38,37 @@ func TestUnwrapDivs(t *testing.T) {
 	assert.Equal(2, d.Find("div").Length())
 
 }
+
+func TestDropTemplates(t *testing.T) {
+	assert := assert.New(t)
+
+	d := doc(`
+	<p>One</p>
+	<template>some content</template>
+	<p>Two</p>
+	<template>
+		<p>Template with HTML</p>
+	</template>
+	<p>Three</p>
+	`)
+	dropBlacklisted(d)
+	assert.Equal(0, d.Find("template").Length())
+	assert.Equal(3, d.Find("p").Length())
+
+	d = doc(`
+	<p>One</p>
+	<amp-list>
+		<template>
+			<p>{{placeholder}}</p>
+		</template>
+	</amp-list>
+	<p>Two</p>
+	<amp-ad>something</amp-ad>
+	<p>Three</p>
+	`)
+	dropBlacklisted(d)
+	assert.Equal(3, d.Find("p").Length())
+	assert.Equal(0, d.Find("amp-list").Length())
+	assert.Equal(0, d.Find("amp-ad").Length())
+	assert.Equal(0, d.Find("amp-template").Length())
+}

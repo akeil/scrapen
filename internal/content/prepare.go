@@ -2,6 +2,7 @@ package content
 
 import (
 	"context"
+	"strings"
 
 	"github.com/PuerkitoBio/goquery"
 	log "github.com/sirupsen/logrus"
@@ -31,6 +32,7 @@ func Prepare(ctx context.Context, t *pipeline.Task) error {
 }
 
 func doPrepare(doc *goquery.Document) {
+	dropBlacklisted(doc)
 	resolveIFrames(doc)
 	resolveNoscriptImage(doc)
 	unwrapNoscript(doc)
@@ -78,5 +80,24 @@ func unwrapDivs(doc *goquery.Document) {
 		if sel.Children().Length() == 1 {
 			sel.Unwrap()
 		}
+	})
+}
+
+var blacklist = []string{
+	"amp-ad",
+	"amp-sticky-ad",
+	"amp-list",
+	"amp-state",
+
+	"template",
+}
+
+// Drop all unwantedelements including their content.
+// This is used to get rid of everything that is easier to detect *before*
+// readability is applied.
+func dropBlacklisted(doc *goquery.Document) {
+	match := strings.Join(blacklist, ",")
+	doc.Find(match).Each(func(index int, sel *goquery.Selection) {
+		sel.Remove()
 	})
 }
