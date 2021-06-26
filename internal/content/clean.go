@@ -29,6 +29,8 @@ func Clean(ctx context.Context, t *pipeline.Task) error {
 	unwrapTags(doc)
 	removeUnwantedAttributes(doc)
 
+	dropOrphanedElements(doc)
+
 	return nil
 }
 
@@ -173,4 +175,20 @@ func findURL(s string) string {
 	}
 
 	return ""
+}
+
+// find elements that typically require a specific parent element
+// and where te parent element has been removed for some reason.
+func dropOrphanedElements(doc *goquery.Document) {
+	doc.Find("figcaption").Each(func(i int, s *goquery.Selection) {
+		found := false
+		s.Parents().Each(func(i int, p *goquery.Selection) {
+			if goquery.NodeName(p) == "figure" {
+				found = true
+			}
+		})
+		if !found {
+			s.Remove()
+		}
+	})
 }
