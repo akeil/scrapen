@@ -126,9 +126,7 @@ func removeMarkupWithinHeadings(doc *goquery.Document) {
 	match := strings.Join(headings, ",")
 
 	doc.Find(match).Each(func(i int, s *goquery.Selection) {
-		fmt.Printf("Found heading: %v\n", goquery.NodeName(s))
 		s.Children().Each(func(i int, child *goquery.Selection) {
-			fmt.Printf("  Child: %v\n", goquery.NodeName(child))
 			child.Contents().Unwrap()
 		})
 	})
