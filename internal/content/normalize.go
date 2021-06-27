@@ -28,6 +28,7 @@ func Normalize(ctx context.Context, t *pipeline.Task) error {
 	deduplicateImage(t, doc)
 	deduplicateTitle(doc, t.Title)
 	normalizeHeadings(doc)
+	removeMarkupWithinHeadings(doc)
 
 	return nil
 }
@@ -81,11 +82,12 @@ func deduplicateImage(t *pipeline.Task, doc *goquery.Document) {
 	})
 }
 
+var headings = []string{"h1", "h2", "h3", "h4", "h5", "h6"}
+
 // normalizeHeadings reorders heading levels (h1 through h6). The result is a
 // consistent structure of headings without gaps between the levels.
 // Normalized headings start with h1.
 func normalizeHeadings(doc *goquery.Document) {
-	headings := []string{"h1", "h2", "h3", "h4", "h5", "h6"}
 	count := map[string]int{}
 
 	// collect the number of occurences for each heading level
@@ -117,4 +119,15 @@ func normalizeHeadings(doc *goquery.Document) {
 			}
 		}
 	}
+}
+
+// Remove markup within headings
+func removeMarkupWithinHeadings(doc *goquery.Document) {
+	match := strings.Join(headings, ",")
+
+	doc.Find(match).Each(func(i int, s *goquery.Selection) {
+		s.Children().Each(func(i int, child *goquery.Selection) {
+			child.Contents().Unwrap()
+		})
+	})
 }

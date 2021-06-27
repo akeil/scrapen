@@ -2,7 +2,9 @@ package content
 
 import (
 	"context"
+	"fmt"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
@@ -33,13 +35,26 @@ func Prepare(ctx context.Context, t *pipeline.Task) error {
 }
 
 func doPrepare(doc *goquery.Document) {
+	// Stage 1
+	// this may eliminate most of the HTML
 	useMain(doc)
+
+	// this makes additional elements visible
+	unwrapNoscript(doc)
+
+	// Stage 2
+	// dropping elements
+	// TODO: *all* of these iterate through the complete doc tree..
 	dropBlacklisted(doc)
 	dropLinkClouds(doc)
+	dropByRole(doc)
 	dropByClass(doc)
+	dropTrackingPixels(doc)
+
+	// Stage 3
+	// work on what is left aftr dropping
 	resolveIFrames(doc)
 	resolveNoscriptImage(doc)
-	unwrapNoscript(doc)
 	unwrapDivs(doc)
 	dropNavLists(doc)
 	fixSrcs(doc)
@@ -107,7 +122,10 @@ var blacklist = []string{
 	"header",
 	"footer",
 	"nav",
+	"aside",
 	"template",
+
+	"form",
 
 	"script",
 
@@ -131,12 +149,13 @@ var blacklist = []string{
 	"amp-consent",
 	"amp-date-picker",
 	"amp-delight-player",
+	"amp-jwplayer",
 	"amp-form",
 	"amp-geo",
 	"amp-gist",
 	"amp-google-assistant-assistjs",
 	"amp-google-document-embed",
-	"amp-inpumask",
+	"amp-inputmask",
 	"amp-install-serviceworker",
 	//"amp-layout",
 	"amp-link-rewriter",
@@ -182,6 +201,7 @@ var blacklist = []string{
 	"amp-carousel",
 	"amp-app-banner",
 	"amp-consent",
+	"amp-iframe",
 }
 
 // Drop all unwantedelements including their content.
@@ -247,14 +267,50 @@ func dropLinkClouds(doc *goquery.Document) {
 
 var unwantedClasses = []string{
 	"adblock",
+	"ad-block",
+	"adchoice",
+	"ad-choice",
+	"article-ad",
+	"articlead",
+
+	// supplementary content
+	"aside",
 	"teaser",
 	"recommendation",
+
 	"newsletter",
+
+	"subscribe",
+	"subscription",
 	"donation",
+	"buy",
+	"offer",
+	"paywall",
+
 	"popular",
-	"groupon",
 	"share",
+	"social",
+	"socbar", // t-online.de
 	"tags",
+	"tagcloud",
+
+	"comments",
+
+	// navigational stuff
+	"sitemap",
+
+	// assumption: embedded audio or video
+	"player",
+
+	// not sure - embedded tweets from wordpress?
+	"wp-block-embed-twitter",
+	"pushlayer", // handlesblatt.com, begging for push-notifications
+
+	"groupon",
+
+	// suspected "invisibles"
+	"zeroopacity",
+	"hidden",
 }
 
 // notes:
@@ -270,4 +326,67 @@ func dropByClass(doc *goquery.Document) {
 			}
 		}
 	})
+}
+
+// roles documentation - see
+// https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Roles
+
+var dropRoles = []string{
+	"complementary",
+	"banner",
+	"comment",
+	"contentinfo",
+	"dialog",
+	"feed",
+	"form",
+	"navigation",
+	"search",
+}
+
+func dropByRole(doc *goquery.Document) {
+	doc.Find("*").Each(func(i int, s *goquery.Selection) {
+		role, _ := s.Attr("role")
+		role = strings.ToLower(role)
+		for _, r := range dropRoles {
+			if role == r {
+				s.Remove()
+			}
+		}
+	})
+}
+
+func dropTrackingPixels(doc *goquery.Document) {
+	doc.Find("img").Each(func(i int, s *goquery.Selection) {
+		w, e0 := intAttr("width", s)
+		h, e1 := intAttr("height", s)
+		// stop here only if *both* dimensions cannot be determined
+		if e0 != nil && e1 != nil {
+			return
+		}
+
+		if w <= 1 || h <= 1 {
+			src, _ := s.Attr("src")
+			log.WithFields(log.Fields{
+				"module": "content",
+				"width":  w,
+				"height": h,
+				"src":    src,
+			}).Debug("Remove suspected tracking pixel")
+			s.Remove()
+		}
+	})
+}
+
+func intAttr(name string, s *goquery.Selection) (int, error) {
+	v, exists := s.Attr(name)
+	if !exists {
+		return 0, fmt.Errorf("no attribute with name %q", name)
+	}
+
+	i, err := strconv.ParseUint(v, 10, 64)
+	if err != nil {
+		return 0, err
+	}
+
+	return int(i), nil
 }

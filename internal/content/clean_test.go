@@ -6,6 +6,8 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/akeil/scrapen/internal/pipeline"
 )
 
 func TestUnwrap(t *testing.T) {
@@ -127,6 +129,23 @@ func TestNormalizeUrls(t *testing.T) {
 	d = doc(`<img src="https://normal.png tail"/>`)
 	normalizeUrls(d)
 	assert.Equal(`<img src="https://normal.png"/>`, str(d))
+}
+
+func TestStripFromTitle(t *testing.T) {
+	assert := assert.New(t)
+	task := &pipeline.Task{}
+
+	task.Title = "No Prefix"
+	stripFromTitle(task)
+	assert.Equal("No Prefix", task.Title)
+
+	task.Title = "Prefix | The Actual Title"
+	stripFromTitle(task)
+	assert.Equal("The Actual Title", task.Title)
+
+	task.Title = "The Actual Title | Suffix"
+	stripFromTitle(task)
+	assert.Equal("The Actual Title", task.Title)
 }
 
 func doc(s string) *goquery.Document {

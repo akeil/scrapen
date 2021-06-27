@@ -31,6 +31,8 @@ func Clean(ctx context.Context, t *pipeline.Task) error {
 
 	dropOrphanedElements(doc)
 
+	stripFromTitle(t)
+
 	return nil
 }
 
@@ -191,4 +193,23 @@ func dropOrphanedElements(doc *goquery.Document) {
 			s.Remove()
 		}
 	})
+}
+
+// strip prefix or suffix from title
+func stripFromTitle(t *pipeline.Task) {
+	separators := []string{"|"}
+	for _, sep := range separators {
+		if strings.Count(t.Title, sep) == 1 {
+			parts := strings.Split(t.Title, sep)
+			a := len(parts[0])
+			b := len(parts[1])
+			if a > b {
+				// assume suffix
+				t.Title = strings.TrimSpace(parts[0])
+			} else {
+				// assume prefix
+				t.Title = strings.TrimSpace(parts[1])
+			}
+		}
+	}
 }
