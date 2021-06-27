@@ -197,6 +197,7 @@ var blacklist = []string{
 	"amp-carousel",
 	"amp-app-banner",
 	"amp-consent",
+	"amp-iframe",
 }
 
 // Drop all unwantedelements including their content.
@@ -262,14 +263,30 @@ func dropLinkClouds(doc *goquery.Document) {
 
 var unwantedClasses = []string{
 	"adblock",
+	"ad-block",
+	"adchoice",
+	"ad-choice",
+
 	"teaser",
 	"recommendation",
+
 	"newsletter",
+
+	"subscribe",
+	"subscription",
 	"donation",
+
 	"popular",
-	"groupon",
 	"share",
 	"tags",
+
+	// not sure - embedded tweets from wordpress?
+	"wp-block-embed-twitter",
+
+	"groupon",
+
+	// suspected "invisibles"
+	"zeroopacity",
 }
 
 // notes:
