@@ -124,6 +124,8 @@ var blacklist = []string{
 	"aside",
 	"template",
 
+	"form",
+
 	"script",
 
 	"amp-ad",
@@ -146,12 +148,13 @@ var blacklist = []string{
 	"amp-consent",
 	"amp-date-picker",
 	"amp-delight-player",
+	"amp-jwplayer",
 	"amp-form",
 	"amp-geo",
 	"amp-gist",
 	"amp-google-assistant-assistjs",
 	"amp-google-document-embed",
-	"amp-inpumask",
+	"amp-inputmask",
 	"amp-install-serviceworker",
 	//"amp-layout",
 	"amp-link-rewriter",
@@ -277,10 +280,16 @@ var unwantedClasses = []string{
 	"subscribe",
 	"subscription",
 	"donation",
+	"buy",
 
 	"popular",
 	"share",
+	"social",
+	"socbar", // t-online.de
 	"tags",
+	"tagcloud",
+
+	"comments",
 
 	// navigational stuff
 	"sitemap",

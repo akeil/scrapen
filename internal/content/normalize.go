@@ -118,3 +118,5 @@ func normalizeHeadings(doc *goquery.Document) {
 		}
 	}
 }
+
+// TODO; within headings, drop block-level elements
