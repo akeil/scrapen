@@ -47,6 +47,7 @@ func doPrepare(doc *goquery.Document) {
 	// TODO: *all* of these iterate through the complete doc tree..
 	dropBlacklisted(doc)
 	dropLinkClouds(doc)
+	dropByRole(doc)
 	dropByClass(doc)
 	dropTrackingPixels(doc)
 
@@ -269,6 +270,8 @@ var unwantedClasses = []string{
 	"ad-block",
 	"adchoice",
 	"ad-choice",
+	"article-ad",
+	"articlead",
 
 	// supplementary content
 	"aside",
@@ -281,6 +284,8 @@ var unwantedClasses = []string{
 	"subscription",
 	"donation",
 	"buy",
+	"offer",
+	"paywall",
 
 	"popular",
 	"share",
@@ -299,11 +304,13 @@ var unwantedClasses = []string{
 
 	// not sure - embedded tweets from wordpress?
 	"wp-block-embed-twitter",
+	"pushlayer", // handlesblatt.com, begging for push-notifications
 
 	"groupon",
 
 	// suspected "invisibles"
 	"zeroopacity",
+	"hidden",
 }
 
 // notes:
@@ -315,6 +322,33 @@ func dropByClass(doc *goquery.Document) {
 		classes, _ := s.Attr("class")
 		for _, c := range unwantedClasses {
 			if strings.Contains(strings.ToLower(classes), c) {
+				s.Remove()
+			}
+		}
+	})
+}
+
+// roles documentation - see
+// https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Roles
+
+var dropRoles = []string{
+	"complementary",
+	"banner",
+	"comment",
+	"contentinfo",
+	"dialog",
+	"feed",
+	"form",
+	"navigation",
+	"search",
+}
+
+func dropByRole(doc *goquery.Document) {
+	doc.Find("*").Each(func(i int, s *goquery.Selection) {
+		role, _ := s.Attr("role")
+		role = strings.ToLower(role)
+		for _, r := range dropRoles {
+			if role == r {
 				s.Remove()
 			}
 		}
