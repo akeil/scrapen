@@ -113,3 +113,20 @@ func TestNormalizeHeadings(t *testing.T) {
 	normalizeHeadings(d)
 	assert.Equal("<h1>Some text</h1><p>foo</p><h2>Heading 2</h2>", str(d))
 }
+
+func TestUnwrapWithinHeadings(t *testing.T) {
+	assert := assert.New(t)
+
+	// leave content w/o headings unchanged
+	d := doc("<h1><p>Foo</p> Bar</h1>")
+	removeMarkupWithinHeadings(d)
+	assert.Equal("<h1>Foo Bar</h1>", str(d))
+
+	d = doc("<h1>Foo <small>Bar</small></h1>")
+	removeMarkupWithinHeadings(d)
+	assert.Equal("<h1>Foo Bar</h1>", str(d))
+
+	d = doc("<h1>Foo Bar</h1>")
+	removeMarkupWithinHeadings(d)
+	assert.Equal("<h1>Foo Bar</h1>", str(d))
+}
