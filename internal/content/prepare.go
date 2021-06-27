@@ -267,6 +267,8 @@ var unwantedClasses = []string{
 	"adchoice",
 	"ad-choice",
 
+	// supplementary content
+	"aside",
 	"teaser",
 	"recommendation",
 
@@ -279,6 +281,12 @@ var unwantedClasses = []string{
 	"popular",
 	"share",
 	"tags",
+
+	// navigational stuff
+	"sitemap",
+
+	// assumption: embedded audio or video
+	"player",
 
 	// not sure - embedded tweets from wordpress?
 	"wp-block-embed-twitter",
