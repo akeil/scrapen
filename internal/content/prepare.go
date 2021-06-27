@@ -2,7 +2,9 @@ package content
 
 import (
 	"context"
+	"fmt"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
@@ -33,13 +35,25 @@ func Prepare(ctx context.Context, t *pipeline.Task) error {
 }
 
 func doPrepare(doc *goquery.Document) {
+	// Stage 1
+	// this may eliminate most of the HTML
 	useMain(doc)
+
+	// this makes additional elements visible
+	unwrapNoscript(doc)
+
+	// Stage 2
+	// dropping elements
+	// TODO: *all* of these iterate through the complete doc tree..
 	dropBlacklisted(doc)
 	dropLinkClouds(doc)
 	dropByClass(doc)
+	dropTrackingPixels(doc)
+
+	// Stage 3
+	// work on what is left aftr dropping
 	resolveIFrames(doc)
 	resolveNoscriptImage(doc)
-	unwrapNoscript(doc)
 	unwrapDivs(doc)
 	dropNavLists(doc)
 	fixSrcs(doc)
@@ -107,6 +121,7 @@ var blacklist = []string{
 	"header",
 	"footer",
 	"nav",
+	"aside",
 	"template",
 
 	"script",
@@ -270,4 +285,40 @@ func dropByClass(doc *goquery.Document) {
 			}
 		}
 	})
+}
+
+func dropTrackingPixels(doc *goquery.Document) {
+	doc.Find("img").Each(func(i int, s *goquery.Selection) {
+		w, e0 := intAttr("width", s)
+		h, e1 := intAttr("height", s)
+		// stop here only if *both* dimensions cannot be determined
+		if e0 != nil && e1 != nil {
+			return
+		}
+
+		if w <= 1 || h <= 1 {
+			src, _ := s.Attr("src")
+			log.WithFields(log.Fields{
+				"module": "content",
+				"width":  w,
+				"height": h,
+				"src":    src,
+			}).Debug("Remove suspected tracking pixel")
+			s.Remove()
+		}
+	})
+}
+
+func intAttr(name string, s *goquery.Selection) (int, error) {
+	v, exists := s.Attr(name)
+	if !exists {
+		return 0, fmt.Errorf("no attribute with name %q", name)
+	}
+
+	i, err := strconv.ParseUint(v, 10, 64)
+	if err != nil {
+		return 0, err
+	}
+
+	return int(i), nil
 }
