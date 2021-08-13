@@ -176,6 +176,30 @@ func TestAuthor(t *testing.T) {
 
 }
 
+func TestSiteName(t *testing.T) {
+	assert := assert.New(t)
+
+	// basic
+	html := `<html><head>
+        <meta property="og:site_name" content="My Site" />
+    </head><body>foo</body></html>`
+
+	i, err := readMeta(html)
+	assert.Nil(err)
+	assert.Equal("My Site", i.SiteName)
+
+	// preference
+	html = `<html><head>
+		<meta property="publisher" content="My Site" />
+        <meta property="og:site_name" content="My Site" />
+    </head><body>foo</body></html>`
+
+	i, err = readMeta(html)
+	assert.Nil(err)
+	assert.Equal("My Site", i.SiteName)
+
+}
+
 func TestSite(t *testing.T) {
 	assert := assert.New(t)
 

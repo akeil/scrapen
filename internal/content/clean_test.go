@@ -146,6 +146,33 @@ func TestStripFromTitle(t *testing.T) {
 	task.Title = "The Actual Title | Suffix"
 	stripFromTitle(task)
 	assert.Equal("The Actual Title", task.Title)
+
+	// with site name as prefix or suffix w/ various separators
+	task.Title = "The Actual Title - The Site Name"
+	task.SiteName = "The Site Name"
+	stripFromTitle(task)
+	assert.Equal("The Actual Title", task.Title)
+
+	task.Title = "The Actual Title: The Site Name"
+	task.SiteName = "The Site Name"
+	stripFromTitle(task)
+	assert.Equal("The Actual Title", task.Title)
+
+	task.Title = "The Site Name | The Actual Title"
+	task.SiteName = "The Site Name"
+	stripFromTitle(task)
+	assert.Equal("The Actual Title", task.Title)
+
+	task.Title = "The Site Name: The Actual Title"
+	task.SiteName = "The Site Name"
+	stripFromTitle(task)
+	assert.Equal("The Actual Title", task.Title)
+
+	// not to be stripped
+	task.Title = "The Actual Title can contain The Site Name"
+	task.SiteName = "The Site Name"
+	stripFromTitle(task)
+	assert.Equal("The Actual Title can contain The Site Name", task.Title)
 }
 
 func doc(s string) *goquery.Document {

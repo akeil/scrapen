@@ -74,6 +74,11 @@ func findMeta(m *metadata, doc *goquery.Document) {
 			m.pubDate[name] = content
 			return
 		}
+
+		if contains(siteNamePref, name) {
+			m.siteName[name] = content
+			return
+		}
 	})
 }
 
@@ -143,6 +148,13 @@ var (
 		"parsely-pub-date",
 		"sailthru.date",
 	}
+	siteNamePref = []string{
+		"og:site_name",
+		"publisher",
+		"twitter:creator",
+		"twitter:publisher",
+		"DC.publisher",
+	}
 	// title: og:title, twitter:title, parsely-title, sailthru.title, krux:title
 )
 
@@ -195,6 +207,14 @@ func setMetadata(m *metadata, t *pipeline.Task) {
 			break
 		}
 	}
+
+	for _, k := range siteNamePref {
+		v, ok := m.siteName[k]
+		if ok {
+			t.SiteName = v
+			break
+		}
+	}
 }
 
 var prefixes = []string{
@@ -227,6 +247,7 @@ type metadata struct {
 	url         map[string]string
 	author      map[string]string
 	pubDate     map[string]string
+	siteName    map[string]string
 }
 
 func newMetadata() *metadata {
@@ -236,6 +257,7 @@ func newMetadata() *metadata {
 		url:         make(map[string]string),
 		author:      make(map[string]string),
 		pubDate:     make(map[string]string),
+		siteName:    make(map[string]string),
 	}
 }
 
