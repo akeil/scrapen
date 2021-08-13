@@ -298,6 +298,10 @@ var unwantedClasses = []string{
 
 	// navigational stuff
 	"sitemap",
+	"breadcrumb",
+	"breadcrumbs",
+	"crumb",
+	"crumbs",
 
 	// assumption: embedded audio or video
 	"player",
