@@ -285,7 +285,8 @@ var unwantedClasses = []string{
 	"donation",
 	"buy",
 	"offer",
-	"paywall",
+	// "paywalled" content might sometimes be available
+	// "paywall",
 
 	"popular",
 	"share",
@@ -294,6 +295,7 @@ var unwantedClasses = []string{
 	"tags",
 	"tagcloud",
 
+	"comment",
 	"comments",
 
 	// navigational stuff
