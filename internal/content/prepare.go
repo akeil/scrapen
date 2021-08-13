@@ -319,9 +319,15 @@ var unwantedClasses = []string{
 
 func dropByClass(doc *goquery.Document) {
 	doc.Find("*").Each(func(i int, s *goquery.Selection) {
+		// prevent <body> tag w/ strange class attributes from being removed
+		tag := goquery.NodeName(s)
+		if tag == "body" {
+			return
+		}
 		classes, _ := s.Attr("class")
 		for _, c := range unwantedClasses {
 			if strings.Contains(strings.ToLower(classes), c) {
+				log.Debug(fmt.Sprintf("Remove element %q (classes: %q) for class matching %q", tag, classes, c))
 				s.Remove()
 			}
 		}
