@@ -1,0 +1,36 @@
+url: https://www.tagesschau.de/ausland/tuerkei-1193.html
+# List of strings that should be PRESENT in the output
+find:
+  # image caption
+  - In vielen Orten schiebt sich förmlich eine braune Lawine durch Straßen und schluckt alles, was auf ihrem Weg liegt.
+  # first
+  - Es sind die schlimmsten Überschwemmungen in der Türkei seit Jahrzehnten. Mindestens 40 Menschen sind ums Leben gekommen
+  # last
+  - Die Türkei bliebt im Krisenmodus.
+# List of strings that should NOT appear in the output
+findnot:
+  # headline of linked article
+  - Tote nach Überschwemmungen in der Türkei
+  # related articles
+  - Mehr zum Thema
+  - Chinook-Helikopter des ägyptischen Militärs
+  # comment section
+  - gibt es wirklich mehr Katastrophen oder wird nur mehr darüber geschrieben
+# List of CSS selectors and how often they are expected to appear
+query:
+  # tags
+  - q: ul li a
+    t: Türkei
+    n: 0
+  - q: ul li a
+    t: Waldbrände
+    n: 0
+  # comments
+  - q: h2
+    t: KOMMENTARE
+    n: 0
+  - a: a
+    t: Kommentar schreiben
+    n: 0
+  - q: img
+    n: 2

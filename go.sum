@@ -36,6 +36,8 @@ github.com/go-shiori/dom v0.0.0-20210627111528-4e4722cd0d65/go.mod h1:NPO1+buE6T
 github.com/go-shiori/go-readability v0.0.0-20210627123243-82cc33435520 h1:clFLTuh2YyNzQuxKiDTNLZB2N47pwVGI/ZlQxxilLoE=
 github.com/go-shiori/go-readability v0.0.0-20210627123243-82cc33435520/go.mod h1:LTRGsNyO3/Y6u3ERbz17OiXy2qO1Y+/8QjXpg2ViyEY=
 github.com/go-stack/stack v1.8.0/go.mod h1:v0f6uXyyMGvRgIKkXu+yp6POWl0qKG85gN/melR3HDY=
+github.com/go-yaml/yaml v2.1.0+incompatible h1:RYi2hDdss1u4YE7GwixGzWwVo47T8UQwnTLB6vQiq+o=
+github.com/go-yaml/yaml v2.1.0+incompatible/go.mod h1:w2MrLa16VYP0jy6N7M5kHaCkaLENm+P+Tv+MfurjSw0=
 github.com/gogo/protobuf v1.1.1/go.mod h1:r8qH/GZQm5c6nD/R0oafs1akxWv10x8SbQlK7atdtwQ=
 github.com/gogo/protobuf v1.2.1/go.mod h1:hp+jE20tsWTFYpLwKvXlhS1hjn+gTNwPg2I6zVXpSg4=
 github.com/gogs/chardet v0.0.0-20191104214054-4b6791f73a28 h1:gBeyun7mySAKWg7Fb0GOcv0upX9bdaZScs8QcRo8mEY=
