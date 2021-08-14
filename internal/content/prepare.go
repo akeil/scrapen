@@ -289,6 +289,7 @@ var unwantedClasses = []string{
 	"buy",
 	"offer",
 	// "paywalled" content might sometimes be available
+	// e.g. bloomberg.com
 	// "paywall",
 
 	"popular",
@@ -360,6 +361,7 @@ var dropRoles = []string{
 	"feed",
 	"form",
 	"navigation",
+	"menu",
 	"search",
 }
 
