@@ -10,6 +10,7 @@ import (
 	"os/signal"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/go-yaml/yaml"
@@ -37,15 +38,42 @@ func main() {
 
 	go webserver(casesDir, wsAddr, stop)
 
-	err := filepath.Walk(casesDir, runCase)
+	errors := make([]error, 0)
+	var errMx sync.Mutex
+	var wg sync.WaitGroup
+
+	err := filepath.Walk(casesDir, func(path string, info os.FileInfo, err error) error {
+		wg.Add(1)
+		go func() {
+			e := runCase(path, info, err)
+			if e != nil {
+				errMx.Lock()
+				errors = append(errors, e)
+				errMx.Unlock()
+			}
+			wg.Done()
+		}()
+		return nil
+	})
+
 	if err != nil {
 		log.Fatalf("Integration tests failed: %v", err)
+	}
+
+	wg.Wait()
+
+	errMx.Lock()
+	defer errMx.Unlock()
+	if len(errors) != 0 {
+		for n, e := range errors {
+			log.Printf("%v) %v", n+1, e)
+		}
+		log.Fatal("Integration tests failed")
 	}
 }
 
 func webserver(dir, addr string, stop chan interface{}) {
 	http.Handle("/", http.FileServer(http.Dir(dir)))
-	//http.HandleFunc("/img/", serveImage)
 
 	log.Printf("Starting webserver, dir=%q, addr=%q...", dir, addr)
 	go http.ListenAndServe(addr, nil)
@@ -99,7 +127,7 @@ func runCase(path string, info os.FileInfo, err error) error {
 func check(html string, p params) error {
 	url := "http://" + wsAddr + "/" + html
 	base := strings.TrimSuffix(filepath.Base(html), filepath.Ext(html))
-	outfile := filepath.Join(tempdir, base + ".output")
+	outfile := filepath.Join(tempdir, base+".output")
 
 	cmd := exec.Command(tool, url, outfile)
 	output, err := cmd.Output()
