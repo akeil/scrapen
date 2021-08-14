@@ -22,6 +22,43 @@ func TestNormalizeSpace(t *testing.T) {
 	d = doc("<p> with <em>some</em> space </p>")
 	normalizeSpace(d)
 	assert.Equal("<p>with <em>some</em> space</p>", str(d))
+
+	d = doc("<p> with<a> some </a>space </p>")
+	normalizeSpace(d)
+	assert.Equal("<p>with<a> some </a>space</p>", str(d))
+}
+
+func TestFixInineWhitespace(t *testing.T) {
+	assert := assert.New(t)
+
+	d := doc("<p>foo<em> bar </em>baz</p>")
+	fixInlineWhitespace(d)
+	assert.Equal("<p>foo <em>bar</em> baz</p>", str(d))
+
+	// prefix only
+	d = doc("<p>foo<em> bar</em> baz</p>")
+	fixInlineWhitespace(d)
+	assert.Equal("<p>foo <em>bar</em> baz</p>", str(d))
+
+	// suffix only
+	d = doc("<p>foo <em>bar </em>baz</p>")
+	fixInlineWhitespace(d)
+	assert.Equal("<p>foo <em>bar</em> baz</p>", str(d))
+
+	// no previous sibling w. text
+	d = doc("<p><em> bar </em>baz</p>")
+	fixInlineWhitespace(d)
+	assert.Equal("<p><em> bar</em> baz</p>", str(d))
+
+	// empty element not supported
+	d = doc("<p>foo<em><strong> bar </strong></em>baz</p>")
+	fixInlineWhitespace(d)
+	assert.Equal("<p>foo<em><strong> bar </strong></em>baz</p>", str(d))
+
+	// nested nodes
+	d = doc("<p>foo<em></em>baz</p>")
+	fixInlineWhitespace(d)
+	assert.Equal("<p>foo<em></em>baz</p>", str(d))
 }
 
 func TestDeduplicateTitle(t *testing.T) {

@@ -7,6 +7,7 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	log "github.com/sirupsen/logrus"
+	"golang.org/x/net/html"
 
 	"github.com/akeil/scrapen/internal/pipeline"
 )
@@ -20,6 +21,7 @@ func Normalize(ctx context.Context, t *pipeline.Task) error {
 
 	doc := t.Document()
 
+	fixInlineWhitespace(doc)
 	err := normalizeSpace(doc)
 	if err != nil {
 		return err
@@ -31,6 +33,55 @@ func Normalize(ctx context.Context, t *pipeline.Task) error {
 	removeMarkupWithinHeadings(doc)
 
 	return nil
+}
+
+// attempts to keep spaces *around* inline elements rather than
+// *inside them.
+//
+// foo<em> bar </em>baz  -->  foo <em>bar</em> baz
+//        ^   ^                  ^            ^
+//
+// This is done to cover up the inability of the app's HTML kit to properly
+// render whitespace within inline tags.
+func fixInlineWhitespace(doc *goquery.Document) {
+	doc.Selection.Find("*").Each(func(i int, s *goquery.Selection) {
+		tag := goquery.NodeName(s)
+		if isInline(tag) {
+			log.Info(fmt.Sprintf("Found inline %v", tag))
+			t := s.Text()
+			prefix := strings.HasPrefix(t, " ")
+			suffix := strings.HasSuffix(t, " ")
+			if !prefix && !suffix {
+				return
+			}
+
+			node := s.Get(0)
+			if node == nil {
+				panic("invalid state") // should never happen
+			}
+
+			// precondition, needs to have at least one child node
+			if node.FirstChild == nil && node.LastChild != nil {
+				return
+			}
+
+			// move the space for prefix/suffix out of the inline element
+			if prefix && node.FirstChild.Type == html.TextNode {
+				if node.PrevSibling != nil && node.PrevSibling.Type == html.TextNode {
+					node.PrevSibling.Data += " "
+					node.FirstChild.Data = strings.TrimPrefix(node.FirstChild.Data, " ")
+				}
+			}
+
+			if suffix && node.LastChild.Type == html.TextNode {
+				if node.NextSibling != nil && node.NextSibling.Type == html.TextNode {
+					node.NextSibling.Data = " " + node.NextSibling.Data
+					node.LastChild.Data = strings.TrimSuffix(node.LastChild.Data, " ")
+				}
+			}
+
+		}
+	})
 }
 
 // for each blocklevel element, eliminate any whitespace immediately before
