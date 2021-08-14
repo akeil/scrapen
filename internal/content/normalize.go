@@ -47,7 +47,6 @@ func fixInlineWhitespace(doc *goquery.Document) {
 	doc.Selection.Find("*").Each(func(i int, s *goquery.Selection) {
 		tag := goquery.NodeName(s)
 		if isInline(tag) {
-			log.Info(fmt.Sprintf("Found inline %v", tag))
 			t := s.Text()
 			prefix := strings.HasPrefix(t, " ")
 			suffix := strings.HasSuffix(t, " ")

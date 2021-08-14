@@ -279,6 +279,7 @@ var unwantedClasses = []string{
 	"sidebar",
 	"teaser",
 	"recommendation",
+	"related",
 
 	"newsletter",
 
@@ -325,7 +326,8 @@ var unwantedClasses = []string{
 
 	// suspected "invisibles"
 	"zeroopacity",
-	"hidden",
+	// causes problem w. demo-online.de
+	// "hidden",
 }
 
 // notes:
