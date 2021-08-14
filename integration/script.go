@@ -17,6 +17,7 @@ import (
 
 const (
 	casesDir = "."
+	tempdir  = "./temp"
 	tool     = "../bin/scrapen"
 	wsAddr   = "127.0.0.1:8811"
 )
@@ -97,8 +98,10 @@ func runCase(path string, info os.FileInfo, err error) error {
 
 func check(html string, p params) error {
 	url := "http://" + wsAddr + "/" + html
+	base := strings.TrimSuffix(filepath.Base(html), filepath.Ext(html))
+	outfile := filepath.Join(tempdir, base + ".output")
 
-	cmd := exec.Command(tool, url)
+	cmd := exec.Command(tool, url, outfile)
 	output, err := cmd.Output()
 	if err != nil {
 		log.Print("scrapen output:")
@@ -106,7 +109,7 @@ func check(html string, p params) error {
 		return err
 	}
 
-	s, d, err := readResult()
+	s, d, err := readResult(outfile)
 	if err != nil {
 		return err
 	}
@@ -171,9 +174,8 @@ func queryNodes(d *goquery.Document, p params) error {
 	return err
 }
 
-func readResult() (string, *goquery.Document, error) {
-	p := "./output.html"
-	data, err := os.ReadFile(p)
+func readResult(p string) (string, *goquery.Document, error) {
+	data, err := os.ReadFile(p + ".html")
 	if err != nil {
 		return "", nil, err
 	}
