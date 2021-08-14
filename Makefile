@@ -22,3 +22,6 @@ fmt: ${src}
 	for file in $^ ; do\
 		gofmt -w $${file} ; \
 	done
+
+integration: build
+	cd ./integration && $(MAKE)

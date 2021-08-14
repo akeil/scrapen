@@ -1,0 +1,28 @@
+url: https://anonleaks.net/2021/optinfoil/mit-einem-anwalt-wie-haintz-braucht-man-keine-feinde-mehr/
+# List of strings that should be PRESENT in the output
+find:
+  - Dass die Partei “Die Basis” ein Haufen von Selbstdarstellern ist
+  - Aus einschlägigen Kreisen weiss ich, dass Vicky nicht raucht
+  # embedded tweet
+  - Der Bezug zum Rauchen deutet auf den Konsum von Substanzen hin, kann aber auch Fitnesstraining oder Meditation sein.
+  - Aber das schien Deinem überbordenden Ego offensichtlich zu profan.
+# List of strings that should NOT appear in the output
+findnot:
+  # bottom nav
+  - Wenn der Peter mit dem Ivo …
+  - Was “Selbstdenker” für wahr halten, überlebt alles, immer
+  # comment section
+  - 11 Antworten auf „Mit einem Anwalt wie Haintz
+  - Also bei Haintzelmann fällt mir ja immer Loriot ein
+# List of CSS selectors and how often they are expected to appear
+query:
+  # navigation
+  - q: nav ul li a
+    t: Operation Tinfoil
+    n: 0
+  # tags
+  - q: a
+    t: OpTinfoil
+    n: 0
+  - q: img
+    n: 2

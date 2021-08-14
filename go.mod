@@ -5,6 +5,7 @@ go 1.16
 require (
 	github.com/PuerkitoBio/goquery v1.7.1
 	github.com/go-shiori/go-readability v0.0.0-20210627123243-82cc33435520
+	github.com/go-yaml/yaml v2.1.0+incompatible // indirect
 	github.com/google/brotli/go/cbrotli v0.0.0-20210804124202-19d86fb9a60a
 	github.com/google/uuid v1.3.0
 	github.com/microcosm-cc/bluemonday v1.0.15
