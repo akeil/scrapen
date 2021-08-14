@@ -41,6 +41,7 @@ type Task struct {
 	PubDate      *time.Time
 	Site         string
 	SiteScheme   string
+	SiteName     string
 	Author       string
 	ImageURL     string
 	Images       []ImageInfo
@@ -103,6 +104,7 @@ func (t *Task) reset() {
 	t.PubDate = nil
 	t.Site = ""
 	t.SiteScheme = ""
+	t.SiteName = ""
 	t.Author = ""
 	t.ImageURL = ""
 	t.Images = make([]ImageInfo, 0)

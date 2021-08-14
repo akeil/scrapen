@@ -109,15 +109,20 @@ func isWhitelistedTag(tag string) bool {
 // see
 // https://developer.mozilla.org/en-US/docs/Web/HTML/Block-level_elements
 var blocklevel = []string{
-	"p",
-	"h1", "h2", "h3", "h4", "h5", "h6",
-	"hr",
-	"aside",
-	"ul", "ol", "li",
-	"dl", "dd", "dt",
+	"address", "article", "aside",
 	"blockquote",
-	"pre",
+	"details", "dialog", "div",
+	"dl", "dd", "dt",
+	"fieldset",
 	"figure", "figcaption",
+	"footer", "form",
+	"h1", "h2", "h3", "h4", "h5", "h6",
+	"header", "hgroup", "hr",
+	"li", "ul", "ol",
+	"main", "nav",
+	"p",
+	"pre",
+	"section",
 	// caption, th, td are actually not block-levels - but still can trim space
 	"table", "caption", "th", "td",
 }
@@ -132,4 +137,8 @@ func isBlocklevel(tag string) bool {
 	}
 
 	return false
+}
+
+func isInline(tag string) bool {
+	return !isBlocklevel(tag)
 }

@@ -17,7 +17,12 @@ func main() {
 
 	url := os.Args[1]
 
-	err := run(url)
+	output := "./output"
+	if len(os.Args) >= 3 {
+		output = os.Args[2]
+	}
+
+	err := run(url, output)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -25,7 +30,7 @@ func main() {
 
 type composeFunc func(w io.Writer, t *pipeline.Task) error
 
-func run(url string) error {
+func run(url, output string) error {
 	log.SetLevel(log.DebugLevel)
 	//log.SetLevel(log.InfoLevel)
 	s := pipeline.NewMemoryStore()
@@ -45,7 +50,7 @@ func run(url string) error {
 	}
 
 	format := "html"
-	outfile := fmt.Sprintf("output.%v", format)
+	outfile := fmt.Sprintf("%v.%v", output, format)
 	log.Info(fmt.Sprintf("Output to %q\n", outfile))
 
 	f, err := os.Create(outfile)

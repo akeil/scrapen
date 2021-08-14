@@ -275,29 +275,45 @@ var unwantedClasses = []string{
 
 	// supplementary content
 	"aside",
+	"side-content",
+	"sidebar",
 	"teaser",
 	"recommendation",
+	"related",
 
 	"newsletter",
 
 	"subscribe",
+	"signup",
 	"subscription",
 	"donation",
 	"buy",
 	"offer",
-	"paywall",
+	// "paywalled" content might sometimes be available
+	// e.g. bloomberg.com
+	// "paywall",
 
 	"popular",
 	"share",
-	"social",
 	"socbar", // t-online.de
 	"tags",
 	"tagcloud",
+	"social",
 
+	"comment",
 	"comments",
+	"kommentar",
+	"kommentare",
 
 	// navigational stuff
+	"navigation",
+	"nav",
+	"menu",
 	"sitemap",
+	"breadcrumb",
+	"breadcrumbs",
+	"crumb",
+	"crumbs",
 
 	// assumption: embedded audio or video
 	"player",
@@ -310,7 +326,8 @@ var unwantedClasses = []string{
 
 	// suspected "invisibles"
 	"zeroopacity",
-	"hidden",
+	// causes problem w. demo-online.de
+	// "hidden",
 }
 
 // notes:
@@ -319,9 +336,15 @@ var unwantedClasses = []string{
 
 func dropByClass(doc *goquery.Document) {
 	doc.Find("*").Each(func(i int, s *goquery.Selection) {
+		// prevent <body> tag w/ strange class attributes from being removed
+		tag := goquery.NodeName(s)
+		if tag == "body" || tag == "article" {
+			return
+		}
 		classes, _ := s.Attr("class")
 		for _, c := range unwantedClasses {
 			if strings.Contains(strings.ToLower(classes), c) {
+				log.Debug(fmt.Sprintf("Remove element %q (classes: %q) for class matching %q", tag, classes, c))
 				s.Remove()
 			}
 		}
@@ -340,6 +363,7 @@ var dropRoles = []string{
 	"feed",
 	"form",
 	"navigation",
+	"menu",
 	"search",
 }
 

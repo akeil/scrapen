@@ -197,6 +197,7 @@ func dropOrphanedElements(doc *goquery.Document) {
 
 // strip prefix or suffix from title
 func stripFromTitle(t *pipeline.Task) {
+	stripSiteNameFromTitle(t)
 	separators := []string{"|"}
 	for _, sep := range separators {
 		if strings.Count(t.Title, sep) == 1 {
@@ -211,5 +212,47 @@ func stripFromTitle(t *pipeline.Task) {
 				t.Title = strings.TrimSpace(parts[1])
 			}
 		}
+	}
+}
+
+func stripSiteNameFromTitle(t *pipeline.Task) {
+	if t.SiteName == "" {
+		return
+	}
+
+	siteName := strings.ToLower(t.SiteName)
+	title := strings.ToLower(t.Title)
+	var prefixLen int
+	var suffixLen int
+	separators := []string{"|", ":", "-"}
+	for _, sep := range separators {
+		prefix := siteName + sep
+		if strings.HasPrefix(title, prefix) {
+			prefixLen = len(prefix)
+			break
+		}
+		prefix = siteName + " " + sep
+		if strings.HasPrefix(title, prefix) {
+			prefixLen = len(prefix)
+			break
+		}
+
+		suffix := sep + siteName
+		if strings.HasSuffix(title, suffix) {
+			suffixLen = len(suffix)
+			break
+		}
+		suffix = sep + " " + siteName
+		if strings.HasSuffix(title, suffix) {
+			suffixLen = len(suffix)
+			break
+		}
+	}
+
+	if prefixLen > 0 {
+		t.Title = strings.TrimSpace(t.Title[prefixLen:])
+	} else if suffixLen > 0 {
+		n := len(t.Title) - suffixLen
+		t.Title = strings.TrimSpace(t.Title[:n])
 	}
 }

@@ -1,0 +1,23 @@
+url: https://www.dasbiber.at/content/meine-mutter-haette-lieber-einen-stein-geboren-als-mich
+# selected fragments from content
+find:
+  - Im Badeanzug am Strand liegen, Musik hören und daten, wen sie möchte – das sind Freiheiten, die Lale Gül (23) nie hatte.
+  - "BIBER: Deine Familie ist Teil einer türkischen Gemeinschaft. Inwiefern hat die Kultur deiner Familie und deiner Gemeinschaft dein Leben beeinflusst?"
+  - Wegen all der Drohnachrichten, die ich bekommen habe - insgesamt waren es 70.
+  - "Aber trotzdem habe ich das Gefühl, dass ich alle eisernen Ketten von mir abgeworfen habe. Also: ja."
+  - die Antidiskriminierungsstellen des Landes verzeichneten mehr Vorfälle als in den Jahren zuvor.
+# text that is present in the original HTML but should not appear in the result
+findnot:
+  - Scharfe Post von biber
+  - Zum Verfassen von Kommentaren bitte
+  - Neues Benutzerkonto erstellen
+query:
+  - q: img
+    n: 4
+  - q: p
+    t: "von Jara Majerus, Fotos: Emiel Janssen"
+    n: 1
+  # should not include the nav list
+  - q: div ul li a
+    t: " Story "
+    n: 0
