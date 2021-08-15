@@ -1,0 +1,17 @@
+url: https://www.wired.co.uk/article/revolut-trade-unions-labour-fintech-politics-storonsky
+# List of strings that should be PRESENT in the output
+find:
+  - nothing but a number to them with dollar signs attached.
+  - The job listings for business development roles are almost line-by-line identical to the one Laura applied for.
+# List of strings that should NOT appear in the output
+findnot:
+  # footer
+  - WIRED is where tomorrow is realised.
+  - Privacy notice and cookie statement
+# List of CSS selectors and how often they are expected to appear
+query:
+  - q: ul li a
+    t: Science
+    n: 0
+  - q: img
+    n: 4
