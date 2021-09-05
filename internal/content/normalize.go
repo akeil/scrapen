@@ -127,6 +127,11 @@ func deduplicateImage(t *pipeline.Task, doc *goquery.Document) {
 		}
 
 		if src == t.ImageURL {
+			log.WithFields(log.Fields{
+				"taskId": t.ID,
+				"url":    t.URL,
+				"src":    src,
+			}).Debug("Remove duplicate image")
 			s.Remove()
 		}
 	})
