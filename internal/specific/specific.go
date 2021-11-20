@@ -23,6 +23,9 @@ func SiteSpecific(ctx context.Context, t *pipeline.Task) error {
 	}
 
 	switch h {
+	case "bloomberg.com":
+		bloomberg(t)
+		break
 	case "stackoverflow.com",
 		"stackexchange.com",
 		"superuser.com",

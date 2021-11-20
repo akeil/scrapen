@@ -21,6 +21,8 @@ func Prepare(ctx context.Context, t *pipeline.Task) error {
 		"module": "content",
 	}).Info("Prepare HTML")
 
+	//log.Debug(t.HTML())
+
 	jsonLD(t)
 
 	doc := t.Document()
@@ -31,7 +33,7 @@ func Prepare(ctx context.Context, t *pipeline.Task) error {
 		doPrepare(altDoc)
 	}
 
-	// log.Debug(t.HTML())
+	//log.Debug(t.HTML())
 
 	return nil
 }
