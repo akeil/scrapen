@@ -305,6 +305,7 @@ var unwantedClasses = []string{
 	"tags",
 	"tagcloud",
 	"social",
+	"topic-list",  // vice.com
 
 	"comment",
 	"comments",
@@ -344,7 +345,7 @@ func dropByClass(doc *goquery.Document) {
 	doc.Find("*").Each(func(i int, s *goquery.Selection) {
 		// prevent <body> tag w/ strange class attributes from being removed
 		tag := goquery.NodeName(s)
-		if tag == "body" || tag == "article" {
+		if tag == "html" || tag == "body" || tag == "article" {
 			return
 		}
 		classes, _ := s.Attr("class")

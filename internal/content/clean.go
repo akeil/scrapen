@@ -27,6 +27,7 @@ func Clean(ctx context.Context, t *pipeline.Task) error {
 
 	removeUnwantedElements(doc)
 	unwrapTags(doc)
+	removeUnwantedPunctuation(doc)
 	removeUnwantedAttributes(doc)
 
 	dropOrphanedElements(doc)
@@ -77,6 +78,46 @@ func removeUnwantedAttributes(doc *goquery.Document) {
 		}
 		for _, key := range remove {
 			s.RemoveAttr(key)
+		}
+	})
+}
+
+var punctuation = []string{
+	"|",
+	"-",
+	"/",
+	":",
+	"#",
+	"~",
+	"*",
+	"+",
+}
+
+func isPunctuation(s string) bool {
+	s = strings.TrimSpace(s)
+	for _, p := range punctuation {
+		if s == p {
+			return true
+		}
+	}
+	return false
+}
+
+// Remove block-level elements that contain only punctuation
+// or typical "separators".
+func removeUnwantedPunctuation(doc *goquery.Document) {
+	doc.Selection.Find("*").Each(func(i int, s *goquery.Selection) {
+		tag := goquery.NodeName(s)
+		if !isBlocklevel(tag) {
+			return
+		}
+		if isPunctuation(s.Text()) {
+			log.WithFields(log.Fields{
+				"module": "content",
+				"element": tag,
+				"text": s.Text(),
+			}).Debug("Remove element")
+			s.Remove()
 		}
 	})
 }
