@@ -1,0 +1,20 @@
+url: https://www.faz.net/aktuell/gesellschaft/kriminalitaet/amoklauf-in-plymouth-mutmassliche-taeter-offenbar-aus-incel-szene-17483036.html
+# List of strings that should be PRESENT in the output
+find:
+  - Großbritannien hat am vergangenen Donnerstag einen der schlimmsten Amokläufe in seiner jungen Vergangenheit erlebt.
+  - Johnson sprach den Angehörigen der Opfer sein Beileid aus.
+# List of strings that should NOT appear in the output
+findnot:
+  - können Sie die Rechte an diesem Artikel erwerben.
+  # related articles
+  - Alleinsein und Radikalismus
+  - Die Einsamkeit der Generation Z
+  # Newsletter
+  - Abonnieren Sie unsere FAZ.NET-Newsletter und wir liefern die wichtigsten Nachrichten direkt in Ihre Mailbox.
+# List of CSS selectors and how often they are expected to appear
+query:
+  - q: ul li a
+    t: Impressum
+    n: 0
+  - q: img
+    n: 4

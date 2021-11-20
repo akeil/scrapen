@@ -1,0 +1,24 @@
+url: https://sifted.eu/articles/wolt-530m-raise/
+# List of strings that should be PRESENT in the output
+find:
+  - It’s snowy in Helsinki, but that’s not stopping local food delivery company Wolt.
+  - I know I’m not going to be able to stay as CEO unless I’m able to learn a lot all the time.
+  # image caption
+  - Wolt CEO and cofounder Miki Kuusi
+# List of strings that should NOT appear in the output
+findnot:
+  # related article
+  - Nordics' first homegrown 10-minute grocery delivery startup raises €4.9m
+  # Newsletter ad (x2)
+  - Want the best of Sifted in your inbox?
+  - Get the best of Sifted in your inbox
+  # Comments
+  - Join the conversation
+# List of CSS selectors and how often they are expected to appear
+query:
+  # main navigation
+  - q: ul li a
+    t: " Latest "
+    n: 0
+  - q: img
+    n: 2

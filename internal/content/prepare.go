@@ -21,6 +21,8 @@ func Prepare(ctx context.Context, t *pipeline.Task) error {
 		"module": "content",
 	}).Info("Prepare HTML")
 
+	//log.Debug(t.HTML())
+
 	jsonLD(t)
 
 	doc := t.Document()
@@ -30,6 +32,8 @@ func Prepare(ctx context.Context, t *pipeline.Task) error {
 	if altDoc != nil {
 		doPrepare(altDoc)
 	}
+
+	//log.Debug(t.HTML())
 
 	return nil
 }
@@ -276,7 +280,9 @@ var unwantedClasses = []string{
 	// supplementary content
 	"aside",
 	"side-content",
-	"sidebar",
+	// unwanted removal on mlexmarketinsight.com
+	// with class   post-page-body post-page-body--sidebar-rhs
+	//"sidebar",
 	"teaser",
 	"recommendation",
 	"related",
@@ -299,6 +305,7 @@ var unwantedClasses = []string{
 	"tags",
 	"tagcloud",
 	"social",
+	"topic-list",  // vice.com
 
 	"comment",
 	"comments",
@@ -338,7 +345,7 @@ func dropByClass(doc *goquery.Document) {
 	doc.Find("*").Each(func(i int, s *goquery.Selection) {
 		// prevent <body> tag w/ strange class attributes from being removed
 		tag := goquery.NodeName(s)
-		if tag == "body" || tag == "article" {
+		if tag == "html" || tag == "body" || tag == "article" {
 			return
 		}
 		classes, _ := s.Attr("class")

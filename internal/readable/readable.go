@@ -21,6 +21,8 @@ func MakeReadable(ctx context.Context, t *pipeline.Task) error {
 		"url":    t.ContentURL(),
 	}).Info("Apply readability")
 
+	//log.Debug(t.HTML())
+
 	baseURL := t.ContentURL()
 	candidates := make([]candidate, 0)
 
@@ -52,6 +54,7 @@ func MakeReadable(ctx context.Context, t *pipeline.Task) error {
 	t.Title = winner.Article.Title
 	t.ActualURL = winner.URL
 
+	//log.Debug(t.HTML())
 	return nil
 }
 

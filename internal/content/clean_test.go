@@ -58,6 +58,22 @@ func TestRemoveAttributes(t *testing.T) {
 	assert.Equal("<img src=\"foo\"/>", str(d))
 }
 
+func TestRemovePunctuation(t *testing.T) {
+	assert := assert.New(t)
+
+	d := doc("<p>text</p><p>|</p>")
+	removeUnwantedPunctuation(d)
+	assert.Equal("<p>text</p>", str(d))
+
+	d = doc("<p>text</p><p> | </p>")
+	removeUnwantedPunctuation(d)
+	assert.Equal("<p>text</p>", str(d))
+
+	d = doc("<p>| text |</p>")
+	removeUnwantedPunctuation(d)
+	assert.Equal("<p>| text |</p>", str(d))
+}
+
 func TestRemoveElements(t *testing.T) {
 	assert := assert.New(t)
 
