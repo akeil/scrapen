@@ -280,7 +280,9 @@ var unwantedClasses = []string{
 	// supplementary content
 	"aside",
 	"side-content",
-	"sidebar",
+	// unwanted removal on mlexmarketinsight.com
+	// with class   post-page-body post-page-body--sidebar-rhs
+	//"sidebar",
 	"teaser",
 	"recommendation",
 	"related",
