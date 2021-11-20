@@ -31,6 +31,8 @@ func Prepare(ctx context.Context, t *pipeline.Task) error {
 		doPrepare(altDoc)
 	}
 
+	// log.Debug(t.HTML())
+
 	return nil
 }
 
