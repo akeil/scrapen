@@ -1,0 +1,24 @@
+url: https://www.cntraveler.com/story/travel-accessories-for-women-that-are-actually-worth-buying
+# List of strings that should be PRESENT in the output
+find:
+  - All products featured on Condé Nast Traveler are independently selected
+  - Universal Standard is one of our go-tos for basics
+  - Gregory Packs women
+  - For light day hikes, the last thing you want
+# List of strings that should NOT appear in the output
+findnot:
+  - women who travel
+  - Condé Nast Traveler does not provide medical advice, diagnosis
+# List of CSS selectors and how often they are expected to appear
+query:
+  - q: nav
+    n: 0
+  - q: header section
+    n: 0
+  - q: footer div
+    n: 0
+  - q: a
+    t: Subscribe
+    n: 0
+  - q: img
+    n: 12

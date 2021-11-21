@@ -1,0 +1,30 @@
+url: https://www.rei.com/learn/expert-advice/backpacks-adjusting-fit.html
+# List of strings that should be PRESENT in the output
+find:
+  - Above all else, the best backpack for you is the one that fits your body the best
+  # TODO
+  # - In order to accurately determine this key spec
+  - Double check on REI.com to be sure the waist/hip measurement
+  - In addition, because fit adjustment is a dynamic process
+  # TODO
+  #- Avoid the common mistake of overtightening the sternum strap
+  # - Take your pack off whenever you stop for a break
+# List of strings that should NOT appear in the output
+findnot:
+  - 599 reviews with an average rating of 4.6 out of 5 stars
+  - Related Articles
+  - How to Choose a Backpack
+  - Shop products from this article on REI.com
+  - How helpful was this article? Click a star to rate.
+  - Sign up for REI emails
+  - Sign me up!
+  - At REI, we believe that a life outdoors is a life well lived
+  - Affiliate Program
+  - Total REI Rewards Lookup
+  - Help Center
+# List of CSS selectors and how often they are expected to appear
+query:
+  - q: nav
+    n: 0
+  - q: img
+    n: 2

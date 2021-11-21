@@ -1,0 +1,29 @@
+url: https://www.gatesfoundation.org/ideas/articles/women-unemployment-covid19
+# List of strings that should be PRESENT in the output
+find:
+  - Every year, the International Labour Organization (ILO)
+  - Male employment has mostly recovered
+  - five years into this journey
+  - For men, employment has been recovering, albeit slowly, and mostly
+  - World Bank initiative to accelerate investment around child care
+# List of strings that should NOT appear in the output
+findnot:
+  - Sign up for  # newsletter
+  - get weekly updates on the latest in global  # newsletter
+  # read next
+  - Gender equality is not a side issue
+  - we must advance progress toward gender equality
+  - Time to go big
+  # footer
+  - We are a nonprofit fighting poverty, disease, and inequity around the world.
+# List of CSS selectors and how often they are expected to appear
+query:
+  - q: "h2"
+    t: Read next
+    n: 0
+  - q: footer section
+    n: 0
+  - q: use
+    n: 0
+  - q: img
+    n: 5
