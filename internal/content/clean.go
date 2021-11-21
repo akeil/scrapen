@@ -31,6 +31,7 @@ func Clean(ctx context.Context, t *pipeline.Task) error {
 	removeUnwantedAttributes(doc)
 
 	dropOrphanedElements(doc)
+	dropEmptyElements(doc)
 
 	stripFromTitle(t)
 
@@ -223,6 +224,7 @@ func findURL(s string) string {
 // find elements that typically require a specific parent element
 // and where te parent element has been removed for some reason.
 func dropOrphanedElements(doc *goquery.Document) {
+	// TODO caption -> table
 	doc.Find("figcaption").Each(func(i int, s *goquery.Selection) {
 		found := false
 		s.Parents().Each(func(i int, p *goquery.Selection) {
@@ -235,6 +237,42 @@ func dropOrphanedElements(doc *goquery.Document) {
 		}
 	})
 }
+
+var contentRequired = []string{
+	"p",
+	"h1", "h2", "h3", "h4", "h5", "h6",
+	"b", "u", "i", "s",
+	"em", "strong", "small",
+	"sub", "sup",
+	"abbr",
+	"del", "ins",
+	"aside",
+	"li",
+	"dd", "dt",
+	"code", "pre", "kbd", "sample", "var",
+	"mark", "q",
+	"blockquote", "cite",
+}
+
+// find elements that only make sense if the have content.
+// If they have not, remove them.
+// Content is either TEXT or IMAGE
+func dropEmptyElements(doc *goquery.Document) {
+	match := strings.Join(contentRequired, ",")
+	doc.Find(match).Each(func(i int, s *goquery.Selection) {
+		if strings.TrimSpace(s.Text()) != "" {
+			return
+		}
+
+		if s.Find("img").Size() != 0 {
+			return
+		}
+
+		s.Remove()
+	})
+}
+
+// drop empty lists, tables
 
 // strip prefix or suffix from title
 func stripFromTitle(t *pipeline.Task) {
