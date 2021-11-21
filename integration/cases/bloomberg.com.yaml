@@ -1,0 +1,24 @@
+url: bloomberg.com/news/articles/2015-01-05/the-real-reason-u-s-gas-is-so-cheap-is-americans-don-t-pay-the-true-cost-of-driving
+# List of strings that should be PRESENT in the output
+find:
+  - The situation is hardly a happy coincidence for U.S. motorists.
+  - he estimated them at upwards of $3.3 trillion a year
+  - purses or wallets, but which cost us dearly just the same.
+# List of strings that should NOT appear in the output
+findnot:
+  - Cities are changing fast. Keep up with the CityLab Daily newsletter.
+  # from sidebar nav:
+  - The Women Behind Historic House Designs
+  - A Denser City, But at What Cost?
+  # some stuff from the nav list
+  - Where to Go in 2021
+  - Global Trade Tracker
+  - Bloomberg Opinion Today
+# List of CSS selectors and how often they are expected to appear
+query:
+  - q: nav ol li
+    n: 0
+  - q: aside
+    n: 0
+  - q: img
+    n: 3

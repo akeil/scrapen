@@ -21,6 +21,12 @@ func Normalize(ctx context.Context, t *pipeline.Task) error {
 
 	doc := t.Document()
 
+	// could replace
+	// i -> em
+	// b -> strong
+	// s -> del
+	// kbd, samp, var -> code
+
 	fixInlineWhitespace(doc)
 	err := normalizeSpace(doc)
 	if err != nil {

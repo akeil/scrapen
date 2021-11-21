@@ -1,0 +1,21 @@
+url: https://krautreporter.de/617-what-the-fachkraft
+# List of strings that should be PRESENT in the output
+find:
+  - Vor vier Jahren saß ich in einer Autobahnraststätte im Vogtland
+  - Ich persönlich finde übrigens, dass in Deutschland ein Mangel an Schokolade herrscht
+  - Lassen sie uns über fehlende Pflegekräfte reden
+# List of strings that should NOT appear in the output
+findnot:
+  - Es steckt noch mehr hinter dieser Geschichte!
+  - Du bist bereits Mitglied?
+  # Newsletter
+  - Die Morgenpost
+  - Montag bis Freitag um fünf Uhr früh
+# List of CSS selectors and how often they are expected to appear
+query:
+  - q: header section button
+    n: 0
+  - q: img
+    n: 1
+  - q: footer div div
+    n: 0

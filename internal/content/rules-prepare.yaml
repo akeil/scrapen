@@ -1,0 +1,227 @@
+# Drop generally unwanted or unsupported elements
+- action: drop
+  elements:
+  - header
+  - footer
+  - nav
+  - aside
+  - template
+  - form
+  - script
+
+# Drop most of the AMP elements
+- action: drop
+  elements:
+  # ads and tracking
+  - amp-ad
+  - amp-ad-exit
+  - amp-auto-ads
+  - amp-analytics
+  - amp-call-tracking
+  - amp-social-share
+  - amp-sticky-ad
+
+  # almost all of the "dynamic content" elements
+  - amp-access-laterpay
+  - amp-access-poool
+  - amp-access-scroll
+  - amp-access
+  - amp-action-macro
+  - amp-autocomplete
+  - amp-bind
+  - amp-byside-content
+  - amp-consent
+  - amp-date-picker
+  - amp-delight-player
+  - amp-jwplayer
+  - amp-form
+  - amp-geo
+  - amp-gist
+  - amp-google-assistant-assistjs
+  - amp-google-document-embed
+  - amp-inputmask
+  - amp-install-serviceworker
+  # -amp-layout
+  - amp-link-rewriter
+  - amp-list
+  - amp-live-list
+  - amp-minute-media-player
+  - amp-mustache
+  - amp-next-page
+  - amp-pixel
+  - amp-recaptcha-input
+  - amp-render
+  - amp-script
+  - amp-selector
+  - amp-smartlinks
+  - amp-subscriptions-google
+  - amp-subscriptions
+  - amp-user-notification
+  - amp-video-docking
+  - amp-web-push
+  # social
+  - amp-addthis
+  - amp-beopinion
+  - amp-facebook-comments
+  - amp-facebook-like
+  - amp-facebook-page
+  - amp-facebook
+  - amp-gfycat
+  - amp-iframely
+  - amp-instagram
+  - amp-pinterest
+  - amp-reddit
+  - amp-riddle-quiz
+  - amp-twitter
+  - amp-vine
+  - amp-vk
+  # various
+  - amp-state
+  - amp-sidebar
+  - amp-carousel
+  - amp-app-banner
+  - amp-consent
+  - amp-iframe
+  # social login
+  - mp-onetap-google
+
+# Class indicating ads
+- action: drop
+  attr: class
+  values:
+  - adblock
+  - ad-block
+  - adchoice
+  - ad-choice
+  - article-ad
+  - articlead
+  # problematic, if parent elements contain this
+  # - .*?\w+\-ad(-\w+)?.*?  # foo-ad, foo-ad-bar
+  # - .*?(\w+-)?ad\-\w+.*?  # ad-foo
+
+# unwnated third party
+- action: drop
+  attr: class
+  values:
+    - groupon
+
+# Class indicating supplemental content
+- action: drop
+  attr: class
+  values:
+  - aside
+  - side-content
+  # unwanted removal on mlexmarketinsight.com
+  # with class   post-page-body post-page-body--sidebar-rhs
+  # or sidebar_right
+  #- sidebar
+  - teaser
+  - recommend.*?
+  - related
+  # "recirculation" is a publishing strategy
+  - recirc.*?
+  # sometimes "promoted" refers to "highlighted"
+  #- promo
+  - article-promo
+  - inline-promo
+
+# Indicates tags, recommendations, ...
+- action: drop
+  attr: class
+  values:
+  - popular
+  - tags
+  - tagcloud
+  - (T|t)ag(C|c)loud(W|w)rapper
+  - topic-list  # vice.com
+
+# Class indicating newsletter and user signup stuff
+- action: drop
+  attr: class
+  values:
+  - .*?(N|n)ewsletter.*?  # Newsletter, foo-newsletter-bar
+  - subscribe
+  - signup
+  - subscription
+  - donation
+  - buy
+  - offer
+  # "paywalled" content might sometimes be available
+  # e.g. bloomberg.com
+  # - paywall
+  - js-paywall-template  # krautreporter.de
+
+# Class indicating social share
+- action: drop
+  attr: class
+  values:
+  - .*?share.*?
+  - socbar  # t-online.de
+  - .*?social.*?
+  - shariff  # plugin, https://github.com/heiseonline/shariff
+  - SocialIconsWrapper
+  - SocialIcons
+  - icon-pinterest
+  - icon-facebook
+  - icon-snapchat
+  - icon-instagram
+  - icon-twitter
+
+# indicates user content/comments
+- action: drop
+  attr: class
+  values:
+  - comment
+  - comments
+  - kommentar
+  - kommentare
+  - rating
+  - rate
+
+# Class indicates navigation
+- action: drop
+  attr: class
+  values:
+  - .*?nav.*?
+  - navigation
+  - menu
+  - sitemap
+  - .*?crumb.*?
+  - breadcrumb
+  - breadcrumbs
+  - crumbs
+
+# indicates multimedia
+- action: drop
+  attr: class
+  values:
+  - .*?player.*?
+
+# unclear whether to include
+# not sure - embedded tweets from wordpress?
+# wp-block-embed-twitter
+# pushlayer // handlesblatt.com, begging for push-notifications
+
+# suspected "invisibles"
+- action: drop
+  attr: class
+  values:
+  - zeroopacity
+  # causes problem w. demo-online.de
+  # - hidden
+
+# drop by aria role
+# roles documentation - see
+# https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Roles
+- action: drop
+  attr: role
+  values:
+  - complementary
+  - banner
+  - contentinfo
+  - dialog
+  - feed
+  - form
+  - navigation
+  - menu
+  - search
