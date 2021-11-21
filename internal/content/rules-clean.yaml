@@ -1,0 +1,156 @@
+- action: drop
+  invert: true
+  elements:
+  - "#document"
+  - html
+  - body
+  - p
+  - a
+  - "h1"
+  - "h2"
+  - "h3"
+  - "h4"
+  - "h5"
+  - "h6"
+  - br
+  - b
+  - u
+  - i
+  - s
+  - em
+  - strong
+  - small
+  - sub
+  - sup
+  - abbr
+  - del
+  - ins
+  - aside
+  - ul
+  - ol
+  - li
+  - dl
+  - dd
+  - dt
+  - table
+  - thead
+  - tbody
+  - tfoot
+  - caption
+  - tr
+  - th
+  - td
+  - colgroup
+  - col
+  - code
+  - pre
+  - kbd
+  - sample
+  - var
+  - mark
+  - q
+  - blockquote
+  - cite
+  - rp
+  - rt
+  - ruby
+  - img
+  - figure
+  - figcaption
+  - bdi
+  - bdo
+  - wbr
+  # would not hurt, but not needed either
+  - hr
+  # unsupported
+  # "audio", "video", "track", "source",
+  # embed, iframe,
+  # object, param,
+  # picture, source
+  # svg, path, g
+  # nav  <-- drop as it likely contains irrelevant content
+
+  # These are the same tags as in the "unwrap" rule
+  - span
+  - div
+  - article
+  - section
+  - summary
+  - address
+  - main
+  - footer
+  - header
+  - hgroup
+  - data
+  - dfn
+  - time
+  # deprecated elements
+  - acronym
+  - basefont
+  - big
+  - blink
+  - center
+  - content
+  - font
+  - listing
+  - marquee
+  - nobr
+  - plaintext
+  - spacer
+  - strike
+  - tt
+  - picture
+  # amp
+  - amp-accordion
+
+# Unwrap elements we do not wish to support
+- action: unwrap
+  elements:
+  - span
+  - div
+  - article
+  - section
+  - summary
+  - address
+  - main
+  - footer
+  - header
+  - hgroup
+  - data
+  - dfn
+  - time
+  # deprecated elements
+  - acronym
+  - basefont
+  - big
+  - blink
+  - center
+  - content
+  - font
+  - listing
+  - marquee
+  - nobr
+  - plaintext
+  - spacer
+  - strike
+  - tt
+  - picture
+  # amp
+  - amp-accordion
+
+# second set of elements to unwrap to simplyfy HTML output
+- action: unwrap
+  elements:
+  - sub  # subscript
+  - sup  # superscript
+  - abbr
+  - del
+  - ins
+  - aside
+  - mark
+  - rp
+  - rt
+  - ruby
+  - bdi
+  - bdo
+  - wbr

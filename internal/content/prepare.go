@@ -49,10 +49,11 @@ func doPrepare(doc *goquery.Document) {
 	// Stage 2
 	// dropping elements
 	// TODO: *all* of these iterate through the complete doc tree..
-	dropBlacklisted(doc)
+	applyRules(rulesPrep, doc)
+	//dropBlacklisted(doc)
 	dropLinkClouds(doc)
-	dropByRole(doc)
-	dropByClass(doc)
+	//dropByRole(doc)
+	//dropByClass(doc)
 	dropTrackingPixels(doc)
 
 	// Stage 3
@@ -141,7 +142,7 @@ var blacklist = []string{
 	"amp-social-share",
 	"amp-sticky-ad",
 
-	// almos all of the "dynamic content" elements
+	// almost all of the "dynamic content" elements
 	"amp-access-laterpay",
 	"amp-access-poool",
 	"amp-access-scroll",
@@ -305,7 +306,7 @@ var unwantedClasses = []string{
 	"tags",
 	"tagcloud",
 	"social",
-	"topic-list",  // vice.com
+	"topic-list", // vice.com
 
 	"comment",
 	"comments",
