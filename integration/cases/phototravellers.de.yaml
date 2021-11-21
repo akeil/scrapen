@@ -1,0 +1,24 @@
+# Wordpress site
+url: https://phototravellers.de/wanderung-sudetendeutsche-hutte/
+# List of strings that should be PRESENT in the output
+find:
+  - Die Wanderung zur 2650 Meter hoch gelegenen
+  - Wir passieren ein Gatter und stehen auf einer großen Alm
+  - Der Weg führt dicht an einem tosenden Wasserfall vorbei
+  - Nach einer so langen Wanderung und der Hitze muss natürlich
+  # check
+# List of strings that should NOT appear in the output
+findnot:
+  # unable to select this reliably
+  # - Newsletter abonnieren und Foto-E-Book downloaden
+  - Das könnte Dich auch interessieren
+  - Hinterlasse einen Kommentar
+  - Magst du diesen Artikel? Dann teile ihn doch mit deinen Freunden
+# List of CSS selectors and how often they are expected to appear
+query:
+  - q: header div
+    n: 0
+  - q: nav
+    n: 0
+  - q: img
+    n: 65

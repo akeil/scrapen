@@ -1,0 +1,21 @@
+url: https://www.rnd.de/kultur/fotografie-mit-drohnen-wie-fotografen-die-welt-von-oben-in-szene-setzen-MCYGH5I5WZE35GFZN5UESVE45U.html
+# List of strings that should be PRESENT in the output
+find:
+  - Es ist das, was wir als unsere Kunst bezeichnen
+  - 17 Millionen Fotos zählt allein das Netzwerk Instagram
+  - Als unnötig erachten die beiden Drohnenbrüder die Flut an Vorschriften jedoch nicht
+  - Die Drohnenfotografie macht ganz gewöhnliche Dinge viel interessanter
+  - Es muss etwas mit den Vulkanen zu tun haben
+# List of strings that should NOT appear in the output
+findnot:
+  - "RND-App: Updates zu Corona"
+  - Laden Sie jetzt die RND-App herunter
+  - "Newsletter: \"Der Tag\" - jetzt abonnieren"
+# List of CSS selectors and how often they are expected to appear
+query:
+  - q: ul li article
+    n: 0
+  - q: nav
+    n: 0
+  - q: img
+    n: 5

@@ -140,7 +140,7 @@ func (c configRule) applyForAttr(s *goquery.Selection) {
 
 		// preserve essential elements
 		tag := goquery.NodeName(e)
-		if tag == "html" || tag == "body" || tag == "article" {
+		if tag == "html" || tag == "body" || tag == "main" || tag == "article" {
 			return
 		}
 
@@ -158,12 +158,12 @@ func (c configRule) applyForAttr(s *goquery.Selection) {
 						"action":    c.Action,
 						"tag":       tag,
 						"attribute": c.Attr,
+						"fullValue": val,
 						"value":     v,
 						"matches":   re.String(),
-						"affected":  s.Size(),
 					}).Debug("Apply for attribute")
 
-					c.doApply(s)
+					c.doApply(e)
 					return
 				}
 			}
