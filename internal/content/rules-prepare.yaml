@@ -87,7 +87,8 @@
 
 # Class indicating ads
 - action: drop
-  classes:
+  attr: class
+  values:
   - adblock
   - ad-block
   - adchoice
@@ -100,12 +101,14 @@
 
 # unwnated third party
 - action: drop
-  classes:
+  attr: class
+  values:
     - groupon
 
 # Class indicating supplemental content
 - action: drop
-  classes:
+  attr: class
+  values:
   - aside
   - side-content
   # unwanted removal on mlexmarketinsight.com
@@ -119,7 +122,8 @@
 
 # Indicates tags, recommendations, ...
 - action: drop
-  classes:
+  attr: class
+  values:
   - popular
   - tags
   - tagcloud
@@ -127,7 +131,8 @@
 
 # Class indicating newsletter and user signup stuff
 - action: drop
-  classes:
+  attr: class
+  values:
   - .*?(N|n)ewsletter.*?  # Newsletter, foo-newsletter-bar
   - subscribe
   - signup
@@ -141,14 +146,16 @@
 
 # Class indicating social share
 - action: drop
-  classes:
+  attr: class
+  values:
   - .*?share.*?
   - socbar  # t-online.de
   - .*?social.*?
 
 # indicates user content/comments
 - action: drop
-  classes:
+  attr: class
+  values:
   - comment
   - comments
   - kommentar
@@ -156,7 +163,8 @@
 
 # Class indicates navigation
 - action: drop
-  classes:
+  attr: class
+  values:
   - .*?nav.*?
   - navigation
   - menu
@@ -168,19 +176,19 @@
 
 # indicates multimedia
 - action: drop
-  classes:
+  attr: class
+  values:
   - .*?player.*?
-
 
 # unclear whether to include
 # not sure - embedded tweets from wordpress?
 # wp-block-embed-twitter
 # pushlayer // handlesblatt.com, begging for push-notifications
 
-
 # suspected "invisibles"
 - action: drop
-  classes:
+  attr: class
+  values:
   - zeroopacity
   # causes problem w. demo-online.de
   # - hidden

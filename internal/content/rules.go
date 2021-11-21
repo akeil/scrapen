@@ -87,26 +87,14 @@ type rule interface {
 }
 
 type configRule struct {
-	Action     string
-	Elements   []string
-	Attr       string
-	Values     []string
-	valRegex   []*regexp.Regexp
-	Classes    []string
-	classRegex []*regexp.Regexp
+	Action   string
+	Elements []string
+	Attr     string
+	Values   []string
+	valRegex []*regexp.Regexp
 }
 
 func (c *configRule) compile() {
-	c.classRegex = make([]*regexp.Regexp, 0)
-	for _, s := range c.Classes {
-		re, err := regexp.Compile(s)
-		if err != nil {
-			//TODO: log error
-		} else {
-			c.classRegex = append(c.classRegex, re)
-		}
-	}
-
 	c.valRegex = make([]*regexp.Regexp, 0)
 	for _, s := range c.Values {
 		re, err := regexp.Compile(s)
@@ -128,15 +116,10 @@ func (c *configRule) Apply(doc *goquery.Document) {
 	}
 	s := doc.Find(tags)
 
+	// refine the selection for matching attributes
 	if c.Attr != "" {
 		c.applyForAttr(s)
-	}
-
-	if len(c.Classes) != 0 {
-		c.applyForClasses(s)
-	}
-
-	if c.Attr == "" && len(c.Classes) == 0 {
+	} else {
 		// if we have no further restrictions, apply Action on the selected elements
 		log.WithFields(log.Fields{
 			"action":   c.Action,
@@ -150,51 +133,37 @@ func (c *configRule) Apply(doc *goquery.Document) {
 
 func (c configRule) applyForAttr(s *goquery.Selection) {
 	s.Each(func(i int, e *goquery.Selection) {
-		v, exists := e.Attr(c.Attr)
+		val, exists := e.Attr(c.Attr)
 		if !exists {
 			return
 		}
 
-		for _, re := range c.valRegex {
-			if re.MatchString(v) {
-				log.WithFields(log.Fields{
-					"action":    c.Action,
-					"attribute": c.Attr,
-					"value":     v,
-					"matches":   re.String(),
-					"affected":  s.Size(),
-				}).Info("Apply for attribute")
-
-				c.doApply(s)
-				return
-			}
-		}
-	})
-}
-
-func (c configRule) applyForClasses(s *goquery.Selection) {
-	s.Each(func(i int, e *goquery.Selection) {
-		v, exists := e.Attr("class")
-		if !exists {
-			return
-		}
-
+		// preserve essential elements
 		tag := goquery.NodeName(e)
 		if tag == "html" || tag == "body" || tag == "article" {
 			return
 		}
 
-		elemClasses := strings.Split(v, " ")
-		for _, cls := range elemClasses {
-			for _, re := range c.classRegex {
-				if re.MatchString(cls) {
+		var values []string
+		if c.Attr == "class" {
+			values = strings.Split(val, " ")
+		} else {
+			values = []string{val}
+		}
+
+		for _, v := range values {
+			for _, re := range c.valRegex {
+				if re.MatchString(v) {
 					log.WithFields(log.Fields{
-						"action":  c.Action,
-						"tag":     tag,
-						"class":   cls,
-						"matches": re.String(),
-					}).Info("Apply for class")
-					c.doApply(e)
+						"action":    c.Action,
+						"tag":       tag,
+						"attribute": c.Attr,
+						"value":     v,
+						"matches":   re.String(),
+						"affected":  s.Size(),
+					}).Info("Apply for attribute")
+
+					c.doApply(s)
 					return
 				}
 			}
