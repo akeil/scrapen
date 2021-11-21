@@ -51,7 +51,7 @@ func TestDropTemplates(t *testing.T) {
 	</template>
 	<p>Three</p>
 	`)
-	dropBlacklisted(d)
+	doPrepare(d)
 	assert.Equal(0, d.Find("template").Length())
 	assert.Equal(3, d.Find("p").Length())
 
@@ -66,7 +66,7 @@ func TestDropTemplates(t *testing.T) {
 	<amp-ad>something</amp-ad>
 	<p>Three</p>
 	`)
-	dropBlacklisted(d)
+	doPrepare(d)
 	assert.Equal(3, d.Find("p").Length())
 	assert.Equal(0, d.Find("amp-list").Length())
 	assert.Equal(0, d.Find("amp-ad").Length())

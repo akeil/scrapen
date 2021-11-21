@@ -211,6 +211,8 @@
   # - hidden
 
 # drop by aria role
+# roles documentation - see
+# https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Roles
 - action: drop
   attr: role
   values:
