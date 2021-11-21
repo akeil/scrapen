@@ -104,6 +104,29 @@ func TestDropEmptyElements(t *testing.T) {
 	assert.Equal("<p>text<br/>text</p>", str(d))
 }
 
+func TestDropChildlessParents(t *testing.T) {
+	assert := assert.New(t)
+
+	d := doc("text<ol></ol>text")
+	dropChildlessParents(d)
+	assert.Equal("texttext", str(d))
+
+	// (invalid) text content is also dropped
+	d = doc("text<ol>INVALID</ol>text")
+	dropChildlessParents(d)
+	assert.Equal("texttext", str(d))
+
+	// keep if valid
+	d = doc("<ol><li>foo</li></ol>")
+	dropChildlessParents(d)
+	assert.Equal("<ol><li>foo</li></ol>", str(d))
+
+	// not affected
+	d = doc("<em>no children</em>")
+	dropChildlessParents(d)
+	assert.Equal("<em>no children</em>", str(d))
+}
+
 func TestRemoveUnsupportedScheme(t *testing.T) {
 	assert := assert.New(t)
 

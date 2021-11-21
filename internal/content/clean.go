@@ -31,6 +31,7 @@ func Clean(ctx context.Context, t *pipeline.Task) error {
 	removeUnwantedAttributes(doc)
 
 	dropOrphanedElements(doc)
+	dropChildlessParents(doc)
 	dropEmptyElements(doc)
 
 	stripFromTitle(t)
@@ -269,6 +270,34 @@ func dropEmptyElements(doc *goquery.Document) {
 		}
 
 		s.Remove()
+	})
+}
+
+// for elements that require specific children,
+// drop them if they have none.
+func dropChildlessParents(doc *goquery.Document) {
+	doc.Find("ul,ol").Each(func(i int, s *goquery.Selection) {
+		if s.Find("li").Size() == 0 {
+			s.Remove()
+		}
+	})
+
+	doc.Find("table").Each(func(i int, s *goquery.Selection) {
+		if s.Find("td,th").Size() == 0 {
+			s.Remove()
+		}
+	})
+
+	doc.Find("dl").Each(func(i int, s *goquery.Selection) {
+		if s.Find("dt,dd").Size() == 0 {
+			s.Remove()
+		}
+	})
+
+	doc.Find("figure").Each(func(i int, s *goquery.Selection) {
+		if s.Find("img").Size() == 0 {
+			s.Remove()
+		}
 	})
 }
 
