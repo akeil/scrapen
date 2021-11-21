@@ -120,6 +120,10 @@
   - related
   # "recirculation" is a publishing strategy
   - recirc.*?
+  # sometimes "promoted" refers to "highlighted"
+  #- promo
+  - article-promo
+  - inline-promo
 
 # Indicates tags, recommendations, ...
 - action: drop
@@ -128,6 +132,7 @@
   - popular
   - tags
   - tagcloud
+  - (T|t)ag(C|c)loud(W|w)rapper
   - topic-list  # vice.com
 
 # Class indicating newsletter and user signup stuff
@@ -144,6 +149,7 @@
   # "paywalled" content might sometimes be available
   # e.g. bloomberg.com
   # - paywall
+  - js-paywall-template  # krautreporter.de
 
 # Class indicating social share
 - action: drop
@@ -153,6 +159,13 @@
   - socbar  # t-online.de
   - .*?social.*?
   - shariff  # plugin, https://github.com/heiseonline/shariff
+  - SocialIconsWrapper
+  - SocialIcons
+  - icon-pinterest
+  - icon-facebook
+  - icon-snapchat
+  - icon-instagram
+  - icon-twitter
 
 # indicates user content/comments
 - action: drop
@@ -162,6 +175,8 @@
   - comments
   - kommentar
   - kommentare
+  - rating
+  - rate
 
 # Class indicates navigation
 - action: drop
