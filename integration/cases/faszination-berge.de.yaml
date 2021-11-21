@@ -1,0 +1,22 @@
+url: https://www.faszination-berge.de/blog/unsere-touren/gefangen-im-white-out-auf-5-000-metern/
+# List of strings that should be PRESENT in the output
+find:
+  - Ein Erlebnis, von dem ich schon lange erzählen wollte, war es, wo wir während der Elbrus
+  - Wir planten also unseren Tag und wollten zur Vorbereitung bis zu den Pastuchov Felsen
+  - Umso höher wir kamen, umso schlechter wurde auch die Sicht
+  - Nichtsdestotrotz rief unser Bergführer einen Freund an und bat diesen
+# List of strings that should NOT appear in the output
+findnot:
+  - Folge uns auf Facebook
+# List of CSS selectors and how often they are expected to appear
+query:
+  - q: nav
+    n: 0
+  - q: section h3
+    t: Newsletter
+    n: 0
+  - q: h5
+    t: Eintrag teilen
+    n: 0
+  - q: img
+    n: 5

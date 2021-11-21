@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
-	"strings"
 
 	"github.com/PuerkitoBio/goquery"
 	log "github.com/sirupsen/logrus"
@@ -49,10 +48,8 @@ func doPrepare(doc *goquery.Document) {
 	// Stage 2
 	// dropping elements
 	// TODO: *all* of these iterate through the complete doc tree..
-	dropBlacklisted(doc)
+	applyRules(rulesPrep, doc)
 	dropLinkClouds(doc)
-	dropByRole(doc)
-	dropByClass(doc)
 	dropTrackingPixels(doc)
 
 	// Stage 3
@@ -120,104 +117,6 @@ func unwrapDivs(doc *goquery.Document) {
 	})
 }
 
-// see AMP components list:
-// https://amp.dev/documentation/components/?format=websites
-var blacklist = []string{
-	"header",
-	"footer",
-	"nav",
-	"aside",
-	"template",
-
-	"form",
-
-	"script",
-
-	"amp-ad",
-	"amp-ad-exit",
-	"amp-analytics",
-	"amp-auto-ads",
-	"amp-call-tracking",
-	"amp-social-share",
-	"amp-sticky-ad",
-
-	// almos all of the "dynamic content" elements
-	"amp-access-laterpay",
-	"amp-access-poool",
-	"amp-access-scroll",
-	"amp-access",
-	"amp-action-macro",
-	"amp-autocomplete",
-	"amp-bind",
-	"amp-byside-content",
-	"amp-consent",
-	"amp-date-picker",
-	"amp-delight-player",
-	"amp-jwplayer",
-	"amp-form",
-	"amp-geo",
-	"amp-gist",
-	"amp-google-assistant-assistjs",
-	"amp-google-document-embed",
-	"amp-inputmask",
-	"amp-install-serviceworker",
-	//"amp-layout",
-	"amp-link-rewriter",
-	"amp-list",
-	"amp-live-list",
-	"amp-minute-media-player",
-	"amp-mustache",
-	"amp-next-page",
-	"amp-pixel",
-	"amp-recaptcha-input",
-	"amp-render",
-	"amp-script",
-	"amp-selector",
-	"amp-smartlinks",
-	"amp-subscriptions-google",
-	"amp-subscriptions",
-	"amp-user-notification",
-	"amp-video-docking",
-	"amp-web-push",
-
-	// social
-	"amp-addthis",
-	"amp-beopinion",
-	"amp-facebook-comments",
-	"amp-facebook-like",
-	"amp-facebook-page",
-	"amp-facebook",
-	"amp-gfycat",
-	"amp-iframely",
-	"amp-instagram",
-	"amp-pinterest",
-	"amp-reddit",
-	"amp-riddle-quiz",
-	"amp-twitter",
-	"amp-vine",
-	"amp-vk",
-
-	// social login
-	"amp-onetap-google",
-
-	"amp-state",
-	"amp-sidebar",
-	"amp-carousel",
-	"amp-app-banner",
-	"amp-consent",
-	"amp-iframe",
-}
-
-// Drop all unwantedelements including their content.
-// This is used to get rid of everything that is easier to detect *before*
-// readability is applied.
-func dropBlacklisted(doc *goquery.Document) {
-	match := strings.Join(blacklist, ",")
-	doc.Find(match).Each(func(index int, sel *goquery.Selection) {
-		sel.Remove()
-	})
-}
-
 var whitespace = regexp.MustCompile(`\s`)
 
 // dropNavList attempts to find list elements that are used for navigation
@@ -265,123 +164,6 @@ func dropLinkClouds(doc *goquery.Document) {
 		if ratio >= 0.5 {
 			log.Debug("Remove link cloud")
 			s.Remove()
-		}
-	})
-}
-
-var unwantedClasses = []string{
-	"adblock",
-	"ad-block",
-	"adchoice",
-	"ad-choice",
-	"article-ad",
-	"articlead",
-
-	// supplementary content
-	"aside",
-	"side-content",
-	// unwanted removal on mlexmarketinsight.com
-	// with class   post-page-body post-page-body--sidebar-rhs
-	//"sidebar",
-	"teaser",
-	"recommendation",
-	"related",
-
-	"newsletter",
-
-	"subscribe",
-	"signup",
-	"subscription",
-	"donation",
-	"buy",
-	"offer",
-	// "paywalled" content might sometimes be available
-	// e.g. bloomberg.com
-	// "paywall",
-
-	"popular",
-	"share",
-	"socbar", // t-online.de
-	"tags",
-	"tagcloud",
-	"social",
-	"topic-list",  // vice.com
-
-	"comment",
-	"comments",
-	"kommentar",
-	"kommentare",
-
-	// navigational stuff
-	"navigation",
-	"nav",
-	"menu",
-	"sitemap",
-	"breadcrumb",
-	"breadcrumbs",
-	"crumb",
-	"crumbs",
-
-	// assumption: embedded audio or video
-	"player",
-
-	// not sure - embedded tweets from wordpress?
-	"wp-block-embed-twitter",
-	"pushlayer", // handlesblatt.com, begging for push-notifications
-
-	"groupon",
-
-	// suspected "invisibles"
-	"zeroopacity",
-	// causes problem w. demo-online.de
-	// "hidden",
-}
-
-// notes:
-//
-// maybe "teaser" should only be removed if it contains a link?
-
-func dropByClass(doc *goquery.Document) {
-	doc.Find("*").Each(func(i int, s *goquery.Selection) {
-		// prevent <body> tag w/ strange class attributes from being removed
-		tag := goquery.NodeName(s)
-		if tag == "html" || tag == "body" || tag == "article" {
-			return
-		}
-		classes, _ := s.Attr("class")
-		for _, c := range unwantedClasses {
-			if strings.Contains(strings.ToLower(classes), c) {
-				log.Debug(fmt.Sprintf("Remove element %q (classes: %q) for class matching %q", tag, classes, c))
-				s.Remove()
-			}
-		}
-	})
-}
-
-// roles documentation - see
-// https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Roles
-
-var dropRoles = []string{
-	"complementary",
-	"banner",
-	"comment",
-	"contentinfo",
-	"dialog",
-	"feed",
-	"form",
-	"navigation",
-	"menu",
-	"search",
-}
-
-func dropByRole(doc *goquery.Document) {
-	doc.Find("*").Each(func(i int, s *goquery.Selection) {
-		role, _ := s.Attr("role")
-		role = strings.ToLower(role)
-		for _, r := range dropRoles {
-			if role == r {
-				s.Remove()
-			}
 		}
 	})
 }

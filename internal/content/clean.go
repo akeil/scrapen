@@ -113,9 +113,9 @@ func removeUnwantedPunctuation(doc *goquery.Document) {
 		}
 		if isPunctuation(s.Text()) {
 			log.WithFields(log.Fields{
-				"module": "content",
+				"module":  "content",
 				"element": tag,
-				"text": s.Text(),
+				"text":    s.Text(),
 			}).Debug("Remove element")
 			s.Remove()
 		}
