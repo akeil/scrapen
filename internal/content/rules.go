@@ -125,7 +125,7 @@ func (c *configRule) Apply(doc *goquery.Document) {
 			"action":   c.Action,
 			"elements": tags,
 			"affected": s.Size(),
-		}).Info("Apply for elements")
+		}).Debug("Apply for elements")
 
 		c.doApply(s)
 	}
@@ -161,7 +161,7 @@ func (c configRule) applyForAttr(s *goquery.Selection) {
 						"value":     v,
 						"matches":   re.String(),
 						"affected":  s.Size(),
-					}).Info("Apply for attribute")
+					}).Debug("Apply for attribute")
 
 					c.doApply(s)
 					return
